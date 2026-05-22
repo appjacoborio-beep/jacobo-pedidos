@@ -176,7 +176,7 @@ textarea{resize:vertical;min-height:60px;}
 .suc-screen{min-height:72vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
 .suc-screen-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);letter-spacing:0.04em;margin-bottom:4px;}
 .suc-screen-sub{font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem;}
-.suc-big-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;width:100%;max-width:480px;}
+.suc-big-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;width:100%;max-width:480px;}
 .suc-big-card{background:var(--card);border:2px solid var(--border);border-radius:11px;padding:1.4rem 0.75rem;text-align:center;cursor:pointer;transition:all 0.2s;}
 .suc-big-card:hover{border-color:var(--navy);transform:translateY(-2px);}
 .suc-big-icon{font-size:1.7rem;margin-bottom:7px;}
@@ -267,7 +267,7 @@ textarea{resize:vertical;min-height:60px;}
   </div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchView('order')">📋 <span class="nl">Nuevo Pedido</span></button>
-    <button class="nav-tab" onclick="switchView('production')">👩‍🍳 <span class="nl">Producción</span><span class="badge" id="pending-badge">0</span></button>
+    <button class="nav-tab" onclick="switchView('production')">📅 <span class="nl">Calendario</span><span class="badge" id="pending-badge">0</span></button>
   </nav>
 </header>
 
@@ -376,53 +376,62 @@ textarea{resize:vertical;min-height:60px;}
 </div>
 </div>
 
-<!-- ══ PRODUCCIÓN ══ -->
+<!-- ══ CALENDARIO ══ -->
 <div class="view" id="view-production">
+  <!-- Sucursal selector -->
   <div id="prod-suc-screen" class="suc-screen">
     <div class="suc-screen-title">¿En qué sucursal estás?</div>
-    <div class="suc-screen-sub">Selecciona tu sucursal</div>
+    <div class="suc-screen-sub">Selecciona tu sucursal para ver el calendario</div>
     <div class="suc-big-grid">
       <div class="suc-big-card" onclick="setProdSuc('Otay')"><div class="suc-big-icon">🏪</div><div class="suc-big-name">Otay</div><div class="suc-big-phone">664 973-1089</div></div>
       <div class="suc-big-card" onclick="setProdSuc('Zona Río')"><div class="suc-big-icon">🏙️</div><div class="suc-big-name">Zona Río</div><div class="suc-big-phone">664-104-0941</div></div>
       <div class="suc-big-card" onclick="setProdSuc('Monarca')"><div class="suc-big-icon">👑</div><div class="suc-big-name">Monarca</div><div class="suc-big-phone">664-686-6850</div></div>
+      <div class="suc-big-card" onclick="setProdSuc('Todas')"><div class="suc-big-icon">🗂️</div><div class="suc-big-name">Todas</div><div class="suc-big-phone">Ver todas las sucursales</div></div>
     </div>
   </div>
+
+  <!-- Calendar board -->
   <div id="prod-board" style="display:none">
     <div class="prod-page">
-      <div class="prod-topbar">
-        <div><div class="prod-heading">🏭 Producción — <span id="prod-suc-label"></span></div><div class="prod-sub" id="prod-time">—</div></div>
-        <div class="prod-topbar-right">
-          <button class="refresh-btn" onclick="loadOrders()">↻ Actualizar</button>
-          <button class="change-btn" onclick="changeSuc()">Cambiar sucursal</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:7px">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);letter-spacing:.04em">📅 <span id="prod-suc-label"></span></div>
+          <div style="font-size:.72rem;color:var(--muted)" id="prod-time">—</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:500;cursor:pointer" onclick="loadOrders()">↻ Actualizar</button>
+          <button style="background:#6B729A;color:#fff;border:none;border-radius:7px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:500;cursor:pointer" onclick="changeSuc()">Cambiar sucursal</button>
         </div>
       </div>
-      <div class="suc-view-bar">
-        <span class="svc-label">Ver:</span>
-        <button class="svc-pill active" onclick="setSucView('mine',this)">Mi sucursal</button>
-        <button class="svc-pill" onclick="setSucView('all',this)">Todas</button>
+
+      <!-- Stats counter -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:.85rem">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:var(--navy);line-height:1" id="st-total">0</div><div style="font-size:.63rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">Total</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:#92400E;line-height:1" id="st-pend">0</div><div style="font-size:.63rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">Pendientes</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:#1E40AF;line-height:1" id="st-hoy">0</div><div style="font-size:.63rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em" id="st-hoy-label">Hoy</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:#065F46;line-height:1" id="st-rdy">0</div><div style="font-size:.63rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">Listos</div></div>
       </div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-num" id="st-total">0</div><div class="stat-lbl">Total</div></div>
-        <div class="stat-card"><div class="stat-num" id="st-pend" style="color:#92400E">0</div><div class="stat-lbl">Pendientes</div></div>
-        <div class="stat-card"><div class="stat-num" id="st-mak" style="color:#1E40AF">0</div><div class="stat-lbl">En proceso</div></div>
-        <div class="stat-card"><div class="stat-num" id="st-rdy" style="color:#065F46">0</div><div class="stat-lbl">Listos</div></div>
+
+      <!-- Calendar -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:0.85rem;overflow:hidden">
+        <!-- Month nav -->
+        <div style="background:var(--navy);padding:10px 1rem;display:flex;align-items:center;justify-content:space-between">
+          <button onclick="calPrevMonth()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.1rem;cursor:pointer;width:32px;height:32px;border-radius:6px">‹</button>
+          <span id="cal-month-label" style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;letter-spacing:0.05em"></span>
+          <button onclick="calNextMonth()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.1rem;cursor:pointer;width:32px;height:32px;border-radius:6px">›</button>
+        </div>
+        <!-- Day headers - generated by JS -->
+        <div id="cal-day-headers" style="display:grid;grid-template-columns:repeat(7,1fr);background:#F4F7FF"></div>
+        <!-- Calendar grid -->
+        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)"></div>
       </div>
-      <div class="filter-strip">
-        <button class="ftab active" onclick="setFilter('all',this)">Todos</button>
-        <button class="ftab" onclick="setFilter('Pendiente',this)">⏳ Pendientes</button>
-        <button class="ftab" onclick="setFilter('En proceso',this)">🔥 En proceso</button>
-        <button class="ftab" onclick="setFilter('Listo',this)">✅ Listos</button>
-        <button class="ftab" onclick="setFilter('Entregado',this)">📦 Entregados</button>
+
+      <!-- Selected day orders -->
+      <div id="cal-day-header" style="display:none;margin-bottom:0.7rem">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--navy);letter-spacing:0.04em" id="cal-day-title"></div>
+        <div style="font-size:0.72rem;color:var(--muted)" id="cal-day-sub"></div>
       </div>
-      <div style="display:flex;gap:7px;align-items:center;margin-bottom:.85rem;flex-wrap:wrap">
-        <span style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">📅 Fecha:</span>
-        <button class="ftab active" id="df-hoy" onclick="setDateFilter('hoy',this)">Hoy</button>
-        <button class="ftab" id="df-manana" onclick="setDateFilter('manana',this)">Mañana</button>
-        <button class="ftab" id="df-semana" onclick="setDateFilter('semana',this)">Esta semana</button>
-        <button class="ftab" id="df-todos" onclick="setDateFilter('todos',this)">Todas</button>
-        <input type="date" id="df-custom" onchange="setDateFilter('custom',null)" style="font-size:.73rem;padding:4px 8px;border-radius:14px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer">
-      </div>
-      <div class="orders-grid" id="orders-grid"><div class="spinner-wrap"><div class="spin"></div> Cargando...</div></div>
+      <div class="ogrid" id="orders-grid"><div class="sw"><div class="spin"></div> Cargando...</div></div>
     </div>
   </div>
 </div>
@@ -526,15 +535,15 @@ const POSTRES = [
   {id:'Donas Hojaldre', icon:'🍩', fmts:[{id:'med',label:'Mediana'},{id:'per',label:'Personal'}]}
 ];
 const MINI_POSTRES = [
-  {id:'Mini Dona Hojaldre',     icon:'🍩'},
-  {id:'Dona Mini',              icon:'🍩', sub:'$7'},
-  {id:'Mini Tarta de Frutas',   icon:'🫐', sub:'$20'},
-  {id:'Mini Tarta Queso',       icon:'🧀', sub:'$35 · solo bajo pedido'},
-  {id:'Mini Barra Hojaldre',    icon:'🥖'},
-  {id:'Mini Rollo Pastel',      icon:'🌀', variants:['Chocolate','Vainilla']},
-  {id:'Mini Pay Queso',         icon:'🧀'},
-  {id:'Mousse',                 icon:'🍫', sub:'$45', variants:['Fresa','Chocolate']},
-  {id:'Mini Jacobino de Crepas',icon:'🥞', sub:'$45'},
+  {id:'Mini Dona Hojaldre',     icon:'🍩', step:12},
+  {id:'Dona Mini',              icon:'🍩', sub:'$7 c/u',  step:12},
+  {id:'Mini Tarta de Frutas',   icon:'🫐', sub:'$20 c/u', step:12},
+  {id:'Mini Tarta Queso',       icon:'🧀', sub:'$35 c/u · bajo pedido', step:12},
+  {id:'Mini Barra Hojaldre',    icon:'🥖', step:12},
+  {id:'Mini Rollo Pastel',      icon:'🌀', step:12, variants:['Chocolate','Vainilla']},
+  {id:'Mini Pay Queso',         icon:'🧀', step:12},
+  {id:'Mousse',                 icon:'🍫', sub:'$45 c/u', step:12, variants:['Fresa','Chocolate']},
+  {id:'Mini Jacobino de Crepas',icon:'🥞', sub:'$45 c/u', step:12},
 ];
 const CREPAS_FMTS = [
   {id:'cr6',  label:'6 in',  sub:'$480'},
@@ -561,7 +570,7 @@ const ADICIONALES = [
 const COMBOS_PISOS_LEGACY={'1-0':[{label:'Piso único',hint:null}],'2-A':[{label:'Piso Superior',hint:'6"'},{label:'Piso Inferior',hint:'10"'}],'2-B':[{label:'Piso Superior',hint:'8"'},{label:'Piso Inferior',hint:'12"'}],'3-0':[{label:'Piso Superior',hint:'6"'},{label:'Piso Medio',hint:'10"'},{label:'Piso Inferior',hint:'14"'}]};
 
 // ══ GLOBAL STATE ══
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbydmVI7Am_u__ySlg6iG7xCi1k51gvEjXeFJdzxHfl84__mzfq9nvJNIAvFfNJXH2cwsA/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbyUDZmqH9mNDxclhVBnMxxif67lfNEfCmxoqem4WR4MD8dy29s1gCcq1a5uvcl7qclSjQ/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -578,6 +587,8 @@ async function syncFolioCounter(){
   }catch(e){}
 }
 let currentFilter='all',sucView='mine',prodSuc='',orders=[],dateFilter='hoy',expandedFolios=new Set();
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let calSelectedDate=''; // YYYY-MM-DD
 let selectedSuc='',selectedEntrega='';
 let cart=[];
 let adicQty={};ADICIONALES.forEach(a=>{adicQty[a.id]=0;});
@@ -741,7 +752,7 @@ function renderBuilder(){
 
       ${b.sabor&&(b.sabor==='Trilogía'||b.sabor==='Combinado')?`
       <div class="form-group" style="margin-bottom:0.5rem">
-        <label class="field-label">Sabores a combinar (elige 2 o 3)</label>
+        <label class="field-label">${b.sabor==='Combinado'?'Sabores a combinar (elige 2)':'Sabores a combinar (elige 2 o 3)'}</label>
         <div class="combo-grid" style="margin-top:4px">${SABORES_COMBO.map(s=>`
           <div class="combo-card ${b.comboSabores.includes(s.id)?'selected':''}" onclick="bToggleCombo('${s.id}')">
             <span class="combo-icon">${s.icon}</span><div class="combo-name">${s.id}</div>
@@ -921,27 +932,7 @@ function renderBuilder(){
 
     <!-- ══ PASTELES DE PISOS ══ -->
     <div style="display:${b.cat==='pisos'?'block':'none'}">
-      <div class="step-header"><div class="step-num">1</div><div class="step-title">Sabor del pastel</div></div>
-      <div class="sabor-grid" style="margin-bottom:0.3rem">
-        ${['Vainilla','Chocolate','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','Napolitano'].map(s=>`
-          <div class="sabor-card ${b.sabor===s?'selected':''}" onclick="bSelectSabor('${s}',false)">
-            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Trilogía:'✨',Combinado:'🎨',Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋',Napolitano:'🇮🇹'}[s]||'🎂'}</span>
-            <div class="sabor-name">${s}</div>
-          </div>`).join('')}
-        <div class="sabor-card especial ${b.sabor==='Zanahoria'?'selected':''}" onclick="bSelectSabor('Zanahoria',true)"><span class="sabor-icon">🥕</span><div class="sabor-name">Zanahoria</div></div>
-      </div>
-      <div style="font-size:0.63rem;color:var(--muted);margin-bottom:0.5rem">No aplica 3 Leches en pasteles de pisos</div>
-      ${b.sabor&&(b.sabor==='Trilogía'||b.sabor==='Combinado')?`
-        <div class="form-group" style="margin-bottom:0.5rem">
-          <label class="field-label">Sabores a combinar (2 o 3)</label>
-          <div class="combo-grid" style="margin-top:4px">${SABORES_COMBO.map(s=>`
-            <div class="combo-card ${b.comboSabores.includes(s.id)?'selected':''}" onclick="bToggleCombo('${s.id}')">
-              <span class="combo-icon">${s.icon}</span><div class="combo-name">${s.id}</div>
-            </div>`).join('')}</div>
-          ${b.comboSabores.length?`<div style="font-size:0.65rem;color:var(--muted);margin-top:3px">✓ ${b.comboSabores.join(' + ')}</div>`:''}
-        </div>`:''}
-
-      <div class="step-header"><div class="step-num">2</div><div class="step-title">Combinación de pisos</div></div>
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">¿Cuántos pisos?</div></div>
       <div class="formato-box" style="margin-bottom:0.5rem">
         <div class="formato-grid">
           ${Object.entries(PISOS_CONFIG).map(([key,cfg])=>`
@@ -951,27 +942,24 @@ function renderBuilder(){
             </div>`).join('')}
         </div>
       </div>
-
       ${b.pisosCombo?`
-        <div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:8px;padding:10px 12px;margin-bottom:0.6rem;display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="font-size:0.78rem;font-weight:700;color:#92400E">💰 Depósito de bases: $${PISOS_CONFIG[b.pisosCombo].deposito}</div>
-            <div style="font-size:0.72rem;color:#78350F">Se cobra aparte — cliente devuelve con su nota</div>
-          </div>
+        <div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:8px;padding:10px 12px;margin-bottom:0.6rem">
+          <div style="font-size:0.78rem;font-weight:700;color:#92400E">Deposito de bases: $${PISOS_CONFIG[b.pisosCombo].deposito}</div>
+          <div style="font-size:0.72rem;color:#78350F">Se cobra aparte - cliente devuelve con su nota</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;cursor:pointer" onclick="b.depositoCobrado=!b.depositoCobrado;renderBuilder()">
           <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${b.depositoCobrado?'var(--navy)':'var(--border)'};background:${b.depositoCobrado?'var(--navy)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            ${b.depositoCobrado?'<span style="color:white;font-size:0.8rem">✓</span>':''}
+            ${b.depositoCobrado?'<span style="color:white;font-size:0.8rem">v</span>':''}
           </div>
-          <span style="font-size:0.8rem;font-weight:600;color:var(--navy)">Depósito cobrado al cliente</span>
+          <span style="font-size:0.8rem;font-weight:600;color:var(--navy)">Deposito cobrado al cliente</span>
         </div>
-        <div class="step-header"><div class="step-num">3</div><div class="step-title">Especificaciones por piso</div></div>
+        <div class="step-header"><div class="step-num">2</div><div class="step-title">Sabor y relleno por piso</div></div>
         ${PISOS_CONFIG[b.pisosCombo].pisos.map((pisoLabel,i)=>`
           <div class="piso-card">
             <div class="piso-title">${pisoLabel}</div>
             <div class="form-group">
               <label class="field-label">Sabor</label>
-              <div class="chips">${['Vainilla','Chocolate','Trilogía','Moca','Red Velvet','Blueberry','Limón','Zanahoria'].map(s=>`
+              <div class="chips">${['Vainilla','Chocolate','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','Napolitano','Zanahoria'].map(s=>`
                 <div class="chip ${(b.pisosData[i]&&b.pisosData[i].sabor===s)?'selected':''}" onclick="bSetPisoSabor(${i},'${s}')">${s}</div>`).join('')}
               </div>
             </div>
@@ -985,7 +973,7 @@ function renderBuilder(){
       `:''}
     </div>
 
-    <!-- FOTO -->
+        <!-- FOTO -->
     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
       <label class="field-label">Foto de referencia (opcional)</label>
       <div class="photo-area ${b.photo?'has-photo':''}" style="margin-top:5px" ${b.photo?'':'onclick="bTakePhoto()"'}>
@@ -1016,20 +1004,23 @@ function renderBuilder(){
     <!-- ADICIONALES DEL PRODUCTO -->
     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
       <div class="step-header" style="margin-top:0"><div class="step-num">➕</div><div class="step-title">Adicionales para este producto</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       ${ADICIONALES.map(a=>{
         const qty=b.adicionales[a.id]||0;
         const step=a.step||1;
-        const label=a.step?`${qty} (${qty/step} doc.)`:String(qty);
-        return`<div class="qi">
-          <div class="qi-n">${a.name}</div>
-          <div class="qi-p">${a.price}</div>
-          <div class="qc">
+        const label=a.step?`${qty} pz (${qty/step} doc.)`:String(qty);
+        const active=qty>0;
+        return`<div style="background:${active?'var(--navy)':'var(--faint)'};border:1.5px solid ${active?'var(--navy)':'var(--border)'};border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:0.75rem;font-weight:600;color:${active?'#fff':'var(--text)'};line-height:1.2">${a.name}</div>
+          <div style="font-size:0.67rem;color:${active?'rgba(255,255,255,0.7)':'var(--muted)'};">${a.price}${a.step?' · por docena':''}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
             <button class="qb" onclick="bChAdic('${a.id}',-${step})">−</button>
-            <span class="qn">${label}</span>
+            <span class="qn" style="min-width:40px;text-align:center;color:${active?'#fff':'var(--navy)'}">${label}</span>
             <button class="qb" onclick="bChAdic('${a.id}',${step})">+</button>
           </div>
         </div>`;
       }).join('')}
+      </div>
     </div>
 
     <!-- CANTIDAD -->
@@ -1058,24 +1049,10 @@ function bChAdic(id, delta){
   const next=Math.max(0,cur+delta);
   if(next===0)delete b.adicionales[id];
   else b.adicionales[id]=next;
-  // Re-render just the adicionales section without full rebuild
-  const items=document.querySelectorAll('.builder-body .qi');
-  items.forEach(item=>{
-    const btn=item.querySelector('.qb');
-    if(!btn)return;
-    const onclick=btn.getAttribute('onclick')||'';
-    const match=onclick.match(/bChAdic\('([^']+)'/);
-    if(!match)return;
-    const aid=match[1];
-    const a2=ADICIONALES.find(x=>x.id===aid);
-    const q=b.adicionales[aid]||0;
-    const s=a2?.step||1;
-    const lbl=a2?.step?`${q} (${q/s} doc.)`:String(q);
-    item.querySelector('.qn').textContent=lbl;
-  });
+  renderBuilder();
 }
 
-function bSetCat(cat){b.cat=cat;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaMermelada=false;renderBuilder();}
+function bSetCat(cat){b.cat=cat;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaMermelada=false;b.comboSabores=[];renderBuilder();}
 
 function bSelectSabor(s,esp){
   b.sabor=s;b.saborEspecial=esp;
@@ -1086,8 +1063,10 @@ function bSelectSabor(s,esp){
 }
 
 function bToggleCombo(s){
+  const max=b.sabor==='Combinado'?2:3;
   if(b.comboSabores.includes(s))b.comboSabores=b.comboSabores.filter(x=>x!==s);
-  else if(b.comboSabores.length<3)b.comboSabores.push(s);
+  else if(b.comboSabores.length<max)b.comboSabores.push(s);
+  else toast('⚠️',`Máximo ${max} sabores para ${b.sabor}`);
   renderBuilder();
 }
 
@@ -1129,7 +1108,13 @@ function bTogRelCosto(r){
 function bSelectPostre(id){b.postProduct=id;b.postFmt='';b.postFmtLabel='';b.cupcakeSabor='';renderBuilder();}
 function bSelPostreFmt(id,label){b.postFmt=id;b.postFmtLabel=label;renderBuilder();}
 function bSetCupcakeSabor(s){b.cupcakeSabor=s;renderBuilder();}
-function bSelectMini(id){b.miniProduct=id;b.miniVariant='';renderBuilder();}
+function bSelectMini(id){
+  b.miniProduct=id;b.miniVariant='';
+  // Set minimum quantity to step for mini postres
+  const p=MINI_POSTRES.find(x=>x.id===id);
+  if(p&&p.step&&b.qty<p.step)b.qty=p.step;
+  renderBuilder();
+}
 function bSetMiniVariant(v){b.miniVariant=v;renderBuilder();}
 
 function bChangeCant(d){b.qty=Math.max(1,b.qty+d);const el=document.getElementById('b-qty-display');if(el)el.textContent=b.qty;}
@@ -1163,7 +1148,6 @@ function bRemovePhoto(e){e.stopPropagation();b.photo=null;renderBuilder();}
 function bAddToCart(){
   let name='',details='';
   if(b.cat==='pisos'){
-    if(!b.sabor){toast('⚠️','Elige el sabor');return;}
     if(!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
     const cfg=PISOS_CONFIG[b.pisosCombo];
     name=`Pastel de Pisos ${b.sabor} · ${cfg.label}`;
@@ -1177,7 +1161,8 @@ function bAddToCart(){
     details+=`💰 Depósito bases: $${cfg.deposito} — ${b.depositoCobrado?'✅ Cobrado':'⚠️ PENDIENTE DE COBRAR'}\n`;
   } else if(b.cat==='pastel'){
     if(!b.sabor){toast('⚠️','Elige el sabor');return;}
-    if((b.sabor==='Trilogía'||b.sabor==='Combinado')&&b.comboSabores.length<2){toast('⚠️','Elige al menos 2 sabores para combinar');return;}
+    if(b.sabor==='Combinado'&&b.comboSabores.length!==2){toast('⚠️','Combinado requiere exactamente 2 sabores');return;}
+    if(b.sabor==='Trilogía'&&b.comboSabores.length<2){toast('⚠️','Trilogía requiere 2 o 3 sabores');return;}
     if(b.sabor!=='Napolitano'&&!b.fmtGrupo){toast('⚠️','Elige el formato');return;}
     if(b.fmtGrupo==='pisos'&&!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
     // Name
@@ -1290,7 +1275,7 @@ function clearForm(){
 }
 
 // ══ PRODUCTION ══
-function setProdSuc(suc){prodSuc=suc;document.getElementById('prod-suc-screen').style.display='none';document.getElementById('prod-board').style.display='block';document.getElementById('prod-suc-label').textContent=suc;loadOrders();}
+function setProdSuc(suc){prodSuc=suc;calMonth=new Date().getMonth();calYear=new Date().getFullYear();calSelectedDate='';document.getElementById('prod-suc-screen').style.display='none';document.getElementById('prod-board').style.display='block';document.getElementById('prod-suc-label').textContent=suc==='Todas'?'Todas las sucursales':suc;loadOrders();}
 function changeSuc(){prodSuc='';document.getElementById('prod-suc-screen').style.display='flex';document.getElementById('prod-board').style.display='none';}
 function setSucView(v,btn){sucView=v;document.querySelectorAll('.svc-pill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderOrders();}
 
@@ -1330,21 +1315,121 @@ async function loadOrders(){
   // Bad date format
   if(s.startsWith('1899')||s.startsWith('1900'))return'';
   return s;
-})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||''})).reverse();
-    renderOrders();document.getElementById('prod-time').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});updateBadge();
+})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',historial:r['Historial']||''})).reverse();
+    renderCalendar();document.getElementById('prod-time').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});updateBadge();
   }catch(e){document.getElementById('orders-grid').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error de conexión</div></div>`;}
 }
 
 
 function joinDetails(s){return(s||'').split(' | ').join('\n');}
+// ══ CALENDAR ══
+function renderCalendar(){
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay = new Date(calYear, calMonth+1, 0);
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
+  // Render day headers
+  const dayHeaders = document.getElementById('cal-day-headers');
+  if(dayHeaders) dayHeaders.innerHTML = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d=>`<div style="text-align:center;font-size:0.62rem;font-weight:700;color:var(--muted);padding:5px 0;text-transform:uppercase;letter-spacing:0.05em">${d}</div>`).join('');
+
+  // Count orders per day
+  const ordersByDay = {};
+  const visOrders = prodSuc==='Todas' ? orders : orders.filter(o=>o.sucursal===prodSuc);
+  visOrders.forEach(o=>{
+    if(!o.fechaEntrega) return;
+    if(!ordersByDay[o.fechaEntrega]) ordersByDay[o.fechaEntrega] = {total:0,pend:0,proc:0,listo:0};
+    ordersByDay[o.fechaEntrega].total++;
+    if(o.status==='Pendiente') ordersByDay[o.fechaEntrega].pend++;
+    if(o.status==='En proceso') ordersByDay[o.fechaEntrega].proc++;
+    if(o.status==='Listo') ordersByDay[o.fechaEntrega].listo++;
+  });
+
+  // Build calendar grid
+  const startDow = firstDay.getDay(); // 0=Sun
+  let html = '';
+  // Empty cells before first day
+  for(let i=0;i<startDow;i++){
+    html += '<div style="background:var(--card);min-height:52px"></div>';
+  }
+  // Days
+  for(let d=1;d<=lastDay.getDate();d++){
+    const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const dayOrders = ordersByDay[dateStr];
+    const isToday = dateStr===todayStr;
+    const isSelected = dateStr===calSelectedDate;
+    const bgColor = isSelected?'var(--navy)':isToday?'var(--faint)':'var(--card)';
+    const numColor = isSelected?'#fff':isToday?'var(--navy)':'var(--text)';
+    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'}">
+      <div style="font-size:0.78rem;font-weight:${isToday?'700':'500'};color:${numColor};margin-bottom:3px">${d}</div>
+      ${dayOrders?`
+        <div style="display:flex;flex-wrap:wrap;gap:2px">
+          ${dayOrders.pend>0?`<span style="background:#FEF3C7;color:#92400E;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.pend}P</span>`:''}
+          ${dayOrders.proc>0?`<span style="background:#DBEAFE;color:#1E40AF;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.proc}E</span>`:''}
+          ${dayOrders.listo>0?`<span style="background:#D1FAE5;color:#065F46;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.listo}L</span>`:''}
+        </div>`:''}
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+
+  // Update stats
+  const allVis = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal===prodSuc);
+  document.getElementById('st-total').textContent = allVis.length;
+  document.getElementById('st-pend').textContent = allVis.filter(o=>o.status==='Pendiente').length;
+  document.getElementById('st-rdy').textContent = allVis.filter(o=>o.status==='Listo').length;
+
+  // If a day is selected, show its orders
+  if(calSelectedDate){
+    calShowDay(calSelectedDate);
+  } else {
+    // Show today's pending by default
+    const todayPend = allVis.filter(o=>o.fechaEntrega===todayStr&&o.status!=='Entregado').length;
+    document.getElementById('st-hoy').textContent = todayPend;
+    document.getElementById('st-hoy-label').textContent = 'Pendientes hoy';
+    document.getElementById('cal-day-header').style.display='none';
+    document.getElementById('orders-grid').innerHTML = '<div class="empty"><div class="empty-i">👆</div><div class="empty-t">Toca un día</div><p>Selecciona un día en el calendario para ver sus pedidos</p></div>';
+  }
+}
+
+function calSelectDay(dateStr){
+  calSelectedDate = calSelectedDate===dateStr ? '' : dateStr;
+  renderCalendar();
+}
+
+function calShowDay(dateStr){
+  const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal===prodSuc);
+  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+  const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const parts=dateStr.split('-');
+  const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
+  const pend=dayOrders.filter(o=>o.status==='Pendiente'||o.status==='En proceso').length;
+
+  document.getElementById('cal-day-header').style.display='block';
+  document.getElementById('cal-day-title').textContent='📋 Pedidos del '+dateLabel;
+  document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos · '+pend+' pendientes';
+  document.getElementById('st-hoy').textContent=pend;
+  document.getElementById('st-hoy-label').textContent='Pendientes ese día';
+
+  if(!dayOrders.length){
+    document.getElementById('orders-grid').innerHTML='<div class="empty"><div class="empty-i">🎂</div><div class="empty-t">Sin pedidos</div><p>No hay pedidos para este día</p></div>';
+    return;
+  }
+  renderOrdersList(dayOrders);
+}
+
+function calPrevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}calSelectedDate='';renderCalendar();}
+function calNextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}calSelectedDate='';renderCalendar();}
+
 function renderOrders(){
-  let vis=sucView==='mine'?orders.filter(o=>o.sucursal===prodSuc):orders;
-  if(currentFilter!=='all')vis=vis.filter(o=>o.status===currentFilter);
-  const mine=orders.filter(o=>o.sucursal===prodSuc);
-  document.getElementById('st-total').textContent=mine.length;
-  document.getElementById('st-pend').textContent=mine.filter(o=>o.status==='Pendiente').length;
-  document.getElementById('st-mak').textContent=mine.filter(o=>o.status==='En proceso').length;
-  document.getElementById('st-rdy').textContent=mine.filter(o=>o.status==='Listo').length;
+  // In calendar mode, just refresh the calendar
+  renderCalendar();
+  return;
+}
+
+function renderOrdersList(visOrders){
+  let vis=visOrders;
+  // Stats handled by renderCalendar
   const grid=document.getElementById('orders-grid');
   if(!vis.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">🎂</div><div class="empty-title">Sin pedidos</div><p>Los pedidos aparecerán aquí</p></div>`;return;}
   // Apply date filter then sort by delivery date+time ascending
@@ -1401,14 +1486,14 @@ async function advStatus(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));
   if(!o||!NEXT[o.status])return;
   const ns=NEXT[o.status];
-  // Update UI immediately (optimistic)
+  const quien=prompt('¿Quién hace este cambio?','');
+  if(quien===null)return;
   o.status=ns;
-  renderOrders();
+  renderCalendar();
   updateBadge();
   toast('✓',`Folio #${String(o.folio).padStart(4,'0')} → ${ns}`);
-  // Send to sheet in background (no-cors works for writes from any browser)
   try{
-    const payload={_update:true,folio:o.folio,estado:ns};
+    const payload={_update:true,folio:o.folio,estado:ns,quien:quien||'Sin nombre',fechaCambio:new Date().toLocaleString('es-MX')};
     fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload)));
   }catch(e){}
 }
