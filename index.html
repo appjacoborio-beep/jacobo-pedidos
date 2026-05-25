@@ -1500,17 +1500,14 @@ function renderProductLines(prodLines){
     var di=p.indexOf(' '+EM+' ');
     var pname=di>=0?p.slice(0,di):p;
     var raw=di>=0?p.slice(di+3):'';
-    // If raw has ' | ' separators, use them; otherwise split on known labels
     var specs=[];
     if(raw){
       if(raw.indexOf(' | ')>=0){
         specs=raw.split(' | ').map(function(s){return s.trim();}).filter(Boolean);
       } else {
-        // Split on known label keywords followed by colon
         var labels=['Base:','Toppings:','Topping:','Fruta:','Extra:','Relleno:','Rellenos:','Especial:','Sabor:','Piso ','Adicionales:','Nota:','Notas:'];
         var regex=new RegExp('(?=(?:'+labels.map(function(l){return l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|')+'))');
         specs=raw.split(regex).map(function(s){return s.trim();}).filter(Boolean);
-        // If still one chunk, just show it as-is
         if(specs.length<=1)specs=raw?[raw]:[];
       }
     }
@@ -1518,13 +1515,16 @@ function renderProductLines(prodLines){
     if(specs.length){
       html+='<div class="oc-product-detail">';
       specs.forEach(function(s){
+        var temaEmoji='\ud83c\udfa8';
+        var mensajeEmoji='\ud83d\udcac';
+        var alertEmoji='\u26a0';
         var colon=s.indexOf(':');
         var hasLabel=colon>0&&colon<30;
         var label=hasLabel?s.slice(0,colon+1):'';
         var val=hasLabel?s.slice(colon+1).trim():s;
         var sl=s.toLowerCase();
         var icon='&#9658;';
-        if(sl.startsWith('base:'))icon='&#127856;';
+        if(sl.startsWith('base:')){icon='&#127854;';label='Relleno:';}
         else if(sl.startsWith('topping'))icon='&#127827;';
         else if(sl.startsWith('fruta:'))icon='&#127825;';
         else if(sl.startsWith('extra:'))icon='&#10024;';
@@ -1534,6 +1534,9 @@ function renderProductLines(prodLines){
         else if(sl.startsWith('piso'))icon='&#127959;';
         else if(sl.startsWith('nota'))icon='&#128203;';
         else if(sl.startsWith('adicionales:'))icon='&#10133;';
+        if(s.indexOf(temaEmoji)>=0){label='Tem\u00e1tica:';val=s.replace(temaEmoji,'').trim();icon='&#127775;';}
+        if(s.indexOf(mensajeEmoji)>=0){label='Mensaje:';val=s.replace(mensajeEmoji,'').trim();icon='&#128172;';}
+        if(s.indexOf(alertEmoji)>=0&&!hasLabel){label='Alergia:';val=s.replace(alertEmoji,'').trim();icon='&#9888;';}
         html+='<div class="oc-spec-row"><span class="oc-spec-label">'+icon+' '+label+'</span><span class="oc-spec-val">'+val+'</span></div>';
       });
       html+='</div>';
