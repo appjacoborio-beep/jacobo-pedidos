@@ -1117,7 +1117,12 @@ function bTogRelCosto(r){
   renderBuilder();
 }
 
-function bSelectPostre(id){b.postProduct=id;b.postFmt='';b.postFmtLabel='';b.cupcakeSabor='';renderBuilder();}
+function bSelectPostre(id){
+  b.postProduct=id;b.postFmt='';b.postFmtLabel='';b.cupcakeSabor='';
+  const p=POSTRES.find(x=>x.id===id);
+  if(p&&p.minQty&&b.qty<p.minQty)b.qty=p.minQty;
+  renderBuilder();
+}
 function bSelPostreFmt(id,label){b.postFmt=id;b.postFmtLabel=label;renderBuilder();}
 function bSetCupcakeSabor(s){b.cupcakeSabor=s;renderBuilder();}
 function bSelectMini(id){
