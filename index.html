@@ -1264,7 +1264,10 @@ async function sendOrder(){
     const imgUrl=payload.imagen;
     const payloadSinImg={...payload, imagen: imgUrl ? '🖼️ Ver foto en Cloudinary' : ''};
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payloadSinImg));
-    const res=await fetch(url);
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),15000); // 15 sec timeout
+    const res=await fetch(url,{signal:controller.signal});
+    clearTimeout(timeout);
     const result=await res.json();
     if(result.ok){
       // If there's an image URL, update it separately
@@ -1278,7 +1281,12 @@ async function sendOrder(){
       toast('❌','Error: '+(result.error||'intenta de nuevo'));
     }
   }catch(e){
-    toast('❌','Error al enviar. Verifica tu conexión.');
+    btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
+    if(e.name==='AbortError'){
+      toast('❌','Tiempo de espera agotado. Intenta de nuevo.');
+    } else {
+      toast('❌','Error al enviar. Verifica tu conexión.');
+    }
   }
   btn.disabled=false;btn.innerHTML='📤 Enviar a Producción';
 }
