@@ -280,7 +280,7 @@ textarea{resize:vertical;min-height:60px;}
       <div class="folio-logo">🎂</div>
       <div><div class="folio-title">Pedidos Especiales</div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
     </div>
-    <div class="folio-box"><div class="folio-label">Folio</div><div class="folio-number" id="folio-display">0001</div></div>
+    <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"></div>
   </div>
 
   <!-- DATOS CLIENTE -->
@@ -447,14 +447,7 @@ textarea{resize:vertical;min-height:60px;}
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title" id="edit-modal-title">Editar Pedido</span><button class="modal-close" onclick="closeEditModal()">✕</button></div>
-    <div class="modal-body" id="edit-modal-body"></div>
-  </div>
-</div>
-
-<div class="toast" id="toast"><span id="toast-icon">✓</span> <span id="toast-msg">Listo</span></div>
-
-<script>
+    <div class="modal-header"><span class="modal-title" id="edit-modal-title">Editar Pedido</span><button class="modal-close" onclick="closeEdit
 // ══ CATALOG ══
 // All format IDs that use inches use a plain string with in (no special chars in data attrs)
 // Groups use simple keys - no slashes or special chars
@@ -615,7 +608,7 @@ function resetUrl(){
 
 // ══ INIT ══
 document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
-document.getElementById('folio-display').textContent=String(folioCounter).padStart(4,'0');
+document.getElementById('folio-display').value='';
 renderAdicionales();
 syncFolioCounter();
 
@@ -1232,7 +1225,9 @@ async function sendOrder(){
   if(!cart.length){toast('⚠️','Agrega al menos un producto');return;}
   if(!SCRIPT_URL){toast('⚠️','Sin conexión a Google Sheets');return;}
   const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
-  const folio=folioCounter;
+  const folioVal=document.getElementById('folio-display').value.trim();
+  if(!folioVal){toast('⚠️','Ingresa el número de folio');btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';return;}
+  const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
   const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedEntrega==='sucursal'?selectedSuc:'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
@@ -1249,8 +1244,6 @@ async function sendOrder(){
         const imgPayload={_updateImagen:true,folio:payload.folio,imagen:imgUrl};
         fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(imgPayload)));
       }
-      folioCounter++;
-      localStorage.setItem('jacobo_folio',String(folioCounter));
       clearForm();updateBadge();
       toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
     } else {
@@ -1271,7 +1264,7 @@ function clearForm(){
   cart=[];renderCart();
   ADICIONALES.forEach(a=>{adicQty[a.id]=0;});renderAdicionales();
   selectedSuc='';selectedEntrega='';
-  document.getElementById('folio-display').textContent=String(folioCounter).padStart(4,'0');
+  document.getElementById('folio-display').value='';
 }
 
 // ══ PRODUCTION ══
@@ -1330,15 +1323,14 @@ function renderCalendar(){
   const lastDay = new Date(calYear, calMonth+1, 0);
   const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
-
   // Render day headers
   const dayHeaders = document.getElementById('cal-day-headers');
   if(dayHeaders) dayHeaders.innerHTML = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d=>`<div style="text-align:center;font-size:0.62rem;font-weight:700;color:var(--muted);padding:5px 0;text-transform:uppercase;letter-spacing:0.05em">${d}</div>`).join('');
 
   // Count orders per day
   const ordersByDay = {};
-  const allVis = prodSuc==='Todas' ? orders : orders.filter(o=>o.sucursal===prodSuc);
-  allVis.forEach(o=>{
+  const visOrders = prodSuc==='Todas' ? orders : orders.filter(o=>o.sucursal===prodSuc);
+  visOrders.forEach(o=>{
     if(!o.fechaEntrega) return;
     if(!ordersByDay[o.fechaEntrega]) ordersByDay[o.fechaEntrega] = {total:0,pend:0,proc:0,listo:0};
     ordersByDay[o.fechaEntrega].total++;
@@ -1348,9 +1340,13 @@ function renderCalendar(){
   });
 
   // Build calendar grid
-  const startDow = firstDay.getDay();
+  const startDow = firstDay.getDay(); // 0=Sun
   let html = '';
-  for(let i=0;i<startDow;i++) html += '<div style="background:var(--card);min-height:52px"></div>';
+  // Empty cells before first day
+  for(let i=0;i<startDow;i++){
+    html += '<div style="background:var(--card);min-height:52px"></div>';
+  }
+  // Days
   for(let d=1;d<=lastDay.getDate();d++){
     const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const dayOrders = ordersByDay[dateStr];
@@ -1360,24 +1356,27 @@ function renderCalendar(){
     const numColor = isSelected?'#fff':isToday?'var(--navy)':'var(--text)';
     html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'}">
       <div style="font-size:0.78rem;font-weight:${isToday?'700':'500'};color:${numColor};margin-bottom:3px">${d}</div>
-      ${dayOrders?`<div style="display:flex;flex-wrap:wrap;gap:2px">
-        ${dayOrders.pend>0?`<span style="background:#FEF3C7;color:#92400E;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.pend}P</span>`:''}
-        ${dayOrders.proc>0?`<span style="background:#DBEAFE;color:#1E40AF;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.proc}E</span>`:''}
-        ${dayOrders.listo>0?`<span style="background:#D1FAE5;color:#065F46;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.listo}L</span>`:''}
-      </div>`:''}
+      ${dayOrders?`
+        <div style="display:flex;flex-wrap:wrap;gap:2px">
+          ${dayOrders.pend>0?`<span style="background:#FEF3C7;color:#92400E;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.pend}P</span>`:''}
+          ${dayOrders.proc>0?`<span style="background:#DBEAFE;color:#1E40AF;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.proc}E</span>`:''}
+          ${dayOrders.listo>0?`<span style="background:#D1FAE5;color:#065F46;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.listo}L</span>`:''}
+        </div>`:''}
     </div>`;
   }
   document.getElementById('cal-grid').innerHTML = html;
 
   // Update stats
+  const allVis = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal===prodSuc);
   document.getElementById('st-total').textContent = allVis.length;
   document.getElementById('st-pend').textContent = allVis.filter(o=>o.status==='Pendiente').length;
   document.getElementById('st-rdy').textContent = allVis.filter(o=>o.status==='Listo').length;
 
-  // Update day panel
+  // If a day is selected, show its orders
   if(calSelectedDate){
     calShowDay(calSelectedDate);
   } else {
+    // Show today's pending by default
     const todayPend = allVis.filter(o=>o.fechaEntrega===todayStr&&o.status!=='Entregado').length;
     document.getElementById('st-hoy').textContent = todayPend;
     document.getElementById('st-hoy-label').textContent = 'Pendientes hoy';
@@ -1385,7 +1384,6 @@ function renderCalendar(){
     document.getElementById('orders-grid').innerHTML = '<div class="empty"><div class="empty-i">👆</div><div class="empty-t">Toca un día</div><p>Selecciona un día en el calendario para ver sus pedidos</p></div>';
   }
 }
-
 
 function calSelectDay(dateStr){
   calSelectedDate = calSelectedDate===dateStr ? '' : dateStr;
@@ -1566,6 +1564,10 @@ function toggleExpand(folio){
 function updateBadge(){const n=orders.filter(o=>o.status==='Pendiente'&&o.sucursal===prodSuc).length;document.getElementById('pending-badge').textContent=n;}
 function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();}
 function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+
+initSetupBanner();
+setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
+.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 initSetupBanner();
 setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
