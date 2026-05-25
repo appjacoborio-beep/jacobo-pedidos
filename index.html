@@ -1558,12 +1558,45 @@ function openEditModal(folio){
   document.getElementById('edit-modal').classList.add('open');
 }
 async function saveEdit(){
-  const payload={_edit:true,folio:editingFolio,cliente:document.getElementById('e-cliente').value,telefono:document.getElementById('e-tel').value,fechaEntrega:document.getElementById('e-fecha').value,hora:document.getElementById('e-hora').value,tipoEntrega:document.getElementById('e-tipo').value,sucursal:document.getElementById('e-suc').value,direccion:document.getElementById('e-dir').value,productos:document.getElementById('e-prods').value,adicionales:document.getElementById('e-adic').value,notas:document.getElementById('e-notas').value,total:parseFloat(document.getElementById('e-total').value)||0,anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,restante:parseFloat(document.getElementById('e-restante').value)||0};
+  const payload={_edit:true,folio:editingFolio,
+    cliente:document.getElementById('e-cliente').value,
+    telefono:document.getElementById('e-tel').value,
+    fechaEntrega:document.getElementById('e-fecha').value,
+    hora:document.getElementById('e-hora').value,
+    tipoEntrega:document.getElementById('e-tipo').value,
+    sucursal:document.getElementById('e-suc').value,
+    direccion:document.getElementById('e-dir').value,
+    productos:document.getElementById('e-prods').value,
+    adicionales:document.getElementById('e-adic').value,
+    notas:document.getElementById('e-notas').value,
+    total:parseFloat(document.getElementById('e-total').value)||0,
+    anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
+    restante:parseFloat(document.getElementById('e-restante').value)||0
+  };
+  // Update local orders immediately
+  const o=orders.find(x=>String(x.folio)===String(editingFolio));
+  if(o){
+    o.cliente=payload.cliente;
+    o.telefono=payload.telefono;
+    o.fechaEntrega=payload.fechaEntrega;
+    o.hora=payload.hora;
+    o.tipoEntrega=payload.tipoEntrega;
+    o.sucursal=payload.sucursal;
+    o.direccion=payload.direccion;
+    o.productos=payload.productos;
+    o.adicionales=payload.adicionales;
+    o.notas=payload.notas;
+    o.total=payload.total;
+    o.anticipo=payload.anticipo;
+    o.restante=payload.restante;
+  }
+  closeEditModal();
+  renderCalendar();
+  toast('✓','Pedido actualizado ✅');
+  // Send to sheet in background
   try{
-    const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
-    await fetch(url);
-    toast('✓','Pedido actualizado');closeEditModal();setTimeout(loadOrders,1500);
-  }catch(e){toast('❌','Error al guardar');}
+    fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload)));
+  }catch(e){}
 }
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');}
 function openImgModal(src,title){document.getElementById('img-modal-src').src=src;document.getElementById('img-modal-title').textContent=title||'Foto';document.getElementById('img-modal').classList.add('open');}
