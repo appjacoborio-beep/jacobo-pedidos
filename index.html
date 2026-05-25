@@ -459,7 +459,8 @@ textarea{resize:vertical;min-height:60px;}
 const GRUPOS_LABEL = {
   'jacobino':   'Jacobino',
   'redondo':    'Redondo',
-  'corazon':    'Corazón · Cuadrado',
+  'corazon':    'Corazón',
+  'cuadrado':   'Cuadrado',
   'plancha':    'Plancha',
   'barra':      'Barra Napolitana',
   'pisos':      'Pasteles de Pisos',
@@ -472,6 +473,7 @@ const FORMATOS = {
     {grupo:'jacobino', items:[{id:'individual', label:'Individual', sub:'1 porción'}]},
     {grupo:'redondo',  items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'8',label:'8 in',sub:'8-10 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'},{id:'12',label:'12 in',sub:'20-25 porciones'},{id:'14',label:'14 in',sub:'40-50 porciones'}]},
     {grupo:'corazon',  items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'8',label:'8 in',sub:'8-10 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'},{id:'12',label:'12 in',sub:'20-25 porciones'}]},
+    {grupo:'cuadrado', items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'8',label:'8 in',sub:'8-10 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'},{id:'12',label:'12 in',sub:'20-25 porciones'}]},
     {grupo:'plancha',  items:[{id:'p25',label:'¼ Plancha',sub:'~25 porciones'},{id:'p50',label:'½ Plancha',sub:'~50 porciones'},{id:'p70',label:'¾ Plancha',sub:'~70 porciones'},{id:'p100',label:'1 Plancha',sub:'~100 porciones'}]},
 
   ],
@@ -529,8 +531,8 @@ const POSTRES = [
   {id:'Gelatina de Fruta',icon:'🍓',fmts:[{id:'gf-ind',label:'Individual'},{id:'gf-fam',label:'Familiar 8 pulgadas'}]},
   {id:'Gelatina Mosaico',icon:'🟩',fmts:[{id:'gm-ind',label:'Individual'},{id:'gm-fam',label:'Familiar 8 pulgadas'}]},
   {id:'Hojaldre',       icon:'🥐', fmts:[{id:'med',label:'Media Barra'},{id:'com',label:'Barra Completa'}]},
-  {id:'Cupcakes',       icon:'🧁', fmts:[{id:'sr',label:'Sin relleno',sub:'$35'},{id:'rc',label:'Relleno crema',sub:'$40'},{id:'rq',label:'Relleno queso',sub:'$45'},{id:'cq',label:'Cubierta y relleno queso',sub:'$55'}]},
-  {id:'Donas Hojaldre', icon:'🍩', fmts:[{id:'med',label:'Mediana'},{id:'per',label:'Personal'}]}
+  {id:'Cupcakes',       icon:'🧁', minQty:12, fmts:[{id:'sr',label:'Sin relleno',sub:'$35'},{id:'rc',label:'Relleno crema',sub:'$40'},{id:'rq',label:'Relleno queso',sub:'$45'},{id:'cq',label:'Cubierta y relleno queso',sub:'$55'}]},
+  {id:'Donas Hojaldre', icon:'🍩', minQty:12, fmts:[{id:'med',label:'Mediana'},{id:'per',label:'Personal'}]}
 ];
 const MINI_POSTRES = [
   {id:'Mini Dona Hojaldre',     icon:'🍩', step:12},
@@ -802,7 +804,7 @@ function renderBuilder(){
       </div>`:'' }
 
       <!-- Doble pan option -->
-      ${b.fmtTamano&&(b.fmtGrupo==='redondo'||b.fmtGrupo==='corazon')&&b.sabor!=='3 Leches'?`
+      ${b.fmtTamano&&(b.fmtGrupo==='redondo'||b.fmtGrupo==='corazon'||b.fmtGrupo==='cuadrado')&&b.sabor!=='3 Leches'?`
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.6rem;cursor:pointer;background:#EEF1FB;border-radius:8px;padding:10px 12px" onclick="b.doblePan=!b.doblePan;renderBuilder()">
         <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${b.doblePan?'var(--navy)':'var(--border)'};background:${b.doblePan?'var(--navy)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
           ${b.doblePan?'<span style="color:white;font-size:0.8rem">✓</span>':''}
@@ -961,8 +963,15 @@ function renderBuilder(){
                 <div class="chip ${(b.pisosData[i]&&b.pisosData[i].sabor===s)?'selected':''}" onclick="bSetPisoSabor(${i},'${s}')">${s}</div>`).join('')}
               </div>
             </div>
+            <div class="form-group">
+              <label class="field-label">Base de crema (elige una)</label>
+              <div class="chips">
+                ${['Crema Chantilly','Crema de Queso'].map(c=>`
+                  <div class="chip ${(b.pisosData[i]&&b.pisosData[i].crema===c)?'selected':''}" onclick="bSetPisoCrema(${i},'${c}')">${c}</div>`).join('')}
+              </div>
+            </div>
             <div class="form-group" style="margin-bottom:0">
-              <label class="field-label">Relleno</label>
+              <label class="field-label">Relleno adicional</label>
               <div class="chips">${RELLENOS_PISO.map(r=>`
                 <div class="chip ${(b.pisosData[i]&&b.pisosData[i].relleno.includes(r))?'selected':''}" onclick="bTogPisoRel(${i},'${r}')">${r}</div>`).join('')}
               </div>
@@ -1082,6 +1091,11 @@ function bSelFmt(grupo,tamId){
   renderBuilder();
 }
 
+function bSetPisoCrema(i,c){
+  if(!b.pisosData[i])b.pisosData[i]={sabor:'',crema:'',relleno:[]};
+  b.pisosData[i].crema=c;
+  renderBuilder();
+}
 function bSetPisoSabor(i,s){if(!b.pisosData[i])b.pisosData[i]={sabor:'',relleno:[],custom:''};b.pisosData[i].sabor=s;renderBuilder();}
 function bTogPisoRel(i,r){if(!b.pisosData[i])return;const arr=b.pisosData[i].relleno;if(arr.includes(r))b.pisosData[i].relleno=arr.filter(x=>x!==r);else arr.push(r);renderBuilder();}
 function bSetPisoCustom(i,v){if(!b.pisosData[i])return;b.pisosData[i].custom=v;}
@@ -1154,7 +1168,7 @@ function bAddToCart(){
     cfg.pisos.forEach((piso,i)=>{
       const pd=b.pisosData[i]||{};
       const rel=(pd.relleno||[]).join(', ');
-      details+=`${piso}: ${pd.sabor||'—'}${rel?' | '+rel:''}\n`;
+      details+=`${piso}: ${pd.sabor||'—'} | Base: ${pd.crema||'—'}${rel?' | '+rel:''}\n`;
     });
     details+=`💰 Depósito bases: $${cfg.deposito} — ${b.depositoCobrado?'✅ Cobrado':'⚠️ PENDIENTE DE COBRAR'}\n`;
   } else if(b.cat==='pastel'){
@@ -1621,11 +1635,13 @@ function toggleExpand(folio){
   else expandedFolios.add(folio);
   renderOrders();
 }
-function updateBadge(){const n=orders.filter(o=>o.status==='Pendiente'&&o.sucursal===prodSuc).length;document.getElementById('pending-badge').textContent=n;}
+function updateBadge(){const n=prodSuc?orders.filter(o=>o.status==='Pendiente'&&o.sucursal===prodSuc).length:orders.filter(o=>o.status==='Pendiente').length;document.getElementById('pending-badge').textContent=n||'';}
 function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();}
 function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 initSetupBanner();
+// Load orders on start to populate badge
+if(SCRIPT_URL)loadOrders();
 setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
 </script>
 </body>
