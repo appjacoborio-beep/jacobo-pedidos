@@ -280,7 +280,7 @@ textarea{resize:vertical;min-height:60px;}
       <div class="folio-logo">🎂</div>
       <div><div class="folio-title">Pedidos Especiales</div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
     </div>
-    <div class="folio-box"><div class="folio-label">Folio</div><div class="folio-number" id="folio-display">0001</div></div>
+    <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"></div>
   </div>
 
   <!-- DATOS CLIENTE -->
@@ -447,14 +447,7 @@ textarea{resize:vertical;min-height:60px;}
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title" id="edit-modal-title">Editar Pedido</span><button class="modal-close" onclick="closeEditModal()">✕</button></div>
-    <div class="modal-body" id="edit-modal-body"></div>
-  </div>
-</div>
-
-<div class="toast" id="toast"><span id="toast-icon">✓</span> <span id="toast-msg">Listo</span></div>
-
-<script>
+    <div class="modal-header"><span class="modal-title" id="edit-modal-title">Editar Pedido</span><button class="modal-close" onclick="closeEdit
 // ══ CATALOG ══
 // All format IDs that use inches use a plain string with in (no special chars in data attrs)
 // Groups use simple keys - no slashes or special chars
@@ -615,7 +608,7 @@ function resetUrl(){
 
 // ══ INIT ══
 document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
-document.getElementById('folio-display').textContent=String(folioCounter).padStart(4,'0');
+document.getElementById('folio-display').value='';
 renderAdicionales();
 syncFolioCounter();
 
@@ -1232,7 +1225,9 @@ async function sendOrder(){
   if(!cart.length){toast('⚠️','Agrega al menos un producto');return;}
   if(!SCRIPT_URL){toast('⚠️','Sin conexión a Google Sheets');return;}
   const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
-  const folio=folioCounter;
+  const folioVal=document.getElementById('folio-display').value.trim();
+  if(!folioVal){toast('⚠️','Ingresa el número de folio');btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';return;}
+  const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
   const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedEntrega==='sucursal'?selectedSuc:'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
@@ -1249,8 +1244,6 @@ async function sendOrder(){
         const imgPayload={_updateImagen:true,folio:payload.folio,imagen:imgUrl};
         fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(imgPayload)));
       }
-      folioCounter++;
-      localStorage.setItem('jacobo_folio',String(folioCounter));
       clearForm();updateBadge();
       toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
     } else {
@@ -1271,7 +1264,7 @@ function clearForm(){
   cart=[];renderCart();
   ADICIONALES.forEach(a=>{adicQty[a.id]=0;});renderAdicionales();
   selectedSuc='';selectedEntrega='';
-  document.getElementById('folio-display').textContent=String(folioCounter).padStart(4,'0');
+  document.getElementById('folio-display').value='';
 }
 
 // ══ PRODUCTION ══
@@ -1473,7 +1466,6 @@ function renderOrdersList(visOrders){
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
       <div class="oc-footer">
-        ${NEXT[o.status]?`<button class="oc-btn" onclick="advStatus('${o.folio}')">${NEXT_LBL[o.status]}</button>`:''}
         <button class="oc-btn" onclick="openEditModal('${o.folio}')">✏️ Editar</button>
         <button class="oc-btn danger" onclick="delOrder('${o.folio}')">🗑</button>
       </div>
@@ -1572,6 +1564,10 @@ function toggleExpand(folio){
 function updateBadge(){const n=orders.filter(o=>o.status==='Pendiente'&&o.sucursal===prodSuc).length;document.getElementById('pending-badge').textContent=n;}
 function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();}
 function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+
+initSetupBanner();
+setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
+.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 initSetupBanner();
 setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
