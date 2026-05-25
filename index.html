@@ -1554,10 +1554,12 @@ function openEditModal(folio){
       <div class="form-group" style="margin-bottom:0"><label class="field-label">Anticipo $</label><input type="number" id="e-anticipo" value="${o.anticipo||0}" step="0.01"></div>
       <div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="e-restante" value="${o.restante||0}" step="0.01"></div>
     </div>
-    <div class="modal-actions"><button class="btn-primary" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>`;
+    <div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>`;
   document.getElementById('edit-modal').classList.add('open');
 }
 async function saveEdit(){
+  const saveBtn=document.getElementById('edit-save-btn');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.innerHTML='<div class="spin"></div> Guardando...';}
   const payload={_edit:true,folio:editingFolio,
     cliente:document.getElementById('e-cliente').value,
     telefono:document.getElementById('e-tel').value,
@@ -1573,30 +1575,19 @@ async function saveEdit(){
     anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
     restante:parseFloat(document.getElementById('e-restante').value)||0
   };
-  // Update local orders immediately
-  const o=orders.find(x=>String(x.folio)===String(editingFolio));
-  if(o){
-    o.cliente=payload.cliente;
-    o.telefono=payload.telefono;
-    o.fechaEntrega=payload.fechaEntrega;
-    o.hora=payload.hora;
-    o.tipoEntrega=payload.tipoEntrega;
-    o.sucursal=payload.sucursal;
-    o.direccion=payload.direccion;
-    o.productos=payload.productos;
-    o.adicionales=payload.adicionales;
-    o.notas=payload.notas;
-    o.total=payload.total;
-    o.anticipo=payload.anticipo;
-    o.restante=payload.restante;
-  }
-  closeEditModal();
-  renderCalendar();
-  toast('✓','Pedido actualizado ✅');
-  // Send to sheet in background
   try{
-    fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload)));
-  }catch(e){}
+    const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),15000);
+    await fetch(url,{signal:controller.signal});
+    clearTimeout(timeout);
+    closeEditModal();
+    toast('✓','Pedido actualizado ✅');
+    await loadOrders();
+  }catch(e){
+    if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Guardar';}
+    toast('❌','Error al guardar. Intenta de nuevo.');
+  }
 }
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');}
 function openImgModal(src,title){document.getElementById('img-modal-src').src=src;document.getElementById('img-modal-title').textContent=title||'Foto';document.getElementById('img-modal').classList.add('open');}
