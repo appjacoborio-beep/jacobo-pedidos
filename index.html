@@ -1225,13 +1225,36 @@ document.getElementById('f-total').addEventListener('input',calcRest);
 
 // ══ SEND ORDER ══
 async function sendOrder(){
+  // ── Validaciones obligatorias ──
+  const folioVal=document.getElementById('folio-display').value.trim();
+  if(!folioVal){toast('⚠️','Escribe el número de folio');return;}
+
   const name=document.getElementById('c-name').value.trim();
   if(!name){toast('⚠️','Ingresa el nombre del cliente');return;}
+
+  const phone=document.getElementById('c-phone').value.trim();
+  if(!phone){toast('⚠️','Ingresa el teléfono del cliente');return;}
+
+  const fecha=document.getElementById('c-date').value;
+  if(!fecha){toast('⚠️','Selecciona la fecha de entrega');return;}
+
+  if(!selectedEntrega){toast('⚠️','Selecciona el tipo de entrega');return;}
+
+  if(!selectedSuc){toast('⚠️','Selecciona la sucursal');return;}
+
+  if(selectedEntrega==='domicilio'){
+    const dir=document.getElementById('c-address').value.trim();
+    if(!dir){toast('⚠️','Ingresa la dirección de entrega');return;}
+  }
+
+  const total=parseFloat(document.getElementById('f-total').value)||0;
+  if(!total||total<=0){toast('⚠️','Ingresa el precio total del pedido');return;}
+
   if(!cart.length){toast('⚠️','Agrega al menos un producto');return;}
+
   if(!SCRIPT_URL){toast('⚠️','Sin conexión a Google Sheets');return;}
+
   const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
-  const folioVal=document.getElementById('folio-display').value.trim();
-  if(!folioVal){toast('⚠️','Ingresa el número de folio');btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';return;}
   const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
