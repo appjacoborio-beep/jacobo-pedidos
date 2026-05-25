@@ -661,7 +661,7 @@ function renderCart(){
 }
 function removeCartItem(i){cart.splice(i,1);renderCart();}
 function addPhotoToItem(i){
-  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=async e=>{
     const file=e.target.files[0];if(!file)return;
     toast('⏳','Subiendo foto...');
@@ -988,7 +988,7 @@ function renderBuilder(){
           ?`<img src="${b.photo}" alt="Ref"><button class="photo-remove" onclick="bRemovePhoto(event)">✕</button>`
           :`<div class="photo-icon">📷</div><div class="photo-text">Tomar foto o elegir imagen</div><div class="photo-sub">Cámara o galería del iPad</div>`}
       </div>
-      <input type="file" id="b-photo-input" accept="image/*" capture="environment" style="display:none" onchange="bHandlePhoto(event)">
+      <input type="file" id="b-photo-input" accept="image/*" style="display:none" onchange="bHandlePhoto(event)">
     </div>
 
     <!-- DETALLES DEL PRODUCTO -->
