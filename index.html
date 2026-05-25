@@ -1032,7 +1032,7 @@ function renderBuilder(){
 
     <!-- CANTIDAD -->
     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
-      <label class="field-label">Cantidad de piezas</label>
+      <label class="field-label">Cantidad de piezas${getMinQty()>1?' (mínimo '+getMinQty()+')':''}</label>
       <div style="display:flex;align-items:center;gap:10px;margin-top:5px;">
         <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(-1)">−</button>
         <span id="b-qty-display" style="font-size:1.1rem;font-weight:700;color:var(--navy);min-width:24px;text-align:center">${b.qty}</span>
@@ -1134,7 +1134,23 @@ function bSelectMini(id){
 }
 function bSetMiniVariant(v){b.miniVariant=v;renderBuilder();}
 
-function bChangeCant(d){b.qty=Math.max(1,b.qty+d);const el=document.getElementById('b-qty-display');if(el)el.textContent=b.qty;}
+function bChangeCant(d){
+  const minQ=getMinQty();
+  b.qty=Math.max(minQ,b.qty+d);
+  const el=document.getElementById('b-qty-display');
+  if(el)el.textContent=b.qty;
+}
+function getMinQty(){
+  if(b.cat==='mini'){
+    const p=MINI_POSTRES.find(x=>x.id===b.miniProduct);
+    return p&&p.step?p.step:1;
+  }
+  if(b.cat==='postre'){
+    const p=POSTRES.find(x=>x.id===b.postProduct);
+    return p&&p.minQty?p.minQty:1;
+  }
+  return 1;
+}
 function bTakePhoto(){document.getElementById('b-photo-input').click();}
 async function bHandlePhoto(e){
   const file=e.target.files[0];if(!file)return;
@@ -1517,7 +1533,7 @@ function renderOrdersList(visOrders){
         ${o.sucursal&&o.tipoEntrega!=='domicilio'?`<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">${o.sucursal}</span></div>`:''}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
         ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}
-        ${o.adicionales?`<div class="oc-adicionales">➕ ${o.adicionales}</div>`:''}
+        ${o.adicionales?`<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">➕ Adicionales</div>${o.adicionales.split(',').map(a=>a.trim()).filter(Boolean).map(a=>`<div class="oc-adic-item"><span>•</span><span>${a}</span></div>`).join('')}</div>`:''}
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
       <div class="oc-footer">
