@@ -1495,13 +1495,25 @@ function renderOrders(){
 function renderProductLines(prodLines){
   if(!prodLines.length)return'';
   var EM='\u2014';
-  var PIPE=' | ';
   var html='<div class="oc-products"><div class="oc-products-title">Productos</div>';
   prodLines.forEach(function(p){
     var di=p.indexOf(' '+EM+' ');
     var pname=di>=0?p.slice(0,di):p;
     var raw=di>=0?p.slice(di+3):'';
-    var specs=raw?raw.split(PIPE).map(function(s){return s.trim();}).filter(Boolean):[];
+    // If raw has ' | ' separators, use them; otherwise split on known labels
+    var specs=[];
+    if(raw){
+      if(raw.indexOf(' | ')>=0){
+        specs=raw.split(' | ').map(function(s){return s.trim();}).filter(Boolean);
+      } else {
+        // Split on known label keywords followed by colon
+        var labels=['Base:','Toppings:','Topping:','Fruta:','Extra:','Relleno:','Rellenos:','Especial:','Sabor:','Piso ','Adicionales:','Nota:','Notas:'];
+        var regex=new RegExp('(?=(?:'+labels.map(function(l){return l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|')+'))');
+        specs=raw.split(regex).map(function(s){return s.trim();}).filter(Boolean);
+        // If still one chunk, just show it as-is
+        if(specs.length<=1)specs=raw?[raw]:[];
+      }
+    }
     html+='<div class="oc-product-item"><div class="oc-product-name">'+pname+'</div>';
     if(specs.length){
       html+='<div class="oc-product-detail">';
@@ -1521,6 +1533,7 @@ function renderProductLines(prodLines){
         else if(sl.startsWith('sabor:'))icon='&#129473;';
         else if(sl.startsWith('piso'))icon='&#127959;';
         else if(sl.startsWith('nota'))icon='&#128203;';
+        else if(sl.startsWith('adicionales:'))icon='&#10133;';
         html+='<div class="oc-spec-row"><span class="oc-spec-label">'+icon+' '+label+'</span><span class="oc-spec-val">'+val+'</span></div>';
       });
       html+='</div>';
