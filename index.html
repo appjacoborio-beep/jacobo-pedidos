@@ -221,9 +221,9 @@ textarea{resize:vertical;min-height:60px;}
 .oc-product-item{border-bottom:1px dashed var(--border);padding:4px 0;font-size:0.73rem;color:var(--text);}
 .oc-product-item:last-child{border-bottom:none;}
 .oc-product-name{font-weight:600;color:var(--navy);}
-.oc-product-detail{color:var(--muted);font-size:0.68rem;margin-top:1px;line-height:1.5;}
+.oc-product-detail{margin-top:5px;}.oc-spec-row{display:flex;align-items:flex-start;gap:6px;font-size:0.71rem;padding:3px 7px;background:white;border-radius:4px;border-left:2px solid var(--border);margin-bottom:2px;}.oc-spec-label{font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}.oc-spec-val{color:var(--text);line-height:1.4;}.oc-adicionales-wrap{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:6px 9px;margin-top:6px;}.oc-adicionales-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#065F46;font-weight:700;margin-bottom:4px;}.oc-adic-item{font-size:0.71rem;color:#065F46;padding:1px 0;}
 .oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
-.oc-adicionales{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#065F46;margin-top:5px;}
+
 .oc-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;background:var(--navy-faint);border-radius:6px;padding:6px;}
 .oc-total-item{text-align:center;}
 .oc-total-label{font-size:0.59rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;}
@@ -1491,6 +1491,46 @@ function renderOrders(){
   return;
 }
 
+
+function renderProductLines(prodLines){
+  if(!prodLines.length)return'';
+  var EM='\u2014';
+  var PIPE=' | ';
+  var html='<div class="oc-products"><div class="oc-products-title">Productos</div>';
+  prodLines.forEach(function(p){
+    var di=p.indexOf(' '+EM+' ');
+    var pname=di>=0?p.slice(0,di):p;
+    var raw=di>=0?p.slice(di+3):'';
+    var specs=raw?raw.split(PIPE).map(function(s){return s.trim();}).filter(Boolean):[];
+    html+='<div class="oc-product-item"><div class="oc-product-name">'+pname+'</div>';
+    if(specs.length){
+      html+='<div class="oc-product-detail">';
+      specs.forEach(function(s){
+        var colon=s.indexOf(':');
+        var hasLabel=colon>0&&colon<30;
+        var label=hasLabel?s.slice(0,colon+1):'';
+        var val=hasLabel?s.slice(colon+1).trim():s;
+        var sl=s.toLowerCase();
+        var icon='&#9658;';
+        if(sl.startsWith('base:'))icon='&#127856;';
+        else if(sl.startsWith('topping'))icon='&#127827;';
+        else if(sl.startsWith('fruta:'))icon='&#127825;';
+        else if(sl.startsWith('extra:'))icon='&#10024;';
+        else if(sl.startsWith('relleno'))icon='&#127854;';
+        else if(sl.startsWith('especial:'))icon='&#11088;';
+        else if(sl.startsWith('sabor:'))icon='&#129473;';
+        else if(sl.startsWith('piso'))icon='&#127959;';
+        else if(sl.startsWith('nota'))icon='&#128203;';
+        html+='<div class="oc-spec-row"><span class="oc-spec-label">'+icon+' '+label+'</span><span class="oc-spec-val">'+val+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
 function renderOrdersList(visOrders){
   let vis=visOrders;
   // Stats handled by renderCalendar
@@ -1526,14 +1566,14 @@ function renderOrdersList(visOrders){
       ${imgUrl?`<div class="oc-imgs"><img class="oc-img-thumb" src="${imgUrl}" onclick="openImgModal('${imgUrl}','Folio ${folio}')" onerror="this.style.display='none'" alt="Ref"></div>`:''}
       <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div><span class="oc-status ${STATUS_CLS[o.status]||'s-pending'}">${o.status}</span></div>
       <div class="oc-body">
-        ${prodLines.length?`<div class="oc-products"><div class="oc-products-title">Productos</div>${prodLines.map(p=>{const parts=p.split(' — ',2);return`<div class="oc-product-item"><div class="oc-product-name">${parts[0]||''}</div>${parts[1]?`<div class="oc-product-detail">${parts[1].split(' | ').join('\n')}</div>`:''}</div>`;}).join('')}</div>`:''}
+        ${renderProductLines(prodLines)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
         <div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">${entIcon}</span></div>
         ${o.direccion?`<div class="oc-row"><span class="oc-key">Dirección</span><span class="oc-val">${o.direccion}</span></div>`:''}
         ${o.sucursal&&o.tipoEntrega!=='domicilio'?`<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">${o.sucursal}</span></div>`:''}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
         ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}
-        ${o.adicionales?`<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">➕ Adicionales</div>${o.adicionales.split(',').map(a=>a.trim()).filter(Boolean).map(a=>`<div class="oc-adic-item"><span>•</span><span>${a}</span></div>`).join('')}</div>`:''}
+        ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
       <div class="oc-footer">
