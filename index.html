@@ -447,7 +447,12 @@ textarea{resize:vertical;min-height:60px;}
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title" id="edit-modal-title">Editar Pedido</span><button class="modal-close" onclick="closeEdit
+    <div class="modal-header"><span class="modal-title" id="edit-modal-title">Editar Pedido</span><button class="modal-close" onclick="closeEdit()">✕</button></div>
+    <div class="modal-body" id="edit-modal-body"></div>
+  </div>
+</div>
+
+<script>
 // ══ CATALOG ══
 // All format IDs that use inches use a plain string with in (no special chars in data attrs)
 // Groups use simple keys - no slashes or special chars
@@ -1564,10 +1569,6 @@ function toggleExpand(folio){
 function updateBadge(){const n=orders.filter(o=>o.status==='Pendiente'&&o.sucursal===prodSuc).length;document.getElementById('pending-badge').textContent=n;}
 function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();}
 function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
-
-initSetupBanner();
-setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
-.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 initSetupBanner();
 setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
