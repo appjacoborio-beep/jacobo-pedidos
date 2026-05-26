@@ -661,7 +661,7 @@ function renderCart(){
 }
 function removeCartItem(i){cart.splice(i,1);renderCart();}
 function addPhotoToItem(i){
-  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';
   inp.onchange=async e=>{
     const file=e.target.files[0];if(!file)return;
     toast('⏳','Subiendo foto...');
@@ -988,7 +988,7 @@ function renderBuilder(){
           ?`<img src="${b.photo}" alt="Ref"><button class="photo-remove" onclick="bRemovePhoto(event)">✕</button>`
           :`<div class="photo-icon">📷</div><div class="photo-text">Tomar foto o elegir imagen</div><div class="photo-sub">Cámara o galería del iPad</div>`}
       </div>
-      <input type="file" id="b-photo-input" accept="image/*" style="display:none" onchange="bHandlePhoto(event)">
+      <input type="file" id="b-photo-input" accept="image/*" capture="environment" style="display:none" onchange="bHandlePhoto(event)">
     </div>
 
     <!-- DETALLES DEL PRODUCTO -->
@@ -1293,7 +1293,7 @@ async function sendOrder(){
   const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
-  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedEntrega==='sucursal'?selectedSuc:'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
     const imgUrl=payload.imagen;
@@ -1586,7 +1586,7 @@ function renderOrdersList(visOrders){
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
         <div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">${entIcon}</span></div>
         ${o.direccion?`<div class="oc-row"><span class="oc-key">Dirección</span><span class="oc-val">${o.direccion}</span></div>`:''}
-        ${o.sucursal&&o.tipoEntrega!=='domicilio'?`<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">${o.sucursal}</span></div>`:''}
+        ${o.sucursal?`<div class="oc-row"><span class="oc-key">${o.tipoEntrega==='domicilio'?'Sucursal de salida':'Sucursal'}</span><span class="oc-val">${o.sucursal}</span></div>`:''}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
         ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}
         ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
