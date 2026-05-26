@@ -278,7 +278,7 @@ textarea{resize:vertical;min-height:60px;}
   <div class="folio-strip">
     <div class="folio-brand">
       <div class="folio-logo">🎂</div>
-      <div><div class="folio-title">Pedidos Especiales</div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
+      <div><div class="folio-title">Pedidos Especiales <span style="font-size:0.6rem;opacity:0.5">v8</span></div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
     </div>
     <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"></div>
   </div>
@@ -661,7 +661,7 @@ function renderCart(){
 }
 function removeCartItem(i){cart.splice(i,1);renderCart();}
 function addPhotoToItem(i){
-  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';
   inp.onchange=async e=>{
     const file=e.target.files[0];if(!file)return;
     toast('⏳','Subiendo foto...');
@@ -988,7 +988,7 @@ function renderBuilder(){
           ?`<img src="${b.photo}" alt="Ref"><button class="photo-remove" onclick="bRemovePhoto(event)">✕</button>`
           :`<div class="photo-icon">📷</div><div class="photo-text">Tomar foto o elegir imagen</div><div class="photo-sub">Cámara o galería del iPad</div>`}
       </div>
-      <input type="file" id="b-photo-input" accept="image/*" style="display:none" onchange="bHandlePhoto(event)">
+      <input type="file" id="b-photo-input" accept="image/*" capture="environment" style="display:none" onchange="bHandlePhoto(event)">
     </div>
 
     <!-- DETALLES DEL PRODUCTO -->
