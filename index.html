@@ -278,7 +278,7 @@ textarea{resize:vertical;min-height:60px;}
   <div class="folio-strip">
     <div class="folio-brand">
       <div class="folio-logo">🎂</div>
-      <div><div class="folio-title">Pedidos Especiales <span style="font-size:0.55rem;opacity:0.4">v9</span></div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
+      <div><div class="folio-title">Pedidos Especiales <span style="font-size:0.55rem;opacity:0.4">v9</span> <span style="font-size:0.55rem;opacity:0.4">v9</span></div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
     </div>
     <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"></div>
   </div>
@@ -690,7 +690,7 @@ function bReset(){
      comboSabores:[],
      cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
      postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
-     miniProduct:'',miniVariant:'',
+     miniProduct:'',miniVariant:'',panDesc:'',
      mensaje:'',tema:'',alergias:'',notas:'',
      qty:1,nota:'',photo:null};
 }
@@ -731,6 +731,7 @@ function renderBuilder(){
         <div class="cat-chip ${b.cat==='crepas'?'active':''}" onclick="bSetCat('crepas')">🥞 Pasteles de Crepas</div>
         <div class="cat-chip ${b.cat==='postre'?'active':''}" onclick="bSetCat('postre')">🍮 Postres</div>
         <div class="cat-chip ${b.cat==='mini'?'active':''}" onclick="bSetCat('mini')">🍬 Mini postres</div>
+        <div class="cat-chip ${b.cat==='pan'?'active':''}" onclick="bSetCat('pan')">🍞 Pan Variado</div>
       </div>
     </div>
 
@@ -930,6 +931,15 @@ function renderBuilder(){
     </div>
 
 
+    <!-- ══ PAN VARIADO ══ -->
+    <div style="display:${b.cat==='pan'?'block':'none'}">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Tipo de pan</div></div>
+      <textarea placeholder="Ej: Cuernitos, teleras, bolillos, pan dulce surtido..."
+        style="width:100%;min-height:80px;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:0.85rem;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:0.4rem"
+        oninput="b.panDesc=this.value">${b.panDesc||''}</textarea>
+      <div style="font-size:0.72rem;color:var(--muted)">📝 Describe el tipo de pan que se necesita</div>
+    </div>
+
     <!-- ══ PASTELES DE PISOS ══ -->
     <div style="display:${b.cat==='pisos'?'block':'none'}">
       <div class="step-header"><div class="step-num">1</div><div class="step-title">¿Cuántos pisos?</div></div>
@@ -994,6 +1004,7 @@ function renderBuilder(){
     <!-- DETALLES DEL PRODUCTO -->
     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
       <div class="step-header"><div class="step-num">📝</div><div class="step-title">Detalles de este producto</div></div>
+      ${b.cat!=='pan'?`
       <div class="form-group"><label class="field-label">Mensaje / Dedicatoria</label>
         <input type="text" id="b-mensaje" value="${b.mensaje}" placeholder='"¡Feliz Cumpleaños Ana!"' oninput="b.mensaje=this.value">
       </div>
@@ -1002,14 +1013,14 @@ function renderBuilder(){
       </div>
       <div class="form-group"><label class="field-label">Alergias o restricciones</label>
         <input type="text" id="b-alergias" value="${b.alergias}" placeholder="Sin gluten, sin lactosa..." oninput="b.alergias=this.value">
-      </div>
+      </div>`:''}
       <div class="form-group" style="margin-bottom:0"><label class="field-label">Notas adicionales</label>
         <textarea id="b-notas" placeholder="Cualquier detalle especial..." oninput="b.notas=this.value">${b.notas}</textarea>
       </div>
     </div>
 
     <!-- ADICIONALES DEL PRODUCTO -->
-    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border);display:${b.cat==='pan'?'none':'block'}">
       <div class="step-header" style="margin-top:0"><div class="step-num">➕</div><div class="step-title">Adicionales para este producto</div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       ${ADICIONALES.map(a=>{
@@ -1059,7 +1070,7 @@ function bChAdic(id, delta){
   renderBuilder();
 }
 
-function bSetCat(cat){b.cat=cat;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaMermelada=false;b.comboSabores=[];renderBuilder();}
+function bSetCat(cat){b.cat=cat;if(cat==='pan'&&b.qty<12)b.qty=12;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaMermelada=false;b.comboSabores=[];renderBuilder();}
 
 function bSelectSabor(s,esp){
   b.sabor=s;b.saborEspecial=esp;
@@ -1229,10 +1240,14 @@ function bAddToCart(){
     if(!b.postProduct){toast('⚠️','Elige el producto');return;}
     name=b.postProduct+(b.postFmtLabel?` · ${b.postFmtLabel}`:'');
     if(b.cupcakeSabor)details=`Sabor: ${b.cupcakeSabor}\n`;
-  } else {
+  } else if(b.cat==='mini'){
     if(!b.miniProduct){toast('⚠️','Elige el producto');return;}
     name=b.miniProduct;
     if(b.miniVariant)details=`Sabor: ${b.miniVariant}\n`;
+  } else if(b.cat==='pan'){
+    if(!b.panDesc||!b.panDesc.trim()){toast('⚠️','Describe el tipo de pan');return;}
+    name='Pan Variado';
+    details=`Tipo: ${b.panDesc.trim()}\n`;
   }
   // Common details
   if(b.mensaje)details+=`💬 ${b.mensaje}\n`;
