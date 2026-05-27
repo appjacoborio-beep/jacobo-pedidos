@@ -1261,7 +1261,15 @@ async function bHandlePhoto(e){
     toast('❌','Error al subir foto');
     b.photo=null;
   }
-  renderBuilder();
+  // Restore photo area
+  const photoArea=document.querySelector('.photo-area');
+  if(photoArea){
+    if(b.photo){
+      photoArea.innerHTML='<div style="position:relative"><img src="'+b.photo+'" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px" /><button onclick="bRemovePhoto(event)" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px">x</button></div>';
+    } else {
+      photoArea.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--muted)"><div style="font-size:2rem">\uD83D\uDCF7</div><div style="font-size:.8rem;margin-top:4px">Tomar foto o elegir imagen</div><div style="font-size:.7rem;opacity:.7">C\u00e1mara o galer\u00eda</div></div>';
+    }
+  }
 }
 function bRemovePhoto(e){e.stopPropagation();b.photo=null;renderBuilder();}
 
@@ -1786,13 +1794,20 @@ async function delOrder(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));
   if(!o||!confirm(`¿Eliminar folio #${String(o.folio).padStart(4,'0')} de ${o.cliente}?`))return;
   // Remove immediately from UI
-  orders=orders.filter(x=>String(x.folio)!==String(folio));
-  renderOrders();updateBadge();
-  toast('✓','Pedido eliminado');
-  // Send to sheet in background
+  toast('⏳','Eliminando...');
   try{
-    fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify({_delete:true,folio:o.folio})));
-  }catch(e){}
+    const res=await fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify({_delete:true,folio:o.folio})));
+    const result=await res.json();
+    if(result.ok){
+      orders=orders.filter(x=>String(x.folio)!==String(folio));
+      renderOrders();updateBadge();
+      toast('✓','Pedido eliminado');
+    } else {
+      toast('❌','Error al eliminar, intenta de nuevo');
+    }
+  }catch(e){
+    toast('❌','Error de conexión, intenta de nuevo');
+  }
 }
 
 function openEditModal(folio){
