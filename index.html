@@ -1532,20 +1532,22 @@ function jumpToOrder(fechaEntrega,folio){
   }
   renderCalendar();
   setTimeout(function(){
-    var el=document.getElementById('cal-day-list');
-    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+    var grid=document.getElementById('orders-grid');
+    if(grid)grid.scrollIntoView({behavior:'smooth',block:'start'});
     setTimeout(function(){
       var cards=document.querySelectorAll('.oc-card');
+      var folioPad=String(folio).padStart(4,'0');
       cards.forEach(function(card){
         var folioEl=card.querySelector('.oc-folio');
-        if(folioEl&&folioEl.textContent.includes(String(folio).padStart(4,'0'))){
+        if(folioEl&&folioEl.textContent.toUpperCase().includes(folioPad)){
           card.style.outline='3px solid var(--navy)';
+          card.style.borderRadius='12px';
           card.scrollIntoView({behavior:'smooth',block:'center'});
-          setTimeout(function(){card.style.outline='';},2500);
+          setTimeout(function(){card.style.outline='';card.style.borderRadius='';},2500);
         }
       });
-    },400);
-  },100);
+    },500);
+  },150);
 }
 
 function renderCalendar(){
