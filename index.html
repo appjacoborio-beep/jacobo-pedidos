@@ -221,6 +221,19 @@ textarea{resize:vertical;min-height:60px;}
 .oc-product-item{border-bottom:1px dashed var(--border);padding:4px 0;font-size:0.73rem;color:var(--text);}
 .oc-product-item:last-child{border-bottom:none;}
 .oc-product-name{font-weight:600;color:var(--navy);}
+.search-bar-wrap{position:relative;margin-bottom:0.75rem;}
+.search-bar-input{width:100%;padding:9px 36px 9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;background:var(--card);color:var(--text);outline:none;box-sizing:border-box;}
+.search-bar-input:focus{border-color:var(--navy);}
+.search-bar-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0;display:none;}
+.search-results-wrap{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:0.75rem;overflow:hidden;}
+.search-results-title{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);padding:8px 12px 4px;border-bottom:1px solid var(--border);}
+.search-result-item{padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+.search-result-item:last-child{border-bottom:none;}
+.search-result-item:hover{background:var(--navy-faint);}
+.search-result-folio{font-size:0.72rem;font-weight:700;color:var(--navy);}
+.search-result-name{font-size:0.82rem;font-weight:600;color:var(--text);}
+.search-result-meta{font-size:0.68rem;color:var(--muted);margin-top:1px;}
+.search-result-status{font-size:0.62rem;font-weight:600;padding:2px 6px;border-radius:10px;float:right;}
 .oc-product-detail{margin-top:5px;}.oc-spec-row{display:flex;align-items:flex-start;gap:6px;font-size:0.71rem;padding:3px 7px;background:white;border-radius:4px;border-left:2px solid var(--border);margin-bottom:2px;}.oc-spec-label{font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}.oc-spec-val{color:var(--text);line-height:1.4;}.oc-adicionales-wrap{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:6px 9px;margin-top:6px;}.oc-adicionales-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#065F46;font-weight:700;margin-bottom:4px;}.oc-adic-item{font-size:0.71rem;color:#065F46;padding:1px 0;}
 .oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
 
@@ -390,7 +403,14 @@ textarea{resize:vertical;min-height:60px;}
     </div>
   </div>
 
-  <!-- Calendar board -->
+  <!-- Buscador -->
+      <div class="search-bar-wrap">
+        <input class="search-bar-input" id="order-search" type="text" placeholder="Buscar folio, cliente o telefono..." oninput="searchOrders(this.value)" autocomplete="off">
+        <button class="search-bar-clear" id="search-clear" onclick="clearSearch()">x</button>
+      </div>
+      <div id="search-results-container" style="display:none"></div>
+
+      <!-- Calendar board -->
   <div id="prod-board" style="display:none">
     <div class="prod-page">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:7px">
@@ -1458,6 +1478,74 @@ async function loadOrders(){
 
 function joinDetails(s){return(s||'').split(' | ').join('\n');}
 // ══ CALENDAR ══
+function searchOrders(query){
+  var q=query.trim().toLowerCase();
+  var clearBtn=document.getElementById('search-clear');
+  var container=document.getElementById('search-results-container');
+  clearBtn.style.display=q?'block':'none';
+  if(!q){container.style.display='none';container.innerHTML='';return;}
+  var vis=prodSuc&&prodSuc!=='Todas'?orders.filter(function(o){return(o.sucursal||'').trim().toLowerCase()===(prodSuc||'').trim().toLowerCase();}):orders;
+  var results=vis.filter(function(o){
+    return String(o.folio||'').toLowerCase().includes(q)||(o.cliente||'').toLowerCase().includes(q)||(o.telefono||'').toLowerCase().includes(q);
+  }).slice(0,10);
+  if(!results.length){
+    container.style.display='block';
+    container.innerHTML='<div class="search-results-wrap"><div class="search-results-title">Sin resultados</div><div style="padding:12px;font-size:0.8rem;color:var(--muted);text-align:center">No se encontraron pedidos</div></div>';
+    return;
+  }
+  var statusColors={'Pendiente':'#FEF9EC','En proceso':'#EFF6FF','Listo':'#F0FFF4','Entregado':'#F9FAFB'};
+  var statusText={'Pendiente':'Pendiente','En proceso':'En proceso','Listo':'Listo','Entregado':'Entregado'};
+  var months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var items=results.map(function(o){
+    var parts=(o.fechaEntrega||'').split('-');
+    var dateLabel=parts.length===3?parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0]:'Sin fecha';
+    var st=o.status||'Pendiente';
+    var bg=statusColors[st]||'#fff';
+    var stLabel=statusText[st]||st;
+    var folioPad=String(o.folio||'').padStart(4,'0');
+    return '<div class="search-result-item" data-fecha="'+(o.fechaEntrega||'')+'" data-folio="'+(o.folio||'')+'" onclick="jumpToOrder(this.dataset.fecha,this.dataset.folio)">'
+      +'<span class="search-result-status" style="background:'+bg+'">'+stLabel+'</span>'
+      +'<div class="search-result-folio">Folio #'+folioPad+'</div>'
+      +'<div class="search-result-name">'+(o.cliente||'Sin nombre')+'</div>'
+      +'<div class="search-result-meta">'+(o.telefono||'')+(o.telefono&&dateLabel?' &middot; ':'')+dateLabel+(o.sucursal?' &middot; '+o.sucursal:'')+'</div>'
+      +'</div>';
+  }).join('');
+  container.style.display='block';
+  container.innerHTML='<div class="search-results-wrap"><div class="search-results-title">'+results.length+' resultado'+(results.length!==1?'s':'')+'</div>'+items+'</div>';
+}
+
+function clearSearch(){
+  document.getElementById('order-search').value='';
+  searchOrders('');
+}
+
+function jumpToOrder(fechaEntrega,folio){
+  clearSearch();
+  if(!fechaEntrega)return;
+  var parts=fechaEntrega.split('-');
+  if(parts.length===3){
+    calYear=parseInt(parts[0]);
+    calMonth=parseInt(parts[1])-1;
+    calSelectedDate=fechaEntrega;
+  }
+  renderCalendar();
+  setTimeout(function(){
+    var el=document.getElementById('cal-day-list');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+    setTimeout(function(){
+      var cards=document.querySelectorAll('.oc-card');
+      cards.forEach(function(card){
+        var folioEl=card.querySelector('.oc-folio');
+        if(folioEl&&folioEl.textContent.includes(String(folio).padStart(4,'0'))){
+          card.style.outline='3px solid var(--navy)';
+          card.scrollIntoView({behavior:'smooth',block:'center'});
+          setTimeout(function(){card.style.outline='';},2500);
+        }
+      });
+    },400);
+  },100);
+}
+
 function renderCalendar(){
   const today = new Date();
   const todayStr = today.toISOString().slice(0,10);
