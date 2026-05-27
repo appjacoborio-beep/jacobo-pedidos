@@ -1505,7 +1505,7 @@ function searchOrders(query){
     var bg=statusColors[st]||'#fff';
     var stLabel=statusText[st]||st;
     var folioPad=String(o.folio||'').padStart(4,'0');
-    return '<div class="search-result-item" data-fecha="'+(o.fechaEntrega||'')+'" data-folio="'+(o.folio||'')+'" onclick="jumpToOrder(this.dataset.fecha,this.dataset.folio)">'
+    return '<div class="search-result-item" data-fecha="'+(o.fechaEntrega||'')+'" data-folio="'+(o.folio||'')+'" data-suc="'+(o.sucursal||'')+'" onclick="jumpToOrder(this.dataset.fecha,this.dataset.folio,this.dataset.suc)">'
       +'<span class="search-result-status" style="background:'+bg+'">'+stLabel+'</span>'
       +'<div class="search-result-folio">Folio #'+folioPad+'</div>'
       +'<div class="search-result-name">'+(o.cliente||'Sin nombre')+'</div>'
@@ -1521,9 +1521,15 @@ function clearSearch(){
   searchOrders('');
 }
 
-function jumpToOrder(fechaEntrega,folio){
+function jumpToOrder(fechaEntrega,folio,suc){
   clearSearch();
   if(!fechaEntrega)return;
+  var sucScreen=document.getElementById('prod-suc-screen');
+  if(sucScreen&&sucScreen.style.display!=='none'){
+    setProdSuc(suc||'Todas');
+  } else if(suc&&prodSuc&&prodSuc!=='Todas'&&suc.trim().toLowerCase()!==prodSuc.trim().toLowerCase()){
+    setProdSuc('Todas');
+  }
   var parts=fechaEntrega.split('-');
   if(parts.length===3){
     calYear=parseInt(parts[0]);
@@ -1547,7 +1553,7 @@ function jumpToOrder(fechaEntrega,folio){
         }
       });
     },500);
-  },150);
+  },200);
 }
 
 function renderCalendar(){
