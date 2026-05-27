@@ -1486,7 +1486,9 @@ function searchOrders(query){
   if(!q){container.style.display='none';container.innerHTML='';return;}
   var vis=prodSuc&&prodSuc!=='Todas'?orders.filter(function(o){return(o.sucursal||'').trim().toLowerCase()===(prodSuc||'').trim().toLowerCase();}):orders;
   var results=vis.filter(function(o){
-    return String(o.folio||'').toLowerCase().includes(q)||(o.cliente||'').toLowerCase().includes(q)||(o.telefono||'').toLowerCase().includes(q);
+    var folioStr=String(o.folio||'');
+    var folioPad=folioStr.padStart(4,'0');
+    return folioStr.toLowerCase().includes(q)||folioPad.toLowerCase().includes(q)||(o.cliente||'').toLowerCase().includes(q)||(o.telefono||'').toLowerCase().includes(q);
   }).slice(0,10);
   if(!results.length){
     container.style.display='block';
