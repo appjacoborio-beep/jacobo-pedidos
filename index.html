@@ -1791,15 +1791,18 @@ function delOrder(folio){
   const bar=document.createElement('div');
   bar.id='del-confirm-bar';
   bar.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1B2A6B;color:white;padding:12px 16px;border-radius:10px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:90vw';
+  bar.setAttribute('data-folio',folio);
   bar.innerHTML='<span style="font-size:0.82rem">¿Eliminar folio #'+String(o.folio).padStart(4,'0')+'?</span>'
-    +'<button onclick="execDelete(\''+folio+'\')" style="background:#C0392B;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8rem">Sí, eliminar</button>'
+    +'<button onclick="execDelete()" style="background:#C0392B;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8rem">Sí, eliminar</button>'
     +'<button onclick="document.getElementById(\'del-confirm-bar\').remove()" style="background:rgba(255,255,255,0.2);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem">Cancelar</button>';
   document.body.appendChild(bar);
   setTimeout(function(){if(document.getElementById('del-confirm-bar'))document.getElementById('del-confirm-bar').remove();},5000);
 }
-async function execDelete(folio){
+async function execDelete(){
   const bar=document.getElementById('del-confirm-bar');
+  const folio=bar?bar.getAttribute('data-folio'):null;
   if(bar)bar.remove();
+  if(!folio)return;
   const o=orders.find(x=>String(x.folio)===String(folio));
   if(!o)return;
   toast('⏳','Eliminando...');
