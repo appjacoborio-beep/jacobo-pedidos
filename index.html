@@ -208,7 +208,7 @@ textarea{resize:vertical;min-height:60px;}
 .oc-folio{font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:white;letter-spacing:0.04em;}
 .oc-client{font-size:0.68rem;color:rgba(255,255,255,0.7);margin-top:1px;}
 .oc-status{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;border-radius:9px;white-space:nowrap;}
-.s-pending{background:#FEF3C7;color:#92400E;}.s-making{background:#DBEAFE;color:#1E40AF;}.s-ready{background:#D1FAE5;color:#065F46;}.s-delivered{background:#F3F4F6;color:#6B7280;}
+.s-past{background:#F3F4F6;color:#9CA3AF;}.s-pending{background:#FEF3C7;color:#92400E;}.s-making{background:#DBEAFE;color:#1E40AF;}.s-ready{background:#D1FAE5;color:#065F46;}.s-delivered{background:#F3F4F6;color:#6B7280;}
 .oc-imgs{display:flex;gap:5px;padding:8px 10px;background:#111;flex-wrap:wrap;}
 .oc-img-thumb{width:70px;height:70px;object-fit:cover;border-radius:5px;cursor:pointer;}
 .oc-body{padding:8px 10px;}
@@ -616,6 +616,7 @@ let editingFolio=null;
 let b={};  // builder state
 
 const STATUS_CLS={'Pendiente':'s-pending','En proceso':'s-making','Listo':'s-ready','Entregado':'s-delivered'};
+const isOrderPast=o.fechaEntrega&&o.fechaEntrega<todayStr;
 const NEXT={'Pendiente':'En proceso','En proceso':'Listo','Listo':'Entregado'};
 const NEXT_LBL={'Pendiente':'🔥 Iniciar','En proceso':'✅ Listo','Listo':'📦 Entregar'};
 
@@ -1591,10 +1592,11 @@ function renderCalendar(){
     const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const dayOrders = ordersByDay[dateStr];
     const isToday = dateStr===todayStr;
+    const isPast = dateStr<todayStr;
     const isSelected = dateStr===calSelectedDate;
-    const bgColor = isSelected?'var(--navy)':isToday?'var(--faint)':'var(--card)';
-    const numColor = isSelected?'#fff':isToday?'var(--navy)':'var(--text)';
-    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'}">
+    const bgColor = isSelected?'var(--navy)':isToday?'var(--faint)':isPast?'#F8F9FA':'var(--card)';
+    const numColor = isSelected?'#fff':isToday?'var(--navy)':isPast?'#AAAAAA':'var(--text)';
+    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'};opacity:${isPast&&!isSelected?'0.75':'1'}">
       <div style="font-size:0.78rem;font-weight:${isToday?'700':'500'};color:${numColor};margin-bottom:3px">${d}</div>
       ${dayOrders?`
         <div style="display:flex;flex-wrap:wrap;gap:2px">
@@ -1636,13 +1638,14 @@ function calShowDay(dateStr){
   const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   const parts=dateStr.split('-');
   const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
-  const pend=dayOrders.filter(o=>o.status==='Pendiente'||o.status==='En proceso').length;
+  const isPastDay=dateStr<todayStr;
+  const pend=isPastDay?0:dayOrders.filter(o=>o.status==='Pendiente'||o.status==='En proceso').length;
 
   document.getElementById('cal-day-header').style.display='block';
   document.getElementById('cal-day-title').textContent='📋 Pedidos del '+dateLabel;
-  document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos · '+pend+' pendientes';
-  document.getElementById('st-hoy').textContent=pend;
-  document.getElementById('st-hoy-label').textContent='Pendientes ese día';
+  document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos'+(isPastDay?'':' · '+pend+' pendientes');
+  document.getElementById('st-hoy').textContent=isPastDay?'—':pend;
+  document.getElementById('st-hoy-label').textContent=isPastDay?'Fecha pasada':'Pendientes ese día';
 
   if(!dayOrders.length){
     document.getElementById('orders-grid').innerHTML='<div class="empty"><div class="empty-i">🎂</div><div class="empty-t">Sin pedidos</div><p>No hay pedidos para este día</p></div>';
@@ -1716,6 +1719,8 @@ function renderProductLines(prodLines){
   return html;
 }
 
+function getStatusCls(o){var td=new Date().toISOString().slice(0,10);if(o.fechaEntrega&&o.fechaEntrega<td&&(o.status==='Pendiente'||o.status==='En proceso'))return 's-past';return STATUS_CLS[o.status]||'s-pending';}
+function getStatusLbl(o){var td=new Date().toISOString().slice(0,10);if(o.fechaEntrega&&o.fechaEntrega<td&&(o.status==='Pendiente'||o.status==='En proceso'))return '📅 Pasado';return o.status;}
 function renderOrdersList(visOrders){
   let vis=visOrders;
   // Stats handled by renderCalendar
@@ -1749,7 +1754,7 @@ function renderOrdersList(visOrders){
     const isExpanded=expandedFolios.has(String(o.folio));
     return`<div class="order-card${isToday?' urgente':''}">
       ${imgUrl?`<div class="oc-imgs"><img class="oc-img-thumb" src="${imgUrl}" onclick="openImgModal('${imgUrl}','Folio ${folio}')" onerror="this.style.display='none'" alt="Ref"></div>`:''}
-      <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div><span class="oc-status ${STATUS_CLS[o.status]||'s-pending'}">${o.status}</span></div>
+      <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div><span class="oc-status ${getStatusCls(o)}">${getStatusLbl(o)}</span></div>
       <div class="oc-body">
         ${renderProductLines(prodLines)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
