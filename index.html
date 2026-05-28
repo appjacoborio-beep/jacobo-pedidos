@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<div id="stats-row" style="margin-bottom:0.75rem;display:none"><div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 16px;text-align:center;display:flex;align-items:center;justify-content:center;gap:12px"><div style="font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:var(--navy);line-height:1" id="st-total">0</div><div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em" id="st-hoy-label">pedidos ese día</div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:#92400E;line-height:1" id="st-pend">0</div><div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">pendientes</div></div><!-- hidden compat elements --><div style="display:none" id="st-hoy"></div><div style="display:none" id="st-rdy"></div></div><!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -193,7 +193,7 @@ textarea{resize:vertical;min-height:60px;}
 .svc-label{font-size:0.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;}
 .svc-pill{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:4px 11px;font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.18s;}
 .svc-pill.active{background:var(--navy);border-color:var(--navy);color:white;}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:0.85rem;}
+
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px;text-align:center;}
 .stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:var(--navy);line-height:1;}
 .stat-lbl{font-size:0.63rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em;}
@@ -1609,7 +1609,7 @@ function renderCalendar(){
 
   // Update stats
   const allVis = prodSuc==='Todas'?orders:orders.filter(o=>(o.sucursal||'').trim().toLowerCase()===(prodSuc||'').trim().toLowerCase());
-  document.getElementById('st-total').textContent = allVis.length;
+  document.getElementById('st-total').textContent = dayOrders?dayOrders.length:0;
   document.getElementById('st-pend').textContent = allVis.filter(o=>o.status==='Pendiente').length;
   document.getElementById('st-rdy').textContent = allVis.filter(o=>o.status==='Listo').length;
 
@@ -1639,7 +1639,7 @@ function calShowDay(dateStr){
   const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
   const pend=dayOrders.filter(o=>o.status==='Pendiente'||o.status==='En proceso').length;
 
-  document.getElementById('cal-day-header').style.display='block';
+  document.getElementById('cal-day-header').style.display='block';document.getElementById('stats-row').style.display='block';
   document.getElementById('cal-day-title').textContent=(dateStr<new Date().toISOString().slice(0,10)?'📅':'📋')+' Pedidos del '+dateLabel+(dateStr<new Date().toISOString().slice(0,10)?' — Fecha pasada':'');
   document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos · '+pend+' pendientes';
   document.getElementById('st-hoy').textContent=pend;
