@@ -768,7 +768,7 @@ function closeBuilder(){document.getElementById('builder-overlay').classList.rem
 function closeBuilderOutside(e){if(e.target===document.getElementById('builder-overlay'))closeBuilder();}
 
 // ── helpers ──
-function getFmtKey(){return b.sabor==='Napolitano'?'napolitano':b.sabor==='3 Leches'?'treeleches':b.sabor==='Zanahoria'?'zanahoria':'clasico';}
+function getFmtKey(){return b.sabor==='Napolitano'?'napolitano':(b.sabor==='3 Leches'||b.sabor==='3 Leches Chocolate')?'treeleches':b.sabor==='Zanahoria'?'zanahoria':'clasico';}
 function getFmtLabel(grupo,tamId){
   const fKey=getFmtKey();
   const grp=(FORMATOS[fKey]||[]).find(g=>g.grupo===grupo);
@@ -815,6 +815,7 @@ function renderBuilder(){
             <div class="sabor-name">${s}</div>
           </div>`).join('')}
         <div class="sabor-card especial ${b.sabor==='3 Leches'?'selected':''}" onclick="bSelectSabor('3 Leches',true)"><span class="sabor-icon">🥛</span><div class="sabor-name">3 Leches</div></div>
+        <div class="sabor-card especial ${b.sabor==='3 Leches Chocolate'?'selected':''}" onclick="bSelectSabor('3 Leches Chocolate',true)"><span class="sabor-icon">🍫</span><div class="sabor-name">3 Leches Chocolate</div></div>
         <div class="sabor-card especial ${b.sabor==='Zanahoria'?'selected':''}" onclick="bSelectSabor('Zanahoria',true)"><span class="sabor-icon">🥕</span><div class="sabor-name">Zanahoria</div></div>
         <div class="sabor-card ${b.sabor==='Napolitano'?'selected':''}" onclick="bSelectSabor('Napolitano',false)"><span class="sabor-icon">🇮🇹</span><div class="sabor-name">Napolitano</div></div>
       </div>
@@ -874,7 +875,7 @@ function renderBuilder(){
       </div>`:'' }
 
       <!-- Doble pan option -->
-      ${b.fmtTamano&&(b.fmtGrupo==='redondo'||b.fmtGrupo==='corazon'||b.fmtGrupo==='cuadrado')&&b.sabor!=='3 Leches'?`
+      ${b.fmtTamano&&(b.fmtGrupo==='redondo'||b.fmtGrupo==='corazon'||b.fmtGrupo==='cuadrado')&&b.sabor!=='3 Leches'&&b.sabor!=='3 Leches Chocolate'?`
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.6rem;cursor:pointer;background:#EEF1FB;border-radius:8px;padding:10px 12px" onclick="b.doblePan=!b.doblePan;renderBuilder()">
         <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${b.doblePan?'var(--navy)':'var(--border)'};background:${b.doblePan?'var(--navy)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
           ${b.doblePan?'<span style="color:white;font-size:0.8rem">✓</span>':''}
