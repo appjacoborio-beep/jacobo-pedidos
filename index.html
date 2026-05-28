@@ -1785,18 +1785,17 @@ async function advStatus(folio){
 function delOrder(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));
   if(!o)return;
-  // Show custom confirm toast
   const existing=document.getElementById('del-confirm-bar');
   if(existing)existing.remove();
   const bar=document.createElement('div');
   bar.id='del-confirm-bar';
-  bar.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1B2A6B;color:white;padding:12px 16px;border-radius:10px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:90vw';
   bar.setAttribute('data-folio',folio);
+  bar.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1B2A6B;color:white;padding:12px 16px;border-radius:10px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:90vw';
   bar.innerHTML='<span style="font-size:0.82rem">¿Eliminar folio #'+String(o.folio).padStart(4,'0')+'?</span>'
     +'<button onclick="execDelete()" style="background:#C0392B;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8rem">Sí, eliminar</button>'
     +'<button onclick="document.getElementById(\'del-confirm-bar\').remove()" style="background:rgba(255,255,255,0.2);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem">Cancelar</button>';
   document.body.appendChild(bar);
-  setTimeout(function(){if(document.getElementById('del-confirm-bar'))document.getElementById('del-confirm-bar').remove();},5000);
+  setTimeout(function(){var b=document.getElementById('del-confirm-bar');if(b)b.remove();},5000);
 }
 async function execDelete(){
   const bar=document.getElementById('del-confirm-bar');
@@ -1814,10 +1813,10 @@ async function execDelete(){
       renderOrders();updateBadge();
       toast('✓','Pedido eliminado');
     } else {
-      toast('❌','Error al eliminar, intenta de nuevo');
+      toast('❌','Error al eliminar');
     }
   }catch(e){
-    toast('❌','Error de conexión, intenta de nuevo');
+    toast('❌','Error de conexión');
   }
 }
 
@@ -1873,6 +1872,7 @@ async function saveEdit(){
     toast('❌','Error al guardar. Intenta de nuevo.');
   }
 }
+function closeEdit(){closeEditModal();}
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');}
 function openImgModal(src,title){document.getElementById('img-modal-src').src=src;document.getElementById('img-modal-title').textContent=title||'Foto';document.getElementById('img-modal').classList.add('open');}
 function closeImgModal(e){if(e.target===document.getElementById('img-modal'))document.getElementById('img-modal').classList.remove('open');}
@@ -1907,7 +1907,7 @@ function toggleExpand(folio){
 }
 function updateBadge(){var todayStr=new Date().toISOString().slice(0,10);var vis=prodSuc&&prodSuc!=='Todas'?orders.filter(o=>(o.sucursal||'').trim().toLowerCase()===(prodSuc||'').trim().toLowerCase()):orders;var n=vis.filter(o=>o.fechaEntrega===todayStr&&(o.status==='Pendiente'||o.status==='En proceso')).length;document.getElementById('pending-badge').textContent=n||'';}
 function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();}
-function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function toast(icon,msg){const ti=document.getElementById('toast-icon');const tm=document.getElementById('toast-msg');const t=document.getElementById('toast');if(!ti||!tm||!t)return;ti.textContent=icon;tm.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 initSetupBanner();
 // Load orders on start to populate badge
