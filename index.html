@@ -616,7 +616,6 @@ let editingFolio=null;
 let b={};  // builder state
 
 const STATUS_CLS={'Pendiente':'s-pending','En proceso':'s-making','Listo':'s-ready','Entregado':'s-delivered'};
-const isOrderPast=o.fechaEntrega&&o.fechaEntrega<todayStr;
 const NEXT={'Pendiente':'En proceso','En proceso':'Listo','Listo':'Entregado'};
 const NEXT_LBL={'Pendiente':'🔥 Iniciar','En proceso':'✅ Listo','Listo':'📦 Entregar'};
 
@@ -1596,7 +1595,7 @@ function renderCalendar(){
     const isSelected = dateStr===calSelectedDate;
     const bgColor = isSelected?'var(--navy)':isToday?'var(--faint)':isPast?'#F8F9FA':'var(--card)';
     const numColor = isSelected?'#fff':isToday?'var(--navy)':isPast?'#AAAAAA':'var(--text)';
-    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'};opacity:${isPast&&!isSelected?'0.75':'1'}">
+    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'}">
       <div style="font-size:0.78rem;font-weight:${isToday?'700':'500'};color:${numColor};margin-bottom:3px">${d}</div>
       ${dayOrders?`
         <div style="display:flex;flex-wrap:wrap;gap:2px">
@@ -1638,14 +1637,13 @@ function calShowDay(dateStr){
   const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   const parts=dateStr.split('-');
   const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
-  const isPastDay=dateStr<todayStr;
-  const pend=isPastDay?0:dayOrders.filter(o=>o.status==='Pendiente'||o.status==='En proceso').length;
+  const pend=dayOrders.filter(o=>o.status==='Pendiente'||o.status==='En proceso').length;
 
   document.getElementById('cal-day-header').style.display='block';
-  document.getElementById('cal-day-title').textContent='📋 Pedidos del '+dateLabel;
-  document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos'+(isPastDay?'':' · '+pend+' pendientes');
-  document.getElementById('st-hoy').textContent=isPastDay?'—':pend;
-  document.getElementById('st-hoy-label').textContent=isPastDay?'Fecha pasada':'Pendientes ese día';
+  document.getElementById('cal-day-title').textContent=(dateStr<new Date().toISOString().slice(0,10)?'📅':'📋')+' Pedidos del '+dateLabel+(dateStr<new Date().toISOString().slice(0,10)?' — Fecha pasada':'');
+  document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos · '+pend+' pendientes';
+  document.getElementById('st-hoy').textContent=pend;
+  document.getElementById('st-hoy-label').textContent='Pendientes ese día';
 
   if(!dayOrders.length){
     document.getElementById('orders-grid').innerHTML='<div class="empty"><div class="empty-i">🎂</div><div class="empty-t">Sin pedidos</div><p>No hay pedidos para este día</p></div>';
@@ -1719,8 +1717,6 @@ function renderProductLines(prodLines){
   return html;
 }
 
-function getStatusCls(o){var td=new Date().toISOString().slice(0,10);if(o.fechaEntrega&&o.fechaEntrega<td&&(o.status==='Pendiente'||o.status==='En proceso'))return 's-past';return STATUS_CLS[o.status]||'s-pending';}
-function getStatusLbl(o){var td=new Date().toISOString().slice(0,10);if(o.fechaEntrega&&o.fechaEntrega<td&&(o.status==='Pendiente'||o.status==='En proceso'))return '📅 Pasado';return o.status;}
 function renderOrdersList(visOrders){
   let vis=visOrders;
   // Stats handled by renderCalendar
@@ -1754,7 +1750,7 @@ function renderOrdersList(visOrders){
     const isExpanded=expandedFolios.has(String(o.folio));
     return`<div class="order-card${isToday?' urgente':''}">
       ${imgUrl?`<div class="oc-imgs"><img class="oc-img-thumb" src="${imgUrl}" onclick="openImgModal('${imgUrl}','Folio ${folio}')" onerror="this.style.display='none'" alt="Ref"></div>`:''}
-      <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div><span class="oc-status ${getStatusCls(o)}">${getStatusLbl(o)}</span></div>
+      <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div><span class="oc-status ${STATUS_CLS[o.status]||'s-pending'}">${o.status}</span></div>
       <div class="oc-body">
         ${renderProductLines(prodLines)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
