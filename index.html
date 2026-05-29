@@ -1579,7 +1579,7 @@ function renderCalendar(){
 
   // Update stats
   const allVis = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
-  document.getElementById('st-total').textContent = allVis.length;
+  var _curMonth=new Date().toISOString().slice(0,7);document.getElementById('st-total').textContent = allVis.filter(function(o){return(o.fechaEntrega||'').slice(0,7)===_curMonth;}).length;
   document.getElementById('st-pend').textContent = allVis.filter(o=>o.status==='Pendiente').length;
   document.getElementById('st-rdy').textContent = allVis.filter(o=>o.status==='Listo').length;
 
