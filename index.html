@@ -234,7 +234,7 @@ textarea{resize:vertical;min-height:60px;}
 .search-result-name{font-size:0.82rem;font-weight:600;color:var(--text);}
 .search-result-meta{font-size:0.68rem;color:var(--muted);margin-top:1px;}
 .search-result-status{font-size:0.62rem;font-weight:600;padding:2px 6px;border-radius:10px;float:right;}
-.oc-product-detail{margin-top:5px;}.oc-spec-row{display:flex;align-items:flex-start;gap:6px;font-size:0.71rem;padding:3px 7px;background:white;border-radius:4px;border-left:2px solid var(--border);margin-bottom:2px;}.oc-spec-label{font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}.oc-spec-val{color:var(--text);line-height:1.4;}.oc-adicionales-wrap{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:6px 9px;margin-top:6px;}.oc-adicionales-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#065F46;font-weight:700;margin-bottom:4px;}.oc-adic-item{font-size:0.71rem;color:#065F46;padding:1px 0;}
+.imp-thumb{position:relative;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}.imp-thumb img{width:100%;height:100%;object-fit:cover;}.imp-thumb-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}.oc-product-detail{margin-top:5px;}.oc-spec-row{display:flex;align-items:flex-start;gap:6px;font-size:0.71rem;padding:3px 7px;background:white;border-radius:4px;border-left:2px solid var(--border);margin-bottom:2px;}.oc-spec-label{font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}.oc-spec-val{color:var(--text);line-height:1.4;}.oc-adicionales-wrap{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:6px 9px;margin-top:6px;}.oc-adicionales-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#065F46;font-weight:700;margin-bottom:4px;}.oc-adic-item{font-size:0.71rem;color:#065F46;padding:1px 0;}
 .oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
 
 .oc-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;background:var(--navy-faint);border-radius:6px;padding:6px;}
@@ -367,6 +367,14 @@ textarea{resize:vertical;min-height:60px;}
         <div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="f-restante" placeholder="0.00" readonly style="background:#EEF1FB;font-weight:700;color:var(--navy)"></div>
       </div>
     </div>
+  </div>
+
+  <!-- ══ IMPRESIONES ══ -->
+  <div class="form-card" id="impresiones-section" style="margin-bottom:0.75rem">
+    <div class="section-title">🖨️ Imágenes de Impresión <span style="font-size:0.7rem;font-weight:400;color:var(--muted)">(opcional)</span></div>
+    <div id="impresiones-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
+    <button type="button" onclick="addImpresion()" style="background:var(--navy-faint);border:1.5px dashed var(--navy);color:var(--navy);border-radius:8px;padding:8px 16px;font-size:0.82rem;cursor:pointer;font-family:inherit;width:100%">+ Agregar imagen de impresión</button>
+    <input type="file" id="impresion-input" accept="image/*" style="display:none" onchange="handleImpresion(event)">
   </div>
 
   <div class="actions-row">
@@ -609,7 +617,7 @@ let calSelectedDate=''; // YYYY-MM-DD
 let selectedSuc='',selectedEntrega='';
 let cart=[];
 let adicQty={};ADICIONALES.forEach(a=>{adicQty[a.id]=0;});
-let editingFolio=null;
+let editingFolio=null;impresiones=[];renderImpresiones();
 let b={};  // builder state
 
 const STATUS_CLS={'Pendiente':'s-pending','En proceso':'s-making','Listo':'s-ready','Entregado':'s-delivered'};
@@ -1241,7 +1249,7 @@ function bAddToCart(){
     if(!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
     const cfg=PISOS_CONFIG[b.pisosCombo];
     name=`Pastel de Pisos ${b.sabor} · ${cfg.label}`;
-    if(b.doblePan)details+=`⚠️ PASTEL ALTO / DOBLE PAN\n`;
+    if(b.doblePan)details+=`🍞 PASTEL ALTO / DOBLE PAN\n`;
     if(b.comboSabores.length)details+=`Sabores: ${b.comboSabores.join(' + ')}\n`;
     cfg.pisos.forEach((piso,i)=>{
       const pd=b.pisosData[i]||{};
@@ -1260,7 +1268,7 @@ function bAddToCart(){
     else if(b.fmtGrupo==='jacobino')name=`Jacobino ${b.sabor} (Individual)`;
     else if(b.fmtGrupo==='pisos')name=`Pastel ${b.sabor} · ${PISOS_CONFIG[b.pisosCombo]?.label||'Pisos'}`;
     else name=`Pastel ${b.sabor} · ${GRUPOS_LABEL[b.fmtGrupo]||b.fmtGrupo} ${b.fmtLabel}`;
-    if(b.doblePan)details+=`⚠️ PASTEL ALTO / DOBLE PAN\n`;
+    if(b.doblePan)details+=`🍞 PASTEL ALTO / DOBLE PAN\n`;
     if(b.comboSabores.length)details+=`Sabores: ${b.comboSabores.join(' + ')}\n`;
     // Pisos details
     if(b.fmtGrupo==='pisos'&&b.pisosData.length){
@@ -1320,6 +1328,44 @@ function calcRest(){const t=parseFloat(document.getElementById('f-total').value)
 document.getElementById('f-total').addEventListener('input',calcRest);
 
 // ══ SEND ORDER ══
+var impresiones=[];
+function addImpresion(){
+  document.getElementById('impresion-input').click();
+}
+async function handleImpresion(e){
+  var file=e.target.files[0];e.target.value='';
+  if(!file)return;
+  toast('⏳','Subiendo imagen...');
+  try{
+    var fechaRef=document.getElementById('c-date')?document.getElementById('c-date').value:'';
+    var folder='jacobo/impresiones/'+(fechaRef?fechaRef.slice(0,7):'sin-fecha');
+    var sigRes=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(folder));
+    var sig=await sigRes.json();
+    var fd=new FormData();
+    fd.append('file',file);fd.append('api_key',sig.api_key);
+    fd.append('timestamp',String(sig.timestamp));fd.append('signature',sig.signature);
+    fd.append('folder',folder);
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+sig.cloud+'/image/upload',{method:'POST',body:fd});
+    var data=await res.json();
+    if(data.secure_url){
+      impresiones.push(data.secure_url);
+      renderImpresiones();
+      toast('✓','Imagen subida ✅');
+    } else {toast('❌','Error al subir imagen');}
+  }catch(err){toast('❌','Error al subir imagen');}
+}
+function renderImpresiones(){
+  var list=document.getElementById('impresiones-list');
+  if(!list)return;
+  list.innerHTML=impresiones.map(function(url,i){
+    return '<div class="imp-thumb"><img src="'+url+'" />'
+      +'<button class="imp-thumb-del" onclick="removeImpresion('+i+')">x</button></div>';
+  }).join('');
+}
+function removeImpresion(i){
+  impresiones.splice(i,1);renderImpresiones();
+}
+
 async function sendOrder(){
   // ── Validaciones obligatorias ──
   const folioVal=document.getElementById('folio-display').value.trim();
