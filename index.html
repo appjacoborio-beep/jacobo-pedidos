@@ -235,7 +235,7 @@ textarea{resize:vertical;min-height:60px;}
 .search-result-meta{font-size:0.68rem;color:var(--muted);margin-top:1px;}
 .search-result-status{font-size:0.62rem;font-weight:600;padding:2px 6px;border-radius:10px;float:right;}
 .imp-thumb{position:relative;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}.imp-thumb img{width:100%;height:100%;object-fit:cover;}.imp-thumb-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}.oc-product-detail{margin-top:5px;}.oc-spec-row{display:flex;align-items:flex-start;gap:6px;font-size:0.71rem;padding:3px 7px;background:white;border-radius:4px;border-left:2px solid var(--border);margin-bottom:2px;}.oc-spec-label{font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}.oc-spec-val{color:var(--text);line-height:1.4;}.oc-adicionales-wrap{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:6px 9px;margin-top:6px;}.oc-adicionales-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#065F46;font-weight:700;margin-bottom:4px;}.oc-adic-item{font-size:0.71rem;color:#065F46;padding:1px 0;}
-.oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
+.oc-imp-wrap{margin-top:6px;background:#EFF6FF;border-left:3px solid #3B82F6;border-radius:0 6px 6px 0;padding:6px 9px;}.oc-imp-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#1E40AF;font-weight:700;margin-bottom:4px;}.oc-imp-grid{display:flex;flex-wrap:wrap;gap:6px;}.oc-imp-img{width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #BFDBFE;}.oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
 
 .oc-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;background:var(--navy-faint);border-radius:6px;padding:6px;}
 .oc-total-item{text-align:center;}
@@ -1249,7 +1249,7 @@ function bAddToCart(){
     if(!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
     const cfg=PISOS_CONFIG[b.pisosCombo];
     name=`Pastel de Pisos ${b.sabor} · ${cfg.label}`;
-    if(b.doblePan)details+=`🍞 PASTEL ALTO / DOBLE PAN\n`;
+    if(b.doblePan)details+=`⚠️ PASTEL ALTO / DOBLE PAN\n`;
     if(b.comboSabores.length)details+=`Sabores: ${b.comboSabores.join(' + ')}\n`;
     cfg.pisos.forEach((piso,i)=>{
       const pd=b.pisosData[i]||{};
@@ -1268,7 +1268,7 @@ function bAddToCart(){
     else if(b.fmtGrupo==='jacobino')name=`Jacobino ${b.sabor} (Individual)`;
     else if(b.fmtGrupo==='pisos')name=`Pastel ${b.sabor} · ${PISOS_CONFIG[b.pisosCombo]?.label||'Pisos'}`;
     else name=`Pastel ${b.sabor} · ${GRUPOS_LABEL[b.fmtGrupo]||b.fmtGrupo} ${b.fmtLabel}`;
-    if(b.doblePan)details+=`🍞 PASTEL ALTO / DOBLE PAN\n`;
+    if(b.doblePan)details+=`⚠️ PASTEL ALTO / DOBLE PAN\n`;
     if(b.comboSabores.length)details+=`Sabores: ${b.comboSabores.join(' + ')}\n`;
     // Pisos details
     if(b.fmtGrupo==='pisos'&&b.pisosData.length){
@@ -1400,7 +1400,7 @@ async function sendOrder(){
   const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
-  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto,impresionUrls:impresiones.join('|')};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
     const imgUrl=payload.imagen;
@@ -1486,7 +1486,7 @@ async function loadOrders(){
   // Bad date format
   if(s.startsWith('1899')||s.startsWith('1900'))return'';
   return s;
-})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',historial:r['Historial']||''})).reverse();
+})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',historial:r['Historial']||'',impresionUrls:r['Impresion Urls']||r['ImpresionUrls']||''})).reverse();
     renderCalendar();document.getElementById('prod-time').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});updateBadge();
   }catch(e){document.getElementById('orders-grid').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error de conexión</div></div>`;}
 }
@@ -1772,7 +1772,7 @@ function renderOrdersList(visOrders){
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
         ${(function(){var tipoRow=o.tipoEntrega==='domicilio'?'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">\u{1F6F5} Domicilio desde '+(o.sucursal||'\u2014')+'</span></div>':'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">'+entIcon+'</span></div>'+(o.sucursal?'<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">'+o.sucursal+'</span></div>':'');var dirRow=o.direccion?'<div class="oc-row"><span class="oc-key">'+(o.tipoEntrega==="domicilio"?"Direcci\u00f3n de env\u00edo":"Direcci\u00f3n")+'</span><span class="oc-val">'+o.direccion+'</span></div>':'';return tipoRow+dirRow;})()}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
-        ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}
+        ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${o.impresionUrls?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Imágenes de impresión</div><div class="oc-imp-grid">'+o.impresionUrls.split('|').filter(Boolean).map(function(u){return '<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión\')">'; }).join('')+'</div></div>':''}
         ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
