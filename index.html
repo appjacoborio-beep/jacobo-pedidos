@@ -1603,7 +1603,7 @@ function calSelectDay(dateStr){
 
 function calShowDay(dateStr){
   const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
-  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>{function toMin(h){if(!h)return 9999;var m=h.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}return toMin(a.hora)-toMin(b.hora);});
   const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   const parts=dateStr.split('-');
   const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
