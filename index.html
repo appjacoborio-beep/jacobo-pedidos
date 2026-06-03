@@ -1360,7 +1360,7 @@ async function sendOrder(){
   const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
-  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto,impresionUrls:impresiones.join('|')};
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
     const imgUrl=payload.imagen;
@@ -1446,7 +1446,7 @@ async function loadOrders(){
   // Bad date format
   if(s.startsWith('1899')||s.startsWith('1900'))return'';
   return s;
-})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',historial:r['Historial']||'',impresionUrls:r['Impresion Urls']||r['ImpresionUrls']||''})).reverse();
+})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',historial:r['Historial']||''})).reverse();
     renderCalendar();document.getElementById('prod-time').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});updateBadge();
   }catch(e){document.getElementById('orders-grid').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error de conexión</div></div>`;}
 }
