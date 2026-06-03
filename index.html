@@ -235,7 +235,7 @@ textarea{resize:vertical;min-height:60px;}
 .search-result-meta{font-size:0.68rem;color:var(--muted);margin-top:1px;}
 .search-result-status{font-size:0.62rem;font-weight:600;padding:2px 6px;border-radius:10px;float:right;}
 .imp-thumb{position:relative;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}.imp-thumb img{width:100%;height:100%;object-fit:cover;}.imp-thumb-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}.oc-product-detail{margin-top:5px;}.oc-spec-row{display:flex;align-items:flex-start;gap:6px;font-size:0.71rem;padding:3px 7px;background:white;border-radius:4px;border-left:2px solid var(--border);margin-bottom:2px;}.oc-spec-label{font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}.oc-spec-val{color:var(--text);line-height:1.4;}.oc-adicionales-wrap{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:6px 9px;margin-top:6px;}.oc-adicionales-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#065F46;font-weight:700;margin-bottom:4px;}.oc-adic-item{font-size:0.71rem;color:#065F46;padding:1px 0;}
-.oc-imp-wrap{margin-top:6px;background:#EFF6FF;border-left:3px solid #3B82F6;border-radius:0 6px 6px 0;padding:6px 9px;}.oc-imp-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#1E40AF;font-weight:700;margin-bottom:4px;}.oc-imp-grid{display:flex;flex-wrap:wrap;gap:6px;}.oc-imp-item{position:relative;display:inline-block;}.oc-imp-img{width:70px;height:70px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #BFDBFE;display:block;}.oc-imp-dl{position:absolute;bottom:2px;right:2px;background:rgba(30,64,175,0.85);color:white;border-radius:4px;font-size:0.65rem;padding:1px 4px;text-decoration:none;line-height:1.4;}.oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
+.oc-imp-wrap{margin-top:6px;background:#EFF6FF;border-left:3px solid #3B82F6;border-radius:0 6px 6px 0;padding:6px 9px;}.oc-imp-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#1E40AF;font-weight:700;margin-bottom:4px;}.oc-imp-grid{display:flex;flex-wrap:wrap;gap:6px;}.oc-imp-item{position:relative;display:inline-block;}.oc-imp-img{width:70px;height:70px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #BFDBFE;display:block;}.oc-imp-dl{position:absolute;bottom:2px;right:2px;background:rgba(30,64,175,0.85);color:white;border-radius:4px;font-size:0.65rem;padding:1px 4px;text-decoration:none;line-height:1.4;}.oc-imp-link{display:flex;align-items:center;gap:6px;margin-top:5px;padding:6px 9px;background:#EFF6FF;border-left:3px solid #3B82F6;border-radius:0 6px 6px 0;}.oc-imp-link-btn{color:#1E40AF;font-size:0.75rem;font-weight:600;text-decoration:none;}.oc-imp-link-btn:hover{text-decoration:underline;}.oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
 
 .oc-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;background:var(--navy-faint);border-radius:6px;padding:6px;}
 .oc-total-item{text-align:center;}
@@ -367,14 +367,6 @@ textarea{resize:vertical;min-height:60px;}
         <div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="f-restante" placeholder="0.00" readonly style="background:#EEF1FB;font-weight:700;color:var(--navy)"></div>
       </div>
     </div>
-  </div>
-
-  <!-- ══ IMPRESIONES ══ -->
-  <div class="form-card" id="impresiones-section" style="margin-bottom:0.75rem">
-    <div class="section-title">🖨️ Imágenes de Impresión <span style="font-size:0.7rem;font-weight:400;color:var(--muted)">(opcional)</span></div>
-    <div id="impresiones-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
-    <button type="button" onclick="addImpresion()" style="background:var(--navy-faint);border:1.5px dashed var(--navy);color:var(--navy);border-radius:8px;padding:8px 16px;font-size:0.82rem;cursor:pointer;font-family:inherit;width:100%">+ Agregar imagen de impresión</button>
-    <input type="file" id="impresion-input" accept="image/*" style="display:none" onchange="handleImpresion(event)">
   </div>
 
   <div class="actions-row">
@@ -617,7 +609,7 @@ let calSelectedDate=''; // YYYY-MM-DD
 let selectedSuc='',selectedEntrega='';
 let cart=[];
 let adicQty={};ADICIONALES.forEach(a=>{adicQty[a.id]=0;});
-let editingFolio=null;impresiones=[];renderImpresiones();
+let editingFolio=null;
 let b={};  // builder state
 
 const STATUS_CLS={'Pendiente':'s-pending','En proceso':'s-making','Listo':'s-ready','Entregado':'s-delivered'};
@@ -738,7 +730,7 @@ function bReset(){
      cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
      postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
      miniProduct:'',miniVariant:'',panDesc:'',
-     mensaje:'',tema:'',alergias:'',notas:'',
+     mensaje:'',tema:'',alergias:'',notas:'',impLink:'',
      qty:1,nota:'',photo:null};
 }
 function openBuilder(){bReset();renderBuilder();document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
@@ -1063,7 +1055,11 @@ function renderBuilder(){
         <input type="text" id="b-alergias" value="${b.alergias}" placeholder="Sin gluten, sin lactosa..." oninput="b.alergias=this.value">
       </div>
 `:''}
-            <div class="form-group" style="margin-bottom:0"><label class="field-label">Notas adicionales</label>
+            <div class="form-group"><label class="field-label">🖨️ Link de impresiones (Drive)</label>
+        <input type="url" id="b-implink" value="${b.impLink||''}" placeholder="https://drive.google.com/..." oninput="b.impLink=this.value" style="font-size:0.75rem">
+        <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Pega el link de Drive con las imágenes de impresión de azúcar</div>
+      </div>
+      <div class="form-group" style="margin-bottom:0"><label class="field-label">Notas adicionales</label>
         <textarea id="b-notas" placeholder="Cualquier detalle especial..." oninput="b.notas=this.value">${b.notas}</textarea>
       </div>
     </div>
@@ -1307,6 +1303,7 @@ function bAddToCart(){
   if(b.mensaje)details+=`💬 ${b.mensaje}\n`;
   if(b.tema)details+=`🎨 ${b.tema}\n`;
   if(b.alergias)details+=`⚠️ ${b.alergias}\n`;
+  if(b.impLink&&b.impLink.trim())details+=`🖨️ ImpLink: ${b.impLink.trim()}\n`;
   if(b.notas)details+=`📝 ${b.notas}\n`;
   if(b.nota)details+=`Nota: ${b.nota}`;
   const aKeys=Object.keys(b.adicionales||{});
@@ -1328,43 +1325,6 @@ function calcRest(){const t=parseFloat(document.getElementById('f-total').value)
 document.getElementById('f-total').addEventListener('input',calcRest);
 
 // ══ SEND ORDER ══
-var impresiones=[];
-function addImpresion(){
-  document.getElementById('impresion-input').click();
-}
-async function handleImpresion(e){
-  var file=e.target.files[0];e.target.value='';
-  if(!file)return;
-  toast('⏳','Subiendo imagen...');
-  try{
-    var fechaRef=document.getElementById('c-date')?document.getElementById('c-date').value:'';
-    var folder='jacobo/impresiones/'+(fechaRef?fechaRef.slice(0,7):'sin-fecha');
-    var sigRes=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(folder));
-    var sig=await sigRes.json();
-    var fd=new FormData();
-    fd.append('file',file);fd.append('api_key',sig.api_key);
-    fd.append('timestamp',String(sig.timestamp));fd.append('signature',sig.signature);
-    fd.append('folder',folder);
-    var res=await fetch('https://api.cloudinary.com/v1_1/'+sig.cloud+'/image/upload',{method:'POST',body:fd});
-    var data=await res.json();
-    if(data.secure_url){
-      impresiones.push(data.secure_url);
-      renderImpresiones();
-      toast('✓','Imagen subida ✅');
-    } else {toast('❌','Error al subir imagen');}
-  }catch(err){toast('❌','Error al subir imagen');}
-}
-function renderImpresiones(){
-  var list=document.getElementById('impresiones-list');
-  if(!list)return;
-  list.innerHTML=impresiones.map(function(url,i){
-    return '<div class="imp-thumb"><img src="'+url+'" />'
-      +'<button class="imp-thumb-del" onclick="removeImpresion('+i+')">x</button></div>';
-  }).join('');
-}
-function removeImpresion(i){
-  impresiones.splice(i,1);renderImpresiones();
-}
 
 async function sendOrder(){
   // ── Validaciones obligatorias ──
@@ -1772,7 +1732,7 @@ function renderOrdersList(visOrders){
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
         ${(function(){var tipoRow=o.tipoEntrega==='domicilio'?'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">\u{1F6F5} Domicilio desde '+(o.sucursal||'\u2014')+'</span></div>':'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">'+entIcon+'</span></div>'+(o.sucursal?'<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">'+o.sucursal+'</span></div>':'');var dirRow=o.direccion?'<div class="oc-row"><span class="oc-key">'+(o.tipoEntrega==="domicilio"?"Direcci\u00f3n de env\u00edo":"Direcci\u00f3n")+'</span><span class="oc-val">'+o.direccion+'</span></div>':'';return tipoRow+dirRow;})()}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
-        ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${o.impresionUrls?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Imágenes de impresión</div><div class="oc-imp-grid">'+o.impresionUrls.split('|').filter(Boolean).map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión\')">'+'<a href="'+u+'" download="impresion-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
+        ${(function(){var impRow='';var lines=(o.productos||'').split(' || ');lines.forEach(function(l){  var m=l.match(/🖨️ ImpLink: (.+?)(?:\\n|$|\s*\|\|)/);  if(m&&m[1])impRow='<div class="oc-imp-link"><span>🖨️</span><a href="'+m[1].trim()+'" target="_blank" class="oc-imp-link-btn">Ver imágenes de impresión</a></div>';});return impRow;})()}${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${o.impresionUrls?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Imágenes de impresión</div><div class="oc-imp-grid">'+o.impresionUrls.split('|').filter(Boolean).map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión\')">'+'<a href="'+u+'" download="impresion-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
         ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
