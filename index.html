@@ -1277,7 +1277,7 @@ function bAddToCart(){
     }
     if(b.cremaBase)details+=`Base: ${b.cremaBase}\n`;
     if(b.rellenosGratis.length)details+=`Toppings: ${b.rellenosGratis.join(', ')}\n`;
-    if(b.rellenoFruta&&b.rellenoFruta.length)details+=`Fruta: ${Array.isArray(b.rellenoFruta)?b.rellenoFruta.join(', '):b.rellenoFruta}\n`;
+    if(b.rellenoFruta&&b.rellenoFruta.length)details+=`Relleno: ${Array.isArray(b.rellenoFruta)?b.rellenoFruta.join(', '):b.rellenoFruta}\n`;
     const ck=Object.keys(b.rellenosCosto);if(ck.length)details+=`Extra: ${ck.join(', ')}\n`;
     if(b.rellenoCustom)details+=`Especial: ${b.rellenoCustom}\n`;
   } else if(b.cat==='crepas'){
