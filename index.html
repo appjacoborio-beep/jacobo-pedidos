@@ -1,617 +1,1888 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Catálogo — Pastelería Jacobo</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Pedidos Especiales — Jacobo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#fff;--bg2:#f7f5f0;--bg3:#f0ede6;
-  --text:#1a1a18;--text2:#5a5955;--text3:#9a9893;
-  --border:rgba(0,0,0,.10);--border2:rgba(0,0,0,.18);
-  --accent:#D85A30;
-  --r:10px;--rl:14px;
-}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg2);color:var(--text);min-height:100vh}
+:root{--navy:#1B2A6B;--red:#C0392B;--navy-faint:#EEF1FB;--bg:#F0F2F8;--border:#C8CEDE;--text:#1A1A2E;--muted:#6B729A;--card:#fff;--radius:10px;--shadow:0 2px 12px rgba(27,42,107,0.09);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* HEADER */
-.site-header{background:#fff;border-bottom:.5px solid var(--border);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:50}
-.brand{display:flex;align-items:center;gap:10px}
-.logo{width:40px;height:40px;border-radius:50%;background:#FAECE7;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#993C1D;letter-spacing:-.5px}
-.brand-text h1{font-size:15px;font-weight:700}
-.brand-text p{font-size:11px;color:var(--text2);margin-top:1px}
-select.suc{height:34px;padding:0 10px;border:.5px solid var(--border2);border-radius:var(--r);font-size:13px;color:var(--text);background:#fff;font-family:inherit}
+/* SETUP */
+.setup-banner{background:#FEF3C7;border-bottom:1px solid #FCD34D;padding:8px 1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.setup-banner p{font-size:0.77rem;color:#78350F;font-weight:500;flex:1;min-width:100px;}
+.setup-input-row{display:flex;gap:6px;align-items:center;flex:2;min-width:180px;}
+.setup-input{flex:1;font-family:'DM Sans',sans-serif;font-size:0.75rem;border:1.5px solid #FCD34D;border-radius:7px;padding:5px 8px;background:white;color:#78350F;outline:none;}
+.setup-btn{background:#1B2A6B;color:white;border:none;border-radius:7px;padding:6px 11px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.setup-ok{background:#D1FAE5;border-color:#6EE7B7;}.setup-ok p{color:#065F46;}
 
-/* AVISO */
-.warning{background:#FEF3CD;border-left:3px solid #F4A900;padding:10px 16px;font-size:13px;color:#633806;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
-.warning strong{font-weight:600;display:block;margin-bottom:1px}
+/* APP BAR */
+.app-bar{background:var(--navy);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.brand{display:flex;align-items:center;gap:8px;}
+.brand-logo{width:31px;height:31px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.95rem;}
+.brand-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;color:white;}
+.brand-sub{font-size:0.57rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;}
+.nav-tabs{display:flex;gap:3px;background:rgba(255,255,255,0.1);border-radius:7px;padding:2px;}
+.nav-tab{background:none;border:none;color:rgba(255,255,255,0.6);font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:500;padding:5px 9px;border-radius:5px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;}
+.nav-tab.active{background:var(--red);color:white;}
+.badge{background:rgba(255,255,255,0.25);color:white;font-size:0.62rem;font-weight:600;padding:1px 5px;border-radius:10px;}
+.nav-tab.active .badge{background:rgba(0,0,0,0.25);}
+.view{display:none;}.view.active{display:block;}
 
-/* MAIN */
-.main{max-width:1100px;margin:0 auto;padding:1.25rem 1.5rem}
+/* LAYOUT */
+.order-page{max-width:700px;margin:0 auto;padding:0.9rem 0.85rem 5rem;}
+.folio-strip{background:var(--navy);border-radius:var(--radius) var(--radius) 0 0;padding:0.8rem 1rem;display:flex;align-items:center;justify-content:space-between;color:white;}
+.folio-brand{display:flex;align-items:center;gap:8px;}
+.folio-logo{width:38px;height:38px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem;}
+.folio-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.05em;}
+.folio-subtitle{font-size:0.6rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.06em;}
+.folio-box{text-align:right;}
+.folio-label{font-size:0.57rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.6);}
+.folio-number{font-family:'Bebas Neue',sans-serif;font-size:1.75rem;color:var(--red);letter-spacing:0.05em;line-height:1;}
+.form-sheet{background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:0.85rem;}
+.section-bar{background:var(--navy);color:white;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:5px 0.9rem;display:flex;align-items:center;justify-content:space-between;}
+.form-inner{padding:0.8rem 0.9rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:0.7rem;}
+.form-group:last-child{margin-bottom:0;}
+.field-label{font-size:0.64rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+input[type=text],input[type=tel],input[type=date],input[type=number],select,textarea{font-family:'DM Sans',sans-serif;background:var(--navy-faint);border:1.5px solid var(--border);border-radius:7px;padding:7px 9px;font-size:0.87rem;color:var(--text);outline:none;transition:border-color 0.18s;width:100%;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--navy);background:white;}
+textarea{resize:vertical;min-height:60px;}
+.time-row{display:flex;gap:4px;}
+.time-row select{flex:1;font-size:0.84rem;padding:7px 4px;text-align:center;}
 
-/* CONTROLES */
-.controls{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
-.sw{position:relative;flex:1;min-width:200px}
-.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
-.sw input{width:100%;height:36px;padding:0 12px 0 34px;border:.5px solid var(--border2);border-radius:var(--r);background:#fff;font-size:14px;color:var(--text);outline:none;font-family:inherit}
-.sw input:focus{border-color:var(--accent)}
-.fb{height:36px;padding:0 12px;font-size:12px;border:.5px solid var(--border2);border-radius:var(--r);background:#fff;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
-.fb.active{background:#FAECE7;color:#993C1D;border-color:#F0997B;font-weight:700}
-.fb:hover:not(.active){background:var(--bg3)}
-.count{font-size:12px;color:var(--text3);margin-bottom:10px}
+/* ENTREGA */
+.entrega-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.entrega-btn{background:var(--navy-faint);border:1.5px solid var(--border);border-radius:8px;padding:9px 7px;text-align:center;cursor:pointer;transition:all 0.18s;}
+.entrega-btn .ei{font-size:1.2rem;display:block;margin-bottom:3px;}
+.entrega-btn .en{font-size:0.77rem;font-weight:600;color:var(--navy);}
+.entrega-btn.selected{background:var(--navy);border-color:var(--navy);}
+.entrega-btn.selected .en{color:white;}
+.suc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.suc-btn{background:var(--navy-faint);border:1.5px solid var(--border);border-radius:7px;padding:7px 3px;text-align:center;cursor:pointer;transition:all 0.18s;}
+.suc-btn .sn{font-size:0.74rem;font-weight:600;color:var(--navy);}
+.suc-btn .sp{font-size:0.62rem;color:var(--muted);margin-top:1px;}
+.suc-btn.selected{background:var(--navy);border-color:var(--navy);}
+.suc-btn.selected .sn,.suc-btn.selected .sp{color:white;}
 
-/* SABORES BANNER */
-.sb{background:#E3F2FD;border:.5px solid #90CAF9;border-radius:var(--rl);padding:12px 16px;margin-bottom:1.25rem;display:none}
-.sb.on{display:block}
-.sb h3{font-size:13px;font-weight:700;color:#1565C0;margin-bottom:8px}
-.pills{display:flex;flex-wrap:wrap;gap:6px}
-.pill{font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;background:#fff;border:.5px solid #90CAF9;color:#1565C0}
-.pill-note{font-size:11px;color:#1565C0;align-self:center;margin-left:4px}
+/* CART */
+.cart-empty{text-align:center;padding:1.5rem;color:var(--muted);font-size:0.82rem;}
+.cart-empty .ce-icon{font-size:2rem;margin-bottom:6px;}
+.cart-item{background:var(--navy-faint);border:1.5px solid var(--border);border-radius:9px;padding:0.75rem;margin-bottom:0.6rem;position:relative;}
+.cart-item-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.cart-item-num{font-size:0.63rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:2px;}
+.cart-item-name{font-size:0.85rem;font-weight:600;color:var(--navy);}
+.cart-item-detail{font-size:0.73rem;color:var(--muted);margin-top:3px;line-height:1.5;}
+.cart-item-img{width:56px;height:56px;border-radius:7px;object-fit:cover;flex-shrink:0;border:1px solid var(--border);cursor:pointer;}
+.cart-item-img-placeholder{width:56px;height:56px;border-radius:7px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;cursor:pointer;border:1.5px dashed var(--muted);}
+.cart-edit{background:none;border:none;font-size:0.85rem;cursor:pointer;padding:2px 5px;border-radius:5px;flex-shrink:0;opacity:0.75;}.cart-remove{background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;padding:2px 5px;border-radius:5px;flex-shrink:0;}
+.cart-remove:hover{background:#FEE2E2;}
+.add-product-btn{width:100%;padding:11px;background:transparent;border:2px dashed var(--border);border-radius:9px;color:var(--navy);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.add-product-btn:hover{border-color:var(--navy);background:var(--navy-faint);}
 
-/* EXTRAS BOX */
-.extras-box{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:1.5rem;display:none}
-.extras-box strong{color:var(--text);font-size:13px;display:block;margin-bottom:8px}
-.eg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
-.ei{background:#fff;border:.5px solid var(--border);border-radius:var(--r);padding:8px 12px}
-.et{font-weight:600;color:var(--text);font-size:12px;margin-bottom:2px}
-.ep{color:var(--accent);font-weight:700;font-size:12px}
-.en{font-size:11px;color:var(--text3);margin-top:2px}
+/* PRODUCT BUILDER MODAL */
+.builder-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.builder-overlay.open{opacity:1;pointer-events:all;}
+.builder-sheet{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;transform:translateY(40px);transition:transform 0.25s cubic-bezier(0.34,1.2,0.64,1);}
+.builder-overlay.open .builder-sheet{transform:translateY(0);}
+.builder-header{background:var(--navy);padding:0.85rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.builder-title{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:white;letter-spacing:0.04em;}
+.builder-close{background:none;border:none;color:white;font-size:1.2rem;cursor:pointer;}
+.builder-body{padding:0.85rem 1rem 1.5rem;}
 
-/* GRID */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:11px}
+/* STEP */
+.step-header{display:flex;align-items:center;gap:8px;margin-bottom:0.5rem;margin-top:0.65rem;}
+.step-num{width:19px;height:19px;border-radius:50%;background:var(--red);color:white;font-size:0.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-title{font-size:0.67rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.07em;}
 
-/* CARD */
-.card{background:#fff;border:.5px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:border-color .15s}
-.card:hover{border-color:var(--border2)}
-.img-slot{width:100%;aspect-ratio:4/3;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border-bottom:.5px solid var(--border);position:relative;overflow:hidden;transition:background .15s}
-.img-slot:hover{background:#e8e4dc}
-.img-slot svg{color:var(--text3)}
-.img-slot span{font-size:11px;color:var(--text3)}
-.img-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.img-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.cb{padding:9px 11px 11px}
-.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-bottom:5px;letter-spacing:.02em}
-.cn{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:3px}
-.cs{font-size:11px;color:var(--text2);margin-bottom:4px;line-height:1.3}
-.cd{font-size:10.5px;color:var(--text3);line-height:1.4;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cd.expanded{display:block;-webkit-line-clamp:unset}
-.ver-mas{font-size:10px;color:var(--accent);cursor:pointer;background:none;border:none;padding:0;margin-bottom:7px;font-family:inherit;display:block}
-.ver-mas:hover{text-decoration:underline}
-.cf{display:flex;justify-content:space-between;align-items:flex-end}
-.csize{font-size:11px;font-weight:600;color:var(--text2)}
-.cpers{font-size:10px;color:var(--text3);margin-top:1px}
-.cprice{font-size:16px;font-weight:800;color:var(--accent)}
-.cprice.cotizar{font-size:13px;color:var(--text2)}
-.cnote{font-size:10px;color:#B45309;background:#FEF3CD;padding:2px 6px;border-radius:4px;margin-top:5px;display:inline-block}
+/* SABOR/FORMATO GRIDS */
+.cat-chips{display:flex;gap:5px;flex-wrap:wrap;}
+.cat-chip{background:var(--navy-faint);border:1.5px solid var(--border);border-radius:14px;padding:5px 12px;font-size:0.74rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.16s;}
+.cat-chip.active{background:var(--navy);border-color:var(--navy);color:white;}
+.sabor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:5px;}
+.sabor-card{background:var(--navy-faint);border:1.5px solid var(--border);border-radius:8px;padding:8px 5px;text-align:center;cursor:pointer;transition:all 0.18s;}
+.sabor-card:active{transform:scale(0.96);}
+.sabor-icon{font-size:1.3rem;display:block;margin-bottom:2px;}
+.sabor-name{font-size:0.64rem;font-weight:600;color:var(--navy);line-height:1.2;}
+.sabor-card.selected{background:var(--navy);border-color:var(--navy);}
+.sabor-card.selected .sabor-name{color:white;}
+.sabor-card.especial{border-color:#F59E0B;background:#FEF9EC;}
+.sabor-card.especial .sabor-name{color:#92400E;}
+.sabor-card.especial.selected{background:#D97706;border-color:#D97706;}
+.sabor-card.especial.selected .sabor-name{color:white;}
+.formato-box{background:#F4F7FF;border:1.5px solid var(--border);border-radius:9px;padding:0.65rem;}
+.formato-group-label{font-size:0.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.35rem;margin-top:0.45rem;}
+.formato-group-label:first-child{margin-top:0;}
+.formato-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:4px;}
+.fmt-btn{background:var(--card);border:1.5px solid var(--border);border-radius:7px;padding:6px 3px;text-align:center;cursor:pointer;transition:all 0.18s;}
+.fmt-btn .ft{font-size:0.73rem;font-weight:700;color:var(--navy);}
+.fmt-btn .fp{font-size:0.58rem;color:var(--muted);margin-top:1px;line-height:1.2;}
+.fmt-btn.selected{background:var(--navy);border-color:var(--navy);}
+.fmt-btn.selected .ft,.fmt-btn.selected .fp{color:white;}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;}
+.chip{background:var(--navy-faint);border:1.5px solid var(--border);border-radius:14px;padding:4px 10px;font-size:0.71rem;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.16s;user-select:none;}
+.chip.selected{background:var(--navy);border-color:var(--navy);color:white;}
+.piso-card{background:#F4F7FF;border:1.5px solid var(--border);border-radius:8px;padding:0.65rem;margin-top:0.45rem;}
+.piso-title{font-family:'Bebas Neue',sans-serif;font-size:0.85rem;color:var(--navy);letter-spacing:0.04em;margin-bottom:0.4rem;display:flex;align-items:center;gap:6px;}
+.piso-badge{background:var(--red);color:white;font-size:0.57rem;font-weight:700;padding:2px 6px;border-radius:6px;font-family:'DM Sans',sans-serif;}
 
-/* BADGES */
-.b-premium{background:#FFF3E0;color:#E65100}
-.b-pisos{background:#EDE7F6;color:#4527A0}
-.b-especiales{background:#FBEAF0;color:#993556}
-.b-crepas{background:#FCE4EC;color:#880E4F}
-.b-tartas{background:#EEEDFE;color:#534AB7}
-.b-postres{background:#E1F5EE;color:#0F6E56}
-.b-mini{background:#E8F5E9;color:#1B5E20}
-.b-gelatinas{background:#EAF3DE;color:#3B6D11}
-.b-pan{background:#FFF8E1;color:#F57F17}
-.b-extras{background:#E8EAF6;color:#283593}
+/* COMBO SABORES */
+.combo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:5px;}
+.combo-card{background:var(--navy-faint);border:1.5px solid var(--border);border-radius:8px;padding:7px 5px;text-align:center;cursor:pointer;transition:all 0.18s;}
+.combo-card:active{transform:scale(0.96);}
+.combo-icon{font-size:1.1rem;display:block;margin-bottom:2px;}
+.combo-name{font-size:0.62rem;font-weight:600;color:var(--navy);line-height:1.2;}
+.combo-card.selected{background:var(--navy);border-color:var(--navy);}
+.combo-card.selected .combo-name{color:white;}
 
-/* NO RESULTS */
-.nores{grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text2);font-size:14px}
-.nores .ico{font-size:36px;margin-bottom:10px}
-.nores strong{color:var(--accent);font-size:15px;display:block;margin-bottom:6px}
+/* PHOTO */
+.photo-area{border:2px dashed var(--border);border-radius:9px;background:var(--navy-faint);cursor:pointer;transition:all 0.2s;text-align:center;padding:1.25rem;position:relative;overflow:hidden;}
+.photo-area.has-photo{padding:0;border-style:solid;}
+.photo-area:hover{border-color:var(--navy);background:#E8EBF7;}
+.photo-area img{width:100%;max-height:200px;object-fit:contain;display:block;border-radius:7px;background:#111;}
+.photo-icon{font-size:2rem;margin-bottom:6px;}
+.photo-text{font-size:0.82rem;font-weight:600;color:var(--navy);}
+.photo-sub{font-size:0.7rem;color:var(--muted);margin-top:3px;}
+.photo-remove{position:absolute;top:7px;right:7px;background:var(--red);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
-/* TABLA ADICIONALES */
-.stitle{font-size:15px;font-weight:700;margin:2rem 0 1rem;padding-top:1.5rem;border-top:.5px solid var(--border);color:var(--text)}
-.at{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:var(--rl);overflow:hidden;border:.5px solid var(--border)}
-.at th{text-align:left;font-weight:700;font-size:10px;color:var(--text2);padding:8px 12px;background:var(--bg3);border-bottom:.5px solid var(--border);text-transform:uppercase;letter-spacing:.04em}
-.at td{padding:8px 12px;border-bottom:.5px solid var(--border);color:var(--text)}
-.at tr:last-child td{border-bottom:none}
-.at tr:hover td{background:var(--bg2)}
-.at .pr{font-weight:700;color:var(--accent)}
+/* QTY ITEMS */
+.qty-item{display:flex;align-items:center;padding:6px 0;border-bottom:1px dashed var(--border);}
+.qty-item:last-child{border-bottom:none;}
+.qty-item-name{font-size:0.78rem;font-weight:500;color:var(--text);flex:1;}
+.qty-item-sub{font-size:0.67rem;color:var(--muted);margin:0 7px;white-space:nowrap;}
+.qty-ctrl{display:flex;align-items:center;gap:5px;}
+.qty-btn{width:23px;height:23px;border-radius:5px;border:1.5px solid var(--border);background:var(--navy-faint);color:var(--navy);font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;line-height:1;}
+.qty-btn:hover{background:var(--navy);color:white;border-color:var(--navy);}
+.qty-num{font-size:0.8rem;font-weight:600;min-width:15px;text-align:center;color:var(--navy);}
 
-/* FOOTER */
-.site-footer{text-align:center;padding:2rem 1rem;font-size:11px;color:var(--text3);border-top:.5px solid var(--border);margin-top:2.5rem}
+/* RESUMEN FINAL */
+.resumen-item{background:var(--navy-faint);border:1px solid var(--border);border-radius:9px;padding:0.7rem;margin-bottom:0.6rem;}
+.resumen-item-header{font-size:0.8rem;font-weight:600;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+.resumen-badge{background:var(--navy);color:white;font-size:0.6rem;font-weight:700;padding:1px 7px;border-radius:8px;}
+.resumen-detail{font-size:0.72rem;color:var(--muted);line-height:1.6;}
 
-@media(max-width:520px){
-  .main{padding:1rem}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px}
-  .controls{gap:5px}
-}
+.totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.actions-row{display:flex;gap:7px;margin-top:0.8rem;}
+.btn-primary{flex:1;padding:12px;background:var(--navy);color:white;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.87rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-primary:active{transform:scale(0.98);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-primary.green{background:#16A34A;}
+.btn-ghost{padding:12px 13px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;}
+
+/* PRODUCTION */
+.suc-screen{min-height:72vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
+.suc-screen-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);letter-spacing:0.04em;margin-bottom:4px;}
+.suc-screen-sub{font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem;}
+.suc-big-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;width:100%;max-width:480px;}
+.suc-big-card{background:var(--card);border:2px solid var(--border);border-radius:11px;padding:1.4rem 0.75rem;text-align:center;cursor:pointer;transition:all 0.2s;}
+.suc-big-card:hover{border-color:var(--navy);transform:translateY(-2px);}
+.suc-big-icon{font-size:1.7rem;margin-bottom:7px;}
+.suc-big-name{font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:var(--navy);letter-spacing:0.04em;}
+.suc-big-phone{font-size:0.65rem;color:var(--muted);margin-top:2px;}
+.prod-page{max-width:1040px;margin:0 auto;padding:0.9rem 0.85rem 4rem;}
+.prod-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;flex-wrap:wrap;gap:7px;}
+.prod-heading{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);letter-spacing:0.04em;}
+.prod-sub{font-size:0.72rem;color:var(--muted);}
+.prod-topbar-right{display:flex;gap:6px;}
+.refresh-btn{background:var(--navy);color:white;border:none;border-radius:7px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:0.76rem;font-weight:500;cursor:pointer;}
+.change-btn{background:#6B729A;color:white;border:none;border-radius:7px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:0.76rem;font-weight:500;cursor:pointer;}
+.suc-view-bar{display:flex;gap:5px;margin-bottom:0.85rem;align-items:center;flex-wrap:wrap;}
+.svc-label{font-size:0.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;}
+.svc-pill{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:4px 11px;font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.18s;}
+.svc-pill.active{background:var(--navy);border-color:var(--navy);color:white;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:0.85rem;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px;text-align:center;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:var(--navy);line-height:1;}
+.stat-lbl{font-size:0.63rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em;}
+.filter-strip{display:flex;gap:5px;margin-bottom:0.85rem;flex-wrap:wrap;}
+.ftab{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:4px 11px;font-family:'DM Sans',sans-serif;font-size:0.73rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.18s;}
+.ftab.active,.ftab:hover{background:var(--navy);border-color:var(--navy);color:white;}
+.orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:0.8rem;}
+.order-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;animation:popIn 0.22s ease-out;}
+.order-card.urgente{border-color:#F59E0B;}
+@keyframes popIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.oc-header{background:var(--navy);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;}
+.oc-folio{font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:white;letter-spacing:0.04em;}
+.oc-client{font-size:0.68rem;color:rgba(255,255,255,0.7);margin-top:1px;}
+.oc-status{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;border-radius:9px;white-space:nowrap;}
+.s-pending{background:#FEF3C7;color:#92400E;}.s-making{background:#DBEAFE;color:#1E40AF;}.s-ready{background:#D1FAE5;color:#065F46;}.s-delivered{background:#F3F4F6;color:#6B7280;}
+.oc-imgs{display:flex;gap:5px;padding:8px 10px;background:#111;flex-wrap:wrap;}
+.oc-img-thumb{width:70px;height:70px;object-fit:cover;border-radius:5px;cursor:pointer;}
+.oc-body{padding:8px 10px;}
+.oc-row{display:flex;justify-content:space-between;font-size:0.75rem;padding:3px 0;border-bottom:1px dashed var(--border);}
+.oc-row:last-child{border-bottom:none;}
+.oc-key{color:var(--muted);font-weight:500;}
+.oc-val{font-weight:600;color:var(--navy);text-align:right;max-width:65%;}
+.oc-products{background:#EEF1FB;border-radius:6px;padding:7px 9px;margin-top:6px;}
+.oc-products-title{font-weight:700;color:var(--navy);margin-bottom:4px;font-size:0.67rem;text-transform:uppercase;letter-spacing:0.05em;}
+.oc-product-item{border-bottom:1px dashed var(--border);padding:4px 0;font-size:0.73rem;color:var(--text);}
+.oc-product-item:last-child{border-bottom:none;}
+.oc-product-name{font-weight:600;color:var(--navy);}
+.search-bar-wrap{position:relative;margin-bottom:0.75rem;}
+.search-bar-input{width:100%;padding:9px 36px 9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;background:var(--card);color:var(--text);outline:none;box-sizing:border-box;}
+.search-bar-input:focus{border-color:var(--navy);}
+.search-bar-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0;display:none;}
+.search-results-wrap{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:0.75rem;overflow:hidden;}
+.search-results-title{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);padding:8px 12px 4px;border-bottom:1px solid var(--border);}
+.search-result-item{padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+.search-result-item:last-child{border-bottom:none;}
+.search-result-item:hover{background:var(--navy-faint);}
+.search-result-folio{font-size:0.72rem;font-weight:700;color:var(--navy);}
+.search-result-name{font-size:0.82rem;font-weight:600;color:var(--text);}
+.search-result-meta{font-size:0.68rem;color:var(--muted);margin-top:1px;}
+.search-result-status{font-size:0.62rem;font-weight:600;padding:2px 6px;border-radius:10px;float:right;}
+.imp-thumb{position:relative;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}.imp-thumb img{width:100%;height:100%;object-fit:cover;}.imp-thumb-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}.oc-product-detail{margin-top:5px;}.oc-spec-row{display:flex;align-items:flex-start;gap:6px;font-size:0.71rem;padding:3px 7px;background:white;border-radius:4px;border-left:2px solid var(--border);margin-bottom:2px;}.oc-spec-label{font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}.oc-spec-val{color:var(--text);line-height:1.4;}.oc-adicionales-wrap{background:#F0FFF4;border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:6px 9px;margin-top:6px;}.oc-adicionales-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#065F46;font-weight:700;margin-bottom:4px;}.oc-adic-item{font-size:0.71rem;color:#065F46;padding:1px 0;}
+.oc-imp-wrap{margin-top:6px;background:#EFF6FF;border-left:3px solid #3B82F6;border-radius:0 6px 6px 0;padding:6px 9px;}.oc-imp-title{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#1E40AF;font-weight:700;margin-bottom:4px;}.oc-imp-grid{display:flex;flex-wrap:wrap;gap:6px;}.oc-imp-item{position:relative;display:inline-block;}.oc-imp-img{width:70px;height:70px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #BFDBFE;display:block;}.oc-imp-dl{position:absolute;bottom:2px;right:2px;background:rgba(30,64,175,0.85);color:white;border-radius:4px;font-size:0.65rem;padding:1px 4px;text-decoration:none;line-height:1.4;}.oc-imp-link{display:flex;align-items:center;gap:6px;margin-top:5px;padding:6px 9px;background:#EFF6FF;border-left:3px solid #3B82F6;border-radius:0 6px 6px 0;}.oc-imp-link-btn{color:#1E40AF;font-size:0.75rem;font-weight:600;text-decoration:none;}.oc-imp-link-btn:hover{text-decoration:underline;}.oc-notes{background:#FEF9EC;border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;padding:5px 7px;font-size:0.72rem;color:#78350F;margin-top:6px;}
+
+.oc-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;background:var(--navy-faint);border-radius:6px;padding:6px;}
+.oc-total-item{text-align:center;}
+.oc-total-label{font-size:0.59rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;}
+.oc-total-val{font-size:0.83rem;font-weight:700;color:var(--navy);}
+.oc-suc-tag{font-size:0.6rem;background:var(--red);color:white;padding:2px 5px;border-radius:7px;font-weight:600;margin-left:4px;}
+.oc-footer{padding:6px 10px;background:var(--navy-faint);border-top:1px solid var(--border);display:flex;gap:5px;}
+.oc-btn{flex:1;padding:6px;background:var(--card);border:1.5px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:600;color:var(--navy);cursor:pointer;transition:all 0.18s;}
+.oc-btn:hover{background:var(--navy);color:white;border-color:var(--navy);}
+.oc-btn.danger:hover{background:var(--red);border-color:var(--red);}
+.empty-state{grid-column:1/-1;text-align:center;padding:3rem 2rem;color:var(--muted);}
+.empty-icon{font-size:3rem;margin-bottom:0.7rem;}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;color:var(--navy);letter-spacing:0.04em;margin-bottom:3px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{background:var(--card);border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-header{background:var(--navy);padding:0.8rem 0.95rem;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:0.98rem;color:white;letter-spacing:0.04em;}
+.modal-close{background:none;border:none;color:white;font-size:1.15rem;cursor:pointer;line-height:1;}
+.modal-body{padding:0.95rem;}
+.modal-img{width:100%;border-radius:7px;margin-bottom:0.75rem;display:block;}
+.modal-actions{display:flex;gap:6px;margin-top:0.8rem;}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner-wrap{display:flex;align-items:center;justify-content:center;gap:7px;padding:2rem;color:var(--muted);font-size:0.82rem;}
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--navy);color:white;padding:9px 13px;border-radius:var(--radius);font-size:0.8rem;font-weight:500;display:flex;align-items:center;gap:7px;box-shadow:0 6px 24px rgba(0,0,0,0.22);z-index:999;transform:translateY(70px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+@media(max-width:560px){.form-row,.totals-grid{grid-template-columns:1fr;}.suc-big-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:1fr 1fr;}.nav-tab .nl{display:none;}}
 </style>
 </head>
 <body>
 
-<header class="site-header">
+<div class="setup-banner setup-ok" id="setup-banner">
+  <p>✅ Conectado con Google Sheets — Pastelería Jacobo</p>
+  <button class="setup-btn" onclick="resetUrl()" style="background:var(--red)">Cambiar URL</button>
+</div>
+
+<header class="app-bar">
   <div class="brand">
-    <div class="logo">PJ</div>
-    <div class="brand-text">
-      <h1>Pastelería y Panadería Jacobo</h1>
-      <p>Catálogo oficial · Guía de Precios 2025 · Uso interno por sucursal</p>
-    </div>
+    <div class="brand-logo">🎂</div>
+    <div><div class="brand-name">Jacobo</div><div class="brand-sub">Pastelería & Panadería</div></div>
   </div>
-  <select class="suc" id="suc">
-    <option value="">Selecciona sucursal</option>
-    <option value="rio">Sucursal Río</option>
-    <option value="otay">Sucursal Otay</option>
-    <option value="monarca">Sucursal Monarca</option>
-  </select>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('order')">📋 <span class="nl">Nuevo Pedido</span></button>
+    <button class="nav-tab" onclick="switchView('production')">📅 <span class="nl">Calendario</span><span class="badge" id="pending-badge">0</span></button>
+  </nav>
 </header>
 
-<div class="warning">
-  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
-  <div>
-    <strong>Aviso para encargados de sucursal</strong>
-    Solo los productos listados aquí están autorizados para venta. Si un colaborador saca un producto que NO aparece en este catálogo, debe ser devuelto al área de origen de inmediato.
+<!-- ══ TOMAR PEDIDO ══ -->
+<div class="view active" id="view-order">
+<div class="order-page">
+
+  <div class="folio-strip">
+    <div class="folio-brand">
+      <div class="folio-logo">🎂</div>
+      <div><div class="folio-title">Pedidos Especiales</div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
+    </div>
+    <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"></div>
   </div>
-</div>
 
-<main class="main">
-
-<div class="controls">
-  <div class="sw">
-    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="search" placeholder="Buscar producto..." oninput="render()" autocomplete="off"/>
-  </div>
-  <button class="fb active" onclick="setFilter('todos',this)">Todos</button>
-  <button class="fb" onclick="setFilter('premium',this)">Pasteles</button>
-  <button class="fb" onclick="setFilter('pisos',this)">Pisos</button>
-  <button class="fb" onclick="setFilter('especiales',this)">Corazón / Plancha</button>
-  <button class="fb" onclick="setFilter('crepas',this)">Crepas</button>
-  <button class="fb" onclick="setFilter('tartas',this)">Tartas / Flanes</button>
-  <button class="fb" onclick="setFilter('postres',this)">Postres</button>
-  <button class="fb" onclick="setFilter('mini',this)">Mini Postres</button>
-  <button class="fb" onclick="setFilter('gelatinas',this)">Gelatinas</button>
-  <button class="fb" onclick="setFilter('pan',this)">Pan Variado</button>
-  <button class="fb" onclick="setFilter('extras',this)">Extras / Rellenos</button>
-</div>
-
-<!-- Banner sabores -->
-<div class="sb" id="sb">
-  <h3>🎨 Sabores disponibles — aplican a pasteles redondos, jacobinos, planchas, corazones, cuadrados y pisos</h3>
-  <div class="pills" id="pills"></div>
-</div>
-
-<!-- Extras box -->
-<div class="count" id="count-label"></div>
-<div class="grid" id="grid"></div>
-
-</main>
-
-<footer class="site-footer" id="footer-suc">
-  Pastelería y Panadería Jacobo · Tijuana, B.C. · Guía de Precios 2025 · Uso interno
-</footer>
-
-<script>
-// ─── SABORES ─────────────────────────────────────────────────────────────────
-const SABORES = [
-  "Vainilla","Chocolate","Combinado","Moca","Red Velvet",
-  "Blueberry","Limón","Trilogía","Napolitano*","Vainilla / Durazno*"
-];
-const SABORES_NOTA = "*Napolitano solo presentación circular · *Vainilla/Durazno solo redondo y jacobino";
-
-// ─── PRODUCTOS ───────────────────────────────────────────────────────────────
-const products = [
-
-  // ── PASTELES REDONDOS / JACOBINOS ─────────────────────────────
-  {id:1,  name:"Pastel Jacobino",        sub:"Vainilla, Chocolate, Combinado, Moca, Red Velvet, Blueberry, Limón, Trilogía", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos (M. Fresa, Cereza, Frambuesa, Nutella, Durazno).", size:"Jacobino", persons:"1", price:"A cotizar"},
-  {id:2,  name:"Pastel Redondo",         sub:"Clásico — Vainilla, Chocolate, Combinado, Moca", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'6"', persons:"4–5", price:"$400"},
-  {id:3,  name:"Pastel Redondo",         sub:"Clásico — Vainilla, Chocolate, Combinado, Moca", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'8"', persons:"8–10", price:"$500"},
-  {id:4,  name:"Pastel Redondo",         sub:"Clásico — Vainilla, Chocolate, Combinado, Moca", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'10"', persons:"12–15", price:"$600"},
-  {id:5,  name:"Pastel Redondo",         sub:"Clásico — Vainilla, Chocolate, Combinado, Moca", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'12"', persons:"20–25", price:"$1,150"},
-  {id:6,  name:"Pastel Redondo",         sub:"Clásico — Vainilla, Chocolate, Combinado, Moca", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'14"', persons:"40–50", price:"$1,650"},
-  {id:7,  name:"Pastel Redondo Premium", sub:"Trilogía, Moca, Vainilla/Durazno, Red Velvet, Napolitano*", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'6"', persons:"4–5", price:"$400"},
-  {id:8,  name:"Pastel Redondo Premium", sub:"Trilogía, Moca, Vainilla/Durazno, Red Velvet, Napolitano*", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'8"', persons:"8–10", price:"$500"},
-  {id:9,  name:"Pastel Redondo Premium", sub:"Trilogía, Moca, Vainilla/Durazno, Red Velvet, Napolitano*", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'10"', persons:"12–15", price:"$600"},
-  {id:10, name:"Pastel Redondo Premium", sub:"Trilogía, Moca, Vainilla/Durazno, Red Velvet, Napolitano*", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'12"', persons:"20–25", price:"$1,150"},
-  {id:11, name:"Pastel Redondo Premium", sub:"Trilogía, Moca, Vainilla/Durazno, Red Velvet, Napolitano*", cat:"premium", desc:"Relleno: Crema Chantilly o Crema de Queso. Toppings sin costo incluidos.", size:'14"', persons:"40–50", price:"$1,650"},
-
-  // ── 3 LECHES / ZANAHORIA ──────────────────────────────────────
-  {id:12, name:"3 Leches / Zanahoria",   sub:"Redondo", cat:"premium", desc:"3 Leches: Chantilly ligero. Zanahoria: Crema de queso o Chantilly. Sin toppings sin costo.", size:'6"', persons:"4–5", price:"$450"},
-  {id:13, name:"3 Leches / Zanahoria",   sub:"Redondo", cat:"premium", desc:"3 Leches: Chantilly ligero. Zanahoria: Crema de queso o Chantilly. Sin toppings sin costo.", size:'10"', persons:"12–15", price:"$650"},
-  {id:14, name:"Zanahoria",   sub:"Redondo", cat:"premium", desc:"3 Leches: Chantilly ligero. Zanahoria: Crema de queso o Chantilly. Sin toppings sin costo.", size:'12"', persons:"20–25", price:"$1,100"},
-
-  // ── PASTELES DE PISOS ─────────────────────────────────────────
-  {id:15, name:"Pastel 2 Pisos — A",    sub:"Inferior 10\" + Superior 6\"", cat:"pisos", desc:"Depósito de bases $350 (devuelto con nota). Sabores y rellenos a elección. Precio a cotizar.", size:"2 pisos", persons:"~50", price:"$2,800", note:"Depósito bases $350"},
-  {id:16, name:"Pastel 2 Pisos — B",    sub:"Inferior 12\" + Superior 8\"", cat:"pisos", desc:"Depósito de bases $350 (devuelto con nota). Sabores y rellenos a elección. Precio a cotizar.", size:"2 pisos", persons:"~70", price:"$3,850", note:"Depósito bases $350"},
-  {id:17, name:"Pastel 3 Pisos",        sub:"14\" + 10\" + 6\"",            cat:"pisos", desc:"Depósito de bases $500 (devuelto con nota). Sabores y rellenos a elección. Precio a cotizar.", size:"3 pisos", persons:"~120", price:"$6,850", note:"Depósito bases $500"},
-
-  // ── CORAZÓN / CUADRADO ────────────────────────────────────────
-  {id:18, name:"Pastel Corazón / Cuadrado", sub:"Vainilla, Choco, Combinado, Zanahoria, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Relleno: Crema de Queso o Chantilly. Toppings sin costo incluidos.", size:'6"', persons:"4–5", price:"$500"},
-  {id:19, name:"Pastel Corazón / Cuadrado", sub:"Vainilla, Choco, Combinado, Zanahoria, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Relleno: Crema de Queso o Chantilly. Toppings sin costo incluidos.", size:'8"', persons:"8–10", price:"$600"},
-  {id:20, name:"Pastel Corazón / Cuadrado", sub:"Vainilla, Choco, Combinado, Zanahoria, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Relleno: Crema de Queso o Chantilly. Toppings sin costo incluidos.", size:'10"', persons:"12–15", price:"$800"},
-  {id:21, name:"Pastel Corazón / Cuadrado", sub:"Sin doble relleno en cuadrado", cat:"especiales", desc:"Relleno: Crema de Queso o Chantilly. Toppings sin costo incluidos.", size:'12"', persons:"20–25", price:"$1,400", note:"Sin doble relleno cheesecake en cuadrado"},
-
-  // ── BARRA NAPOLITANA ──────────────────────────────────────────
-  {id:22, name:"Barra Napolitana",      sub:"Chocolate, Vainilla y Red Velvet", cat:"especiales", desc:"Relleno: Crema de Queso o Chantilly.", size:"Barra", persons:"8–10", price:"$450"},
-
-  // ── PLANCHAS TRADICIONALES ────────────────────────────────────
-  {id:23, name:"Plancha Tradicional",   sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$200.", size:"1/4 plancha", persons:"20–25", price:"$950"},
-  {id:24, name:"Plancha Tradicional",   sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$200.", size:"1/2 plancha", persons:"50", price:"$1,500"},
-  {id:25, name:"Plancha Tradicional",   sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$200.", size:"3/4 plancha", persons:"70", price:"$2,150"},
-  {id:26, name:"Plancha Tradicional",   sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$300.", size:"1 plancha", persons:"90–100", price:"$2,800"},
-
-  // ── PLANCHAS ZANAHORIA ────────────────────────────────────────
-  {id:27, name:"Plancha Zanahoria",     sub:"Chantilly o Crema de Queso", cat:"especiales", desc:"Sin toppings sin costo.", size:"1/4 plancha", persons:"20–25", price:"$1,200"},
-  {id:28, name:"Plancha Zanahoria",     sub:"Chantilly o Crema de Queso", cat:"especiales", desc:"Sin toppings sin costo.", size:"1/2 plancha", persons:"50", price:"$1,750"},
-  {id:29, name:"Plancha Zanahoria",     sub:"Chantilly o Crema de Queso", cat:"especiales", desc:"Sin toppings sin costo.", size:"3/4 plancha", persons:"70", price:"$2,500"},
-  {id:30, name:"Plancha Zanahoria",     sub:"Chantilly o Crema de Queso", cat:"especiales", desc:"Sin toppings sin costo.", size:"1 plancha", persons:"90–100", price:"$3,200"},
-
-  // ── PLANCHAS 3 LECHES ─────────────────────────────────────────
-  {id:31, name:"Plancha 3 Leches",      sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$150. Sin toppings sin costo.", size:"1/4 plancha", persons:"20–25", price:"$1,200"},
-  {id:32, name:"Plancha 3 Leches",      sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$200. Sin toppings sin costo.", size:"1/2 plancha", persons:"50", price:"$1,900"},
-  {id:33, name:"Plancha 3 Leches",      sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$250. Sin toppings sin costo.", size:"3/4 plancha", persons:"70", price:"$2,500"},
-  {id:34, name:"Plancha 3 Leches",      sub:"Vainilla, Chocolate, Combinado, Moca, Trilogía, Napolitano", cat:"especiales", desc:"Chantilly incluido. Crema de Queso +$300. Sin toppings sin costo.", size:"1 plancha", persons:"90–100", price:"$3,200"},
-
-  // ── PASTELES DE CREPAS ────────────────────────────────────────
-  {id:35, name:"Pastel de Crepas",      sub:"Fresa, Oreo, Cajeta o Nutella", cat:"crepas", desc:"Pastel de crepas. Relleno a elegir. Extra mermelada frutos rojos disponible.", size:'6"', persons:"4–6", price:"$480", note:"Extra mermelada +$100"},
-  {id:36, name:"Pastel de Crepas",      sub:"Fresa, Oreo, Cajeta o Nutella", cat:"crepas", desc:"Pastel de crepas. Relleno a elegir. Extra mermelada frutos rojos disponible.", size:'8"', persons:"8–10", price:"$700", note:"Extra mermelada +$100"},
-  {id:37, name:"Pastel de Crepas",      sub:"Fresa, Oreo, Cajeta o Nutella", cat:"crepas", desc:"Pastel de crepas. Relleno a elegir. Extra mermelada frutos rojos disponible.", size:'10"', persons:"10–15", price:"$1,100", note:"Extra mermelada +$100"},
-  {id:38, name:"Pastel de Crepas",      sub:"Fresa, Oreo, Cajeta o Nutella", cat:"crepas", desc:"Pastel de crepas. Relleno a elegir. Extra mermelada frutos rojos disponible.", size:'12"', persons:"15–20", price:"$1,500", note:"Extra mermelada +$150"},
-
-  // ── TARTAS / FLANES / CHEESECAKE ──────────────────────────────
-  {id:39, name:"Tarta de Queso",        sub:"Solo bajo pedido", cat:"tartas", desc:"Base de galleta con queso crema. Fruta de temporada.", size:"Mini", persons:"1", price:"$35", note:"Solo bajo pedido"},
-  {id:40, name:"Tarta de Queso",        sub:"", cat:"tartas", desc:"Base de galleta con queso crema. Fruta de temporada.", size:"Individual", persons:"1", price:"$50"},
-  {id:41, name:"Tarta de Queso",        sub:"", cat:"tartas", desc:"Base de galleta con queso crema. Fruta de temporada.", size:'10"', persons:"10", price:"$470"},
-  {id:42, name:"Chocoflan / Flan",      sub:"Con fruta de temporada", cat:"tartas", desc:"Chocoflan o flan con decoración de fruta.", size:'6"', persons:"4–6", price:"$380"},
-  {id:43, name:"Chocoflan / Flan",      sub:"Con fruta de temporada", cat:"tartas", desc:"Chocoflan o flan con decoración de fruta.", size:'8"', persons:"7–8", price:"$480"},
-  {id:44, name:"Chocoflan / Flan",      sub:"Con fruta de temporada", cat:"tartas", desc:"Chocoflan o flan con decoración de fruta.", size:'10"', persons:"9–10", price:"$650"},
-  {id:45, name:"Pay de Queso",            sub:"Con fruta de temporada", cat:"tartas", desc:"Cheesecake con decoración de fruta de temporada.", size:'6"', persons:"4–6", price:"$470"},
-  {id:46, name:"Pay de Queso",            sub:"Con fruta de temporada", cat:"tartas", desc:"Cheesecake con decoración de fruta de temporada.", size:'8"', persons:"7", price:"$650"},
-  {id:47, name:"Pay de Queso",            sub:"Con fruta de temporada", cat:"tartas", desc:"Cheesecake con decoración de fruta de temporada.", size:'10"', persons:"9", price:"$1,100"},
-  {id:48, name:"Pay de Queso Blueberry",  sub:"", cat:"tartas", desc:"Cheesecake de blueberry con fruta de temporada.", size:'10"', persons:"9", price:"$1,200"},
-
-  // ── GELATINAS ─────────────────────────────────────────────────
-  {id:49, name:"Gelatina de Fruta",     sub:"Individual", cat:"gelatinas", desc:"Encapsulada de fruta o cremosa de fruta natural.", size:"Individual", persons:"1", price:"$45"},
-  {id:50, name:"Gelatina de Fruta",     sub:"Familiar 8\"", cat:"gelatinas", desc:"Encapsulada de fruta o cremosa de fruta natural.", size:'Familiar 8"', persons:"8–9", price:"$400"},
-  {id:51, name:"Gelatina Mosaico",      sub:"Individual", cat:"gelatinas", desc:"Gelatina mosaico individual.", size:"Individual", persons:"1", price:"$45"},
-  {id:52, name:"Gelatina Mosaico",      sub:"Familiar 8\"", cat:"gelatinas", desc:"Gelatina mosaico familiar.", size:'Familiar 8"', persons:"8–9", price:"$350"},
-
-  // ── POSTRES ──────────────────────────────────────────────────
-  {id:53, name:"Hojaldre",             sub:"Media Barra", cat:"postres", desc:"Hojaldre con queso crema, cubierto en crema con fruta de temporada.", size:"Media barra", persons:"5–10", price:"$650"},
-  {id:54, name:"Hojaldre",             sub:"Barra Completa", cat:"postres", desc:"Hojaldre con queso crema, cubierto en crema con fruta de temporada.", size:"Barra completa", persons:"10–15", price:"$850"},
-  {id:55, name:"Cupcakes",             sub:"Sin relleno", cat:"postres", desc:"Cupcake tradicional sin relleno.", size:"Pieza", persons:"1", price:"$25 c/u", note:"Mínimo 12 pzas"},
-  {id:56, name:"Cupcakes",             sub:"Relleno de crema", cat:"postres", desc:"Cupcake con relleno de crema.", size:"Pieza", persons:"1", price:"$30 c/u", note:"Mínimo 12 pzas"},
-  {id:57, name:"Cupcakes",             sub:"Relleno de queso", cat:"postres", desc:"Cupcake con relleno de queso.", size:"Pieza", persons:"1", price:"$35 c/u", note:"Mínimo 12 pzas"},
-  {id:58, name:"Cupcakes",             sub:"Cubierta y relleno de queso", cat:"postres", desc:"Cupcake con cubierta de queso y relleno de queso.", size:"Pieza", persons:"1", price:"$40 c/u", note:"Mínimo 12 pzas"},
-  {id:59, name:"Donas Hojaldre",       sub:"Mediana", cat:"postres", desc:"Dona de hojaldre rellena, presentación mediana.", size:"Mediana", persons:"1–2", price:"$45", note:"Mínimo 12 pzas"},
-  {id:60, name:"Donas Hojaldre",       sub:"Personal", cat:"postres", desc:"Dona de hojaldre rellena, presentación personal.", size:"Personal", persons:"1", price:"$60", note:"Mínimo 12 pzas"},
-
-  // ── MINI POSTRES ─────────────────────────────────────────────
-  {id:61, name:"Mini Dona Hojaldre",   sub:"", cat:"mini", desc:"Mini dona de hojaldre rellena.", size:"Mini", persons:"1", price:"$40", note:"Mínimo 12 pzas"},
-  {id:62, name:"Dona Mini",            sub:"Dona normal pequeña", cat:"mini", desc:"Dona normal en presentación mini. Diferente a la de hojaldre.", size:"Mini", persons:"1", price:"$8 c/u", note:"Mínimo 12 pzas"},
-  {id:63, name:"Mini Tarta de Frutas", sub:"", cat:"mini", desc:"Mini tarta con fruta.", size:"Individual", persons:"1", price:"$20 c/u", note:"Mínimo 12 pzas"},
-  {id:64, name:"Mini Tarta de Queso",  sub:"Solo bajo pedido", cat:"mini", desc:"Mini tarta de queso.", size:"Individual", persons:"1", price:"$30 c/u", note:"Solo bajo pedido · Mín. 12 pzas"},
-  {id:65, name:"Mini Barra Hojaldre",  sub:"", cat:"mini", desc:"Mini barra de hojaldre.", size:"Individual", persons:"1", price:"$45", note:"Mínimo 12 pzas"},
-  {id:66, name:"Mini Rollo Pastel",    sub:"Chocolate o Vainilla", cat:"mini", desc:"Mini rollo de pastel.", size:"Individual", persons:"1", price:"$45", note:"Mínimo 12 pzas"},
-  {id:67, name:"Mini Pay de Queso",    sub:"", cat:"mini", desc:"Mini pay de queso.", size:"Individual", persons:"1", price:"$50", note:"Mínimo 12 pzas"},
-  {id:68, name:"Mousse",               sub:"Fresa o Chocolate", cat:"mini", desc:"Mousse individual.", size:"Individual", persons:"1", price:"$45 c/u", note:"Mínimo 12 pzas"},
-  {id:69, name:"Mini Jacobino de Crepas", sub:"", cat:"mini", desc:"Porción mini de jacobino de crepas.", size:"Individual", persons:"1", price:"$45 c/u", note:"Mínimo 12 pzas"},
-
-  // ── PAN VARIADO ───────────────────────────────────────────────
-  {id:70, name:"Oreja", sub:"", cat:"pan", desc:"Hojaldrado, crujiente y espolvoreado con azúcar.", size:"Pieza", persons:"", price:"$18"},
-  {id:71, name:"Pan Fino", sub:"", cat:"pan", desc:"Suave y ligeramente dulce, ideal para acompañar café.", size:"Pieza", persons:"", price:"$18"},
-  {id:72, name:"Muffin Fresa", sub:"", cat:"pan", desc:"Esponjoso con sabor a fresa y textura suave.", size:"Pieza", persons:"", price:"$30"},
-  {id:73, name:"Muffin Blueberry", sub:"", cat:"pan", desc:"Suave con blueberries y toque dulce.", size:"Pieza", persons:"", price:"$30"},
-  {id:74, name:"Feite Taco Piña", sub:"", cat:"pan", desc:"Relleno de mermelada de piña.", size:"Pieza", persons:"", price:"$25"},
-  {id:75, name:"Feite Cuadro", sub:"", cat:"pan", desc:"Suave con textura ligera y dulce.", size:"Pieza", persons:"", price:"$25"},
-  {id:76, name:"Danés", sub:"", cat:"pan", desc:"Hojaldrado con relleno dulce y acabado brillante.", size:"Pieza", persons:"", price:"$25"},
-  {id:77, name:"Ojo de Buey", sub:"", cat:"pan", desc:"Suave con centro dulce, cubierto de chocolate y cacahuate.", size:"Pieza", persons:"", price:"$18"},
-  {id:78, name:"Pan Fino Canela", sub:"", cat:"pan", desc:"Suave espolvoreado con azúcar y canela.", size:"Pieza", persons:"", price:"$18"},
-  {id:79, name:"Muffin Piña", sub:"", cat:"pan", desc:"Suave con sabor tropical a piña.", size:"Pieza", persons:"", price:"$30"},
-  {id:80, name:"Muffin Plátano", sub:"", cat:"pan", desc:"Húmedo y esponjoso con plátano.", size:"Pieza", persons:"", price:"$30"},
-  {id:81, name:"Muffin Chocolate", sub:"", cat:"pan", desc:"Suave con intenso sabor a chocolate.", size:"Pieza", persons:"", price:"$25"},
-  {id:82, name:"Abanico", sub:"", cat:"pan", desc:"Hojaldrado crujiente cubierto de chocolate y cacahuate.", size:"Pieza", persons:"", price:"$18"},
-  {id:83, name:"Bigote", sub:"", cat:"pan", desc:"Grande hojaldrado cubierto de chocolate.", size:"Pieza", persons:"", price:"$45"},
-  {id:84, name:"Empanada Crema", sub:"", cat:"pan", desc:"Dulce rellena de crema suave.", size:"Pieza", persons:"", price:"$18"},
-  {id:85, name:"Dona", sub:"", cat:"pan", desc:"Clásica esponjosa en distintas variedades.", size:"Pieza", persons:"", price:"$18"},
-  {id:86, name:"Rebanada con Mantequilla", sub:"", cat:"pan", desc:"Suave cubierto con mantequilla y azúcar.", size:"Pieza", persons:"", price:"$18"},
-  {id:87, name:"Rebanada con Chocolate", sub:"", cat:"pan", desc:"Dulce con cobertura de chocolate.", size:"Pieza", persons:"", price:"$18"},
-  {id:88, name:"Empanada Manzana", sub:"", cat:"pan", desc:"Rellena de manzana con toque de canela.", size:"Pieza", persons:"", price:"$18"},
-  {id:89, name:"Torcido", sub:"", cat:"pan", desc:"Trenzado dulce con textura suave.", size:"Pieza", persons:"", price:"$18"},
-  {id:90, name:"Rol de Canela", sub:"", cat:"pan", desc:"Suave con relleno y aroma a canela.", size:"Pieza", persons:"", price:"$20"},
-  {id:91, name:"Piedra", sub:"", cat:"pan", desc:"Tradicional relleno de manzana.", size:"Pieza", persons:"", price:"$20"},
-  {id:92, name:"Polvorones", sub:"", cat:"pan", desc:"Galleta suave y quebradiza con sabor mantequilloso.", size:"Pieza", persons:"", price:"$18"},
-  {id:93, name:"Galleta Chispas de Chocolate", sub:"", cat:"pan", desc:"Clásica con chispas de chocolate.", size:"Pieza", persons:"", price:"$18"},
-  {id:94, name:"Galleta con Nuez", sub:"", cat:"pan", desc:"Crujiente con trozos de nuez.", size:"Pieza", persons:"", price:"$18"},
-  {id:95, name:"Beso", sub:"", cat:"pan", desc:"Dulce cubierto de cremaquilla.", size:"Pieza", persons:"", price:"$18"},
-  {id:96, name:"Choco Rol", sub:"", cat:"pan", desc:"Suave con relleno y cobertura de chocolate.", size:"Pieza", persons:"", price:"$25"},
-  {id:97, name:"Cortadillo Capuchino", sub:"", cat:"pan", desc:"Pastelito sabor café capuchino con crema y mermelada de frambuesa.", size:"Pieza", persons:"", price:"$30"},
-  {id:98, name:"Cortadillo Zanahoria", sub:"", cat:"pan", desc:"De zanahoria con textura suave y húmeda.", size:"Pieza", persons:"", price:"$35"},
-  {id:99, name:"Canasta de Queso", sub:"", cat:"pan", desc:"Relleno de queso crema y acabado dorado.", size:"Pieza", persons:"", price:"$45"},
-  {id:100, name:"Dona Rellena", sub:"", cat:"pan", desc:"Suave con relleno dulce en el centro.", size:"Pieza", persons:"", price:"$20"},
-  {id:101, name:"Peineta", sub:"", cat:"pan", desc:"Relleno de crema bavaria y mermelada sobresaliendo.", size:"Pieza", persons:"", price:"$20"},
-  {id:102, name:"Garras", sub:"", cat:"pan", desc:"Relleno de crema bavaria y mermelada con forma tradicional.", size:"Pieza", persons:"", price:"$20"},
-  {id:103, name:"Coyota Cajeta", sub:"", cat:"pan", desc:"Relleno de cajeta con textura suave.", size:"Pieza", persons:"", price:"$30"},
-  {id:104, name:"Feite Cuadro Piña", sub:"", cat:"pan", desc:"Relleno de mermelada de piña.", size:"Pieza", persons:"", price:"$25"},
-  {id:105, name:"Taco de Piña", sub:"", cat:"pan", desc:"Suave relleno de piña dulce.", size:"Pieza", persons:"", price:"$25"},
-  {id:106, name:"Taco de Crema", sub:"", cat:"pan", desc:"Dulce relleno de crema pastelera.", size:"Pieza", persons:"", price:"$25"},
-  {id:107, name:"Taco de Manzana", sub:"", cat:"pan", desc:"Relleno de manzana y toque de canela.", size:"Pieza", persons:"", price:"$25"},
-  {id:108, name:"Lechuza", sub:"", cat:"pan", desc:"Dulce relleno de higo.", size:"Pieza", persons:"", price:"$35"},
-  {id:109, name:"Lechuza Grande", sub:"", cat:"pan", desc:"Dulce grande relleno de higo.", size:"Grande", persons:"", price:"$45"},
-  {id:110, name:"Feite con Mermelada de Frambuesa", sub:"", cat:"pan", desc:"Relleno de mermelada de frambuesa.", size:"Pieza", persons:"", price:"$25"},
-  {id:111, name:"Dedo de Coco", sub:"", cat:"pan", desc:"Dulce cubierto y relleno con coco.", size:"Pieza", persons:"", price:"$25"},
-  {id:112, name:"Enchiladas", sub:"", cat:"pan", desc:"Dulce cubierto de azúcar roja.", size:"Pieza", persons:"", price:"$25"},
-  {id:113, name:"Rol de Canela con Crema", sub:"", cat:"pan", desc:"De canela con topping de crema dulce.", size:"Pieza", persons:"", price:"$25"},
-  {id:114, name:"Rol de Higo", sub:"", cat:"pan", desc:"Suave con pedacitos de higo.", size:"Pieza", persons:"", price:"$30"},
-  {id:115, name:"Brocas", sub:"", cat:"pan", desc:"Dulce tradicional de textura ligera.", size:"Pieza", persons:"", price:"$18"},
-  {id:116, name:"Cono de Crema", sub:"", cat:"pan", desc:"Hojaldre relleno de crema pastelera con chocolate y cacahuate encima.", size:"Pieza", persons:"", price:"$25"},
-  {id:117, name:"Riel de Manzana", sub:"", cat:"pan", desc:"Relleno de manzana con acabado dulce.", size:"Pieza", persons:"", price:"$35"},
-  {id:118, name:"Empanada Manteca c/ Queso y Frambuesa", sub:"", cat:"pan", desc:"Suave rellena de queso crema y mermelada de frambuesa.", size:"Pieza", persons:"", price:"$25"},
-  {id:119, name:"Niño Envuelto", sub:"", cat:"pan", desc:"Dulce enrollado con relleno suave.", size:"Pieza", persons:"", price:"$18"},
-  {id:120, name:"Taco con Crema y Frambuesa", sub:"", cat:"pan", desc:"Relleno de crema y mermelada de frambuesa.", size:"Pieza", persons:"", price:"$35"},
-  {id:121, name:"Taco con Crema", sub:"", cat:"pan", desc:"Suave relleno de crema pastelera.", size:"Pieza", persons:"", price:"$30"},
-  {id:122, name:"Concha", sub:"", cat:"pan", desc:"Tradicional con costra dulce y textura suave.", size:"Pieza", persons:"", price:"$18"},
-  {id:123, name:"Cuernito", sub:"", cat:"pan", desc:"Hojaldrado suave con forma de cuerno.", size:"Pieza", persons:"", price:"$18"},
-  {id:124, name:"Cemita con Harina", sub:"", cat:"pan", desc:"Suave espolvoreado con harina.", size:"Pieza", persons:"", price:"$18"},
-  {id:125, name:"Cemita con Ajonjolí", sub:"", cat:"pan", desc:"Suave cubierto con ajonjolí tostado.", size:"Pieza", persons:"", price:"$18"},
-  {id:126, name:"Concha Mini (3 pzas)", sub:"", cat:"pan", desc:"Suaves y dulces en presentación de 3 piezas.", size:"3 piezas", persons:"", price:"$30"},
-  {id:127, name:"Rehilete con Mermelada", sub:"", cat:"pan", desc:"En espiral relleno de mermelada dulce.", size:"Pieza", persons:"", price:"$25"},
-  {id:128, name:"Puerquito", sub:"", cat:"pan", desc:"Galleta tradicional con sabor a piloncillo.", size:"Pieza", persons:"", price:"$18"},
-  {id:129, name:"Cuadro Feite con Piña", sub:"", cat:"pan", desc:"Relleno de mermelada de piña.", size:"Pieza", persons:"", price:"$25"},
-  {id:130, name:"Pan de Manteca con Piloncillo", sub:"", cat:"pan", desc:"Suave con sabor tradicional a piloncillo.", size:"Pieza", persons:"", price:"$25"},
-  {id:131, name:"Pan de Manteca Queso y Piloncillo", sub:"", cat:"pan", desc:"Dulce con queso y toque de piloncillo.", size:"Pieza", persons:"", price:"$35"},
-  {id:132, name:"Pierna con Mermelada de Mango", sub:"", cat:"pan", desc:"Suave relleno de mermelada de mango.", size:"Pieza", persons:"", price:"$25"},
-  {id:133, name:"Pierna con Arroz con Leche", sub:"", cat:"pan", desc:"Relleno con cremoso arroz con leche.", size:"Pieza", persons:"", price:"$25"},
-  {id:134, name:"Pierna con Mermelada de Frambuesa", sub:"", cat:"pan", desc:"Suave relleno de frambuesa dulce.", size:"Pieza", persons:"", price:"$25"},
-  {id:135, name:"Empanada Piña", sub:"", cat:"pan", desc:"Rellena de piña dulce.", size:"Pieza", persons:"", price:"$18"},
-  {id:136, name:"Rol de Nuez y Crema", sub:"", cat:"pan", desc:"Suave con nuez y crema dulce.", size:"Pieza", persons:"", price:"$30"},
-  {id:137, name:"Bolillo", sub:"", cat:"pan", desc:"Salado clásico de corteza crujiente.", size:"Pieza", persons:"", price:"$7"},
-  {id:138, name:"Bolillo de Pizza", sub:"", cat:"pan", desc:"Relleno con ingredientes estilo pizza.", size:"Pieza", persons:"", price:"$35"},
-  {id:139, name:"Bolillo con Chorizo", sub:"", cat:"pan", desc:"Relleno de chorizo sazonado.", size:"Pieza", persons:"", price:"$35"},
-  {id:140, name:"Bolillo con Queso y Rajas", sub:"", cat:"pan", desc:"Relleno con queso y rajas.", size:"Pieza", persons:"", price:"$35"},
-  // ── PLANCHA RED VELVET ───────────────────────────────────────
-  {id:300, name:"Plancha Red Velvet", sub:"Relleno de queso crema", cat:"especiales", desc:"Red velvet en plancha. Cubierta en crema, fruta y chocolate blanco.", size:"1/4 plancha", persons:"20–25", price:"$900"},
-  {id:301, name:"Plancha Red Velvet", sub:"Relleno de queso crema", cat:"especiales", desc:"Red velvet en plancha. Cubierta en crema, fruta y chocolate blanco.", size:"1/2 plancha", persons:"50", price:"$1,550"},
-  {id:302, name:"Plancha Red Velvet", sub:"Relleno de queso crema", cat:"especiales", desc:"Red velvet en plancha. Cubierta en crema, fruta y chocolate blanco.", size:"3/4 plancha", persons:"70", price:"$2,200"},
-  {id:303, name:"Plancha Red Velvet", sub:"Relleno de queso crema", cat:"especiales", desc:"Red velvet en plancha. Cubierta en crema, fruta y chocolate blanco.", size:"1 plancha", persons:"90–100", price:"$2,700"},
-
-  // ── PASTEL TIRAMISÚ ──────────────────────────────────────────
-  {id:310, name:"Pastel Tiramisú", sub:"Pan vainilla hidratado de café, queso espresso, soletas", cat:"premium", desc:"Estilo Jacobo: vainilla hidratado de café, relleno de crema de queso con expresso y soletas alrededor.", size:'8"', persons:"8–10", price:"$650"},
-  {id:311, name:"Pastel Tiramisú", sub:"Pan vainilla hidratado de café, queso espresso, soletas", cat:"premium", desc:"Estilo Jacobo: vainilla hidratado de café, relleno de crema de queso con expresso y soletas alrededor.", size:'10"', persons:"12–15", price:"$610"},
-
-  // ── JACOBINO DE CREPAS ────────────────────────────────────────
-  {id:312, name:"Jacobino de Crepas Personal", sub:"Fresa, Oreo, Cajeta o Nutella", cat:"crepas", desc:"Jacobino personal de crepas con relleno a elegir.", size:"Personal", persons:"1", price:"$80"},
-
-  // ── PAYS DE QUESO ─────────────────────────────────────────────
-  {id:320, name:"Pay de Queso · Jacobino", sub:"Cheesecake", cat:"tartas", desc:"Cheesecake jacobino individual.", size:"Jacobino", persons:"1", price:"$190"},
-  {id:321, name:"Pay de Queso · Individual", sub:"Crema de queso y topping", cat:"tartas", desc:"Cheesecake individual con crema de queso y topping.", size:"Individual", persons:"1", price:"$150"},
-  {id:323, name:"Pay de Queso con Frutos Rojos", sub:"Crema de queso y frutos rojos", cat:"tartas", desc:"Cheesecake con frutos rojos y crema de queso.", size:'6"', persons:"4–6", price:"$470"},
-  {id:324, name:"Pay de Queso con Frutos Rojos", sub:"Crema de queso y frutos rojos", cat:"tartas", desc:"Cheesecake con frutos rojos y crema de queso.", size:'8"', persons:"7–8", price:"$650"},
-  {id:326, name:"Pay de Queso", sub:"Clásico", cat:"tartas", desc:"Cheesecake clásico.", size:'12"', persons:"12–15", price:"$1,600"},
-  {id:327, name:"Pay de Queso Snickers", sub:"", cat:"tartas", desc:"Cheesecake estilo snickers.", size:'6"', persons:"4–6", price:"$450"},
-  {id:328, name:"Pay de Queso Snickers", sub:"", cat:"tartas", desc:"Cheesecake estilo snickers.", size:'8"', persons:"7–8", price:"$650"},
-  {id:329, name:"Cheesecake Blueberry Base Oreo", sub:"", cat:"tartas", desc:"Cheesecake blueberry con base de oreo.", size:'8"', persons:"7–8", price:"$680"},
-  {id:330, name:"Cheesecake Blueberry Base Oreo", sub:"", cat:"tartas", desc:"Cheesecake blueberry con base de oreo.", size:'10"', persons:"9–10", price:"$1,200"},
-  {id:331, name:"Plancha Cheesecake", sub:"", cat:"especiales", desc:"Cheesecake en presentación de plancha completa.", size:"1 plancha", persons:"90–100", price:"$5,800"},
-
-  // ── PAN FLAN ──────────────────────────────────────────────────
-  {id:340, name:"Pan Flan", sub:"", cat:"tartas", desc:"Pan flan.", size:'6"', persons:"4–6", price:"$400"},
-  {id:341, name:"Pan Flan", sub:"", cat:"tartas", desc:"Pan flan.", size:'8"', persons:"7–8", price:"$500"},
-
-  // ── MEDIA PLANCHA FLAN Y CHOCOFLAN ────────────────────────────
-  {id:342, name:"Chocoflan / Flan", sub:"Media plancha", cat:"tartas", desc:"Chocoflan o flan en media plancha.", size:"1/2 plancha", persons:"40", price:"$2,000"},
-
-  // ── TARTA PREMIUM / TARTA DELUXE ──────────────────────────────
-  {id:350, name:"Tarta Premium", sub:"Individual", cat:"tartas", desc:"Tarta premium individual.", size:"Individual", persons:"1", price:"$150"},
-  {id:351, name:"Tarta Deluxe", sub:"", cat:"mini", desc:"Tarta deluxe.", size:"Pieza", persons:"1", price:"$120"},
-
-  // ── JELLY CAKE ────────────────────────────────────────────────
-  {id:360, name:"Jelly Cake", sub:"Única presentación 8 pulgadas", cat:"tartas", desc:"Jelly cake, única presentación en 8 pulgadas.", size:'8"', persons:"7–8", price:"A cotizar"},
-
-  {id:141, name:"Pañuelo", sub:"", cat:"pan", desc:"Relleno de queso crema, jamón y jalapeño. Exterior con ajonjolí.", size:"Pieza", persons:"", price:"$45"},
-  // ── EXTRAS, RELLENOS Y ADICIONALES ───────────────────────────
-
-  // Toppings sin costo
-  {id:200, name:"Toppings sin costo", sub:"Pasteles clásicos y premium", cat:"extras", desc:"M. Fresa, M. Cereza, M. Frambuesa, Nutella, Durazno. Incluido en pasteles clásicos, premium, corazón y cuadrado. No aplica en 3 Leches, Zanahoria ni planchas.", size:"Incluido", persons:"", price:"Gratis"},
-
-  // Relleno Fresa / Piña / Coco / Nuez / Cajeta
-  {id:201, name:"Relleno Fresa · Jacobino", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en jacobino.", size:"Jacobino", persons:"", price:"+$40"},
-  {id:202, name:"Relleno Fresa · 6 pulgadas", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en pastel 6 pulgadas.", size:'6"', persons:"", price:"+$60"},
-  {id:203, name:"Relleno Fresa · 8 pulgadas", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en pastel 8 pulgadas.", size:'8"', persons:"", price:"+$80"},
-  {id:204, name:"Relleno Fresa · 10 pulgadas", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en pastel 10 pulgadas.", size:'10"', persons:"", price:"+$100"},
-  {id:205, name:"Relleno Fresa · 12 pulgadas", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en pastel 12 pulgadas.", size:'12"', persons:"", price:"+$200"},
-  {id:206, name:"Relleno Fresa · 14 pulgadas", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en pastel 14 pulgadas.", size:'14"', persons:"", price:"+$200"},
-  {id:207, name:"Relleno Fresa · Plancha", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en plancha cualquier tamaño.", size:"1/4 a 1 plancha", persons:"", price:"+$200"},
-  {id:208, name:"Relleno Fresa · Barra Napolitana", sub:"Piña, Coco, Nuez, Cajeta", cat:"extras", desc:"Relleno extra de fresa, piña, coco, nuez o cajeta en barra napolitana.", size:"Barra", persons:"", price:"+$100"},
-
-  // Relleno Platano
-  {id:210, name:"Relleno Plátano · Jacobino", sub:"", cat:"extras", desc:"Relleno extra de plátano en jacobino.", size:"Jacobino", persons:"", price:"+$20"},
-  {id:211, name:"Relleno Plátano · 6 pulgadas", sub:"", cat:"extras", desc:"Relleno extra de plátano en pastel 6 pulgadas.", size:'6"', persons:"", price:"+$40"},
-  {id:212, name:"Relleno Plátano · 8 pulgadas", sub:"", cat:"extras", desc:"Relleno extra de plátano en pastel 8 pulgadas.", size:'8"', persons:"", price:"+$60"},
-  {id:213, name:"Relleno Plátano · 10 pulgadas", sub:"", cat:"extras", desc:"Relleno extra de plátano en pastel 10 pulgadas.", size:'10"', persons:"", price:"+$80"},
-  {id:214, name:"Relleno Plátano · 12 pulgadas", sub:"", cat:"extras", desc:"Relleno extra de plátano en pastel 12 pulgadas.", size:'12"', persons:"", price:"+$200"},
-  {id:215, name:"Relleno Plátano · 14 pulgadas", sub:"", cat:"extras", desc:"Relleno extra de plátano en pastel 14 pulgadas.", size:'14"', persons:"", price:"+$200"},
-  {id:216, name:"Relleno Plátano · Plancha", sub:"", cat:"extras", desc:"Relleno extra de plátano en plancha cualquier tamaño.", size:"1/4 a 1 plancha", persons:"", price:"+$200"},
-  {id:217, name:"Relleno Plátano · Barra Napolitana", sub:"", cat:"extras", desc:"Relleno extra de plátano en barra napolitana.", size:"Barra", persons:"", price:"+$100"},
-
-  // Doble Relleno Cheesecake
-  {id:220, name:"Doble Relleno Cheesecake · 6 pulgadas", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en pastel 6 pulgadas.", size:'6"', persons:"", price:"+$150"},
-  {id:221, name:"Doble Relleno Cheesecake · 8 pulgadas", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en pastel 8 pulgadas.", size:'8"', persons:"", price:"+$180"},
-  {id:222, name:"Doble Relleno Cheesecake · 10 pulgadas", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en pastel 10 pulgadas.", size:'10"', persons:"", price:"+$230"},
-  {id:223, name:"Doble Relleno Cheesecake · 12 pulgadas", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en pastel 12 pulgadas.", size:'12"', persons:"", price:"+$300"},
-  {id:224, name:"Doble Relleno Cheesecake · 14 pulgadas", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en pastel 14 pulgadas.", size:'14"', persons:"", price:"+$700"},
-  {id:225, name:"Doble Relleno Cheesecake · Plancha 1/4", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en cuarto de plancha.", size:"1/4 plancha", persons:"", price:"+$300"},
-  {id:226, name:"Doble Relleno Cheesecake · Plancha 1/2", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en media plancha.", size:"1/2 plancha", persons:"", price:"+$500"},
-  {id:227, name:"Doble Relleno Cheesecake · Plancha 3/4", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en tres cuartos de plancha.", size:"3/4 plancha", persons:"", price:"+$600"},
-  {id:228, name:"Doble Relleno Cheesecake · Plancha Completa", sub:"", cat:"extras", desc:"Doble relleno de cheesecake en plancha completa.", size:"1 plancha", persons:"", price:"+$700"},
-
-  // Crema de Queso en Planchas Tradicionales
-  {id:230, name:"Crema de Queso · Plancha Trad. 1/4", sub:"Plancha tradicional", cat:"extras", desc:"Upgrade a crema de queso en plancha tradicional cuarto.", size:"1/4 plancha", persons:"", price:"+$200"},
-  {id:231, name:"Crema de Queso · Plancha Trad. 1/2", sub:"Plancha tradicional", cat:"extras", desc:"Upgrade a crema de queso en plancha tradicional media.", size:"1/2 plancha", persons:"", price:"+$200"},
-  {id:232, name:"Crema de Queso · Plancha Trad. 3/4", sub:"Plancha tradicional", cat:"extras", desc:"Upgrade a crema de queso en plancha tradicional tres cuartos.", size:"3/4 plancha", persons:"", price:"+$200"},
-  {id:233, name:"Crema de Queso · Plancha Trad. Completa", sub:"Plancha tradicional", cat:"extras", desc:"Upgrade a crema de queso en plancha tradicional completa.", size:"1 plancha", persons:"", price:"+$300"},
-
-  // Crema de Queso en Planchas 3 Leches
-  {id:235, name:"Crema de Queso · Plancha 3L 1/4", sub:"Plancha 3 Leches", cat:"extras", desc:"Upgrade a crema de queso en plancha 3 leches cuarto.", size:"1/4 plancha", persons:"", price:"+$150"},
-  {id:236, name:"Crema de Queso · Plancha 3L 1/2", sub:"Plancha 3 Leches", cat:"extras", desc:"Upgrade a crema de queso en plancha 3 leches media.", size:"1/2 plancha", persons:"", price:"+$200"},
-  {id:237, name:"Crema de Queso · Plancha 3L 3/4", sub:"Plancha 3 Leches", cat:"extras", desc:"Upgrade a crema de queso en plancha 3 leches tres cuartos.", size:"3/4 plancha", persons:"", price:"+$250"},
-  {id:238, name:"Crema de Queso · Plancha 3L Completa", sub:"Plancha 3 Leches", cat:"extras", desc:"Upgrade a crema de queso en plancha 3 leches completa.", size:"1 plancha", persons:"", price:"+$300"},
-
-  // Mermelada extra Crepas
-  {id:240, name:"Mermelada Extra Frutos Rojos · Crepas 6-10 pulgadas", sub:"Crepas", cat:"extras", desc:"Mermelada extra de frutos rojos en pastel de crepas 6, 8 o 10 pulgadas.", size:'6"-10"', persons:"", price:"+$100"},
-  {id:241, name:"Mermelada Extra Frutos Rojos · Crepas 12 pulgadas", sub:"Crepas", cat:"extras", desc:"Mermelada extra de frutos rojos en pastel de crepas 12 pulgadas.", size:'12"', persons:"", price:"+$150"},
-
-  // Decoraciones y adicionales
-  {id:250, name:"Macarrones", sub:"Decoración", cat:"extras", desc:"Macarrones para decoración de pasteles.", size:"Por pieza", persons:"", price:"$30 c/u", note:"Mínimo 1 docena"},
-  {id:251, name:"Merengues", sub:"Decoración", cat:"extras", desc:"Merengues para decoración de pasteles.", size:"Por pieza", persons:"", price:"$20 c/u"},
-  {id:252, name:"Trufas", sub:"Decoración", cat:"extras", desc:"Trufas para decoración de pasteles.", size:"Por pieza", persons:"", price:"$25 c/u"},
-  {id:253, name:"Fresas con Chocolate", sub:"Decoración", cat:"extras", desc:"Fresas bañadas en chocolate para decoración.", size:"Por pieza", persons:"", price:"$25 c/u"},
-  {id:254, name:"Fresas Adicionales", sub:"Sin chocolate", cat:"extras", desc:"Fresas naturales adicionales para decoración.", size:"Por pieza", persons:"", price:"$10 c/u"},
-  {id:255, name:"Rosas Naturales", sub:"Decoración", cat:"extras", desc:"Rosas naturales para decoración de pasteles.", size:"Por pieza", persons:"", price:"$50 c/u"},
-  {id:256, name:"Corona de Merengues", sub:"Decoración", cat:"extras", desc:"Corona decorativa de merengues.", size:"Pieza", persons:"", price:"$100"},
-  {id:257, name:"Impresión Papel de Azúcar", sub:"Personalización", cat:"extras", desc:"Impresión personalizada en papel de azúcar comestible tamaño carta.", size:"Hoja carta", persons:"", price:"$200"},
-  {id:258, name:"Impresión Papel de Arroz", sub:"Personalización", cat:"extras", desc:"Impresión personalizada en papel de arroz comestible tamaño carta.", size:"Hoja carta", persons:"", price:"$200"},
-  {id:259, name:"Decorado con Soletas", sub:"Decoración exterior", cat:"extras", desc:"Decorado del contorno del pastel con soletas.", size:"Cualquier tamaño", persons:"", price:"+$60"},
-  {id:260, name:"Decorado de Enjambre", sub:"Decoración exterior", cat:"extras", desc:"Decorado exterior del pastel estilo enjambre.", size:"Cualquier tamaño", persons:"", price:"+$30"},
-  {id:261, name:"Cubierta en Fondant", sub:"Personalización", cat:"extras", desc:"Cubierta completa del pastel en fondant. Precio varía según tamaño y diseño.", size:"A cotizar", persons:"", price:"A cotizar"},
-  {id:262, name:"Figura en Fondant", sub:"Personalización", cat:"extras", desc:"Figura decorativa hecha a mano en fondant. Precio varía según complejidad.", size:"A cotizar", persons:"", price:"A cotizar"},
-];
-
-// ─── EXTRAS ──────────────────────────────────────────────────────────────────
-const extrasAll = [
-  {t:"Toppings sin costo", p:"Incluido", n:"M. Fresa, M. Cereza, M. Frambuesa, Nutella, Durazno (no aplica en 3L/Zanahoria ni planchas)"},
-  {t:"Relleno Fresa/Piña/Coco/Nuez/Cajeta", p:"+$40 a +$200", n:"Jacobino $40 · 6\" $60 · 8\" $80 · 10\" $100 · 12–14\" $200 · Planchas $200 · Barra $100"},
-  {t:"Relleno Plátano", p:"+$20 a +$200", n:"Jacobino $20 · 6\" $40 · 8\" $60 · 10\" $80 · 12–14\" $200 · Planchas $200 · Barra $100"},
-  {t:"Doble Relleno Cheesecake", p:"+$200 a +$800", n:"6\" $200 · 8\" $280 · 10\" $380 · 12\" $580 · 14\" $700 · Planchas $500–$800"},
-  {t:"Crema de Queso en Planchas Trad.", p:"+$200–$300", n:"1/4 y 1/2 y 3/4 $200 · 1 plancha $300"},
-  {t:"Crema de Queso en Planchas 3L", p:"+$150–$300", n:"1/4 $150 · 1/2 $200 · 3/4 $250 · 1 plancha $300"},
-];
-
-// ─── ADICIONALES ─────────────────────────────────────────────────────────────
-const additionals = [
-  {name:"Macarrones",                   price:"$30 c/u",   note:"Mínimo 1 docena"},
-  {name:"Merengues",                    price:"$20 c/u",   note:""},
-  {name:"Trufas",                       price:"$25 c/u",   note:""},
-  {name:"Fresas con Chocolate",         price:"$25 c/u",   note:""},
-  {name:"Rosas Naturales",              price:"$50 c/u",   note:""},
-  {name:"Corona de Merengues",          price:"$100",      note:""},
-  {name:"Impresión Papel de Azúcar",    price:"$200",      note:"Por hoja carta"},
-  {name:"Impresión Papel de Arroz",     price:"$200",      note:"Por hoja carta"},
-  {name:"Decorado con Soletas",         price:"+$60",      note:""},
-  {name:"Decorado de Enjambre",         price:"+$30",      note:""},
-  {name:"Cubierta en Fondant",          price:"A cotizar", note:""},
-  {name:"Figura en Fondant",            price:"A cotizar", note:""},
-  {name:"Extra Mermelada Frutos Rojos (Crepas 6–10\")", price:"+$100", note:""},
-  {name:"Extra Mermelada Frutos Rojos (Crepas 12\")",   price:"+$150", note:""},
-];
-
-const rellenos = [
-  {s:"Jacobino",    f:"$40",  p:"$20",  c:"—"},
-  {s:'6"',          f:"$60",  p:"$40",  c:"$200"},
-  {s:'8"',          f:"$80",  p:"$60",  c:"$280"},
-  {s:'10"',         f:"$100", p:"$80",  c:"$380"},
-  {s:'12"',         f:"$200", p:"$200", c:"$580"},
-  {s:'14"',         f:"$200", p:"$200", c:"$700"},
-  {s:"¼ Plancha",   f:"$200", p:"$200", c:"$500"},
-  {s:"½ Plancha",   f:"$200", p:"$200", c:"$600"},
-  {s:"¾ Plancha",   f:"$200", p:"$200", c:"$700"},
-  {s:"1 Plancha",   f:"$200", p:"$200", c:"$800"},
-  {s:"Barra Napo.", f:"$100", p:"$100", c:"—"},
-];
-
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
-const catLabels = {premium:"Pastel",pisos:"Pisos",especiales:"Esp./Plancha",crepas:"Crepas",tartas:"Tarta/Flan",postres:"Postre",mini:"Mini Postre",gelatinas:"Gelatina",pan:"Pan Variado",extras:"Extra / Relleno"};
-const catBadge  = {premium:"b-premium",pisos:"b-pisos",especiales:"b-especiales",crepas:"b-crepas",tartas:"b-tartas",postres:"b-postres",mini:"b-mini",gelatinas:"b-gelatinas",pan:"b-pan",extras:"b-extras"};
-const SECS = {
-  rio:    {label:"Sucursal Río",    info:"Francisco Javier Mina #1616-5, Zona Urbana Río · Lun–Dom 7am–8:30pm · 664 104 09 41"},
-  otay:   {label:"Sucursal Otay",   info:"Calz del Tecnológico 13701, Local 19-20 · Lun–Dom 7am–9pm · 664 973 68 01 / 664 973 10 89"},
-  monarca:{label:"Sucursal Monarca",info:"Gato Bronco 19651-Int 4-6, Amp. Guaycura · Lun–Dom 7am–9pm · 664 686 6850"},
-};
-
-let activeFilter = "todos";
-let imgStore = {};
-
-function setFilter(f, btn) {
-  activeFilter = f;
-  document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-function getFiltered() {
-  const q = document.getElementById('search').value.toLowerCase().trim();
-  return products.filter(p => {
-    if (p.active === false) return false;
-    const mc = activeFilter === 'todos' || p.cat === activeFilter;
-    const mq = !q || p.name.toLowerCase().includes(q) || (p.sub||'').toLowerCase().includes(q)
-      || p.desc.toLowerCase().includes(q) || (catLabels[p.cat]||'').toLowerCase().includes(q)
-      || (p.size||'').toLowerCase().includes(q) || (p.price||'').toLowerCase().includes(q);
-    return mc && mq;
-  });
-}
-
-function render() {
-  const filtered = getFiltered();
-  document.getElementById('count-label').textContent = filtered.length + ' producto' + (filtered.length!==1?'s':'');
-
-  document.getElementById('sb').classList.remove('on');
-
-  const grid = document.getElementById('grid');
-  if (!filtered.length) {
-    grid.innerHTML = `<div class="nores"><div class="ico">🔍</div><strong>Producto no encontrado en el catálogo</strong>Si el artículo no aparece aquí, no está autorizado para su venta en sucursal.</div>`;
-  } else {
-    grid.innerHTML = filtered.map(p => {
-      const img = imgStore[p.id];
-      const isCotizar = p.price === 'A cotizar';
-      const isExtra = p.cat === 'extras';
-      return `<div class="card">
-        ${!isExtra ? `
-        <div class="img-slot" onclick="triggerUpload(${p.id})" title="Clic para agregar foto">
-          ${img ? `<img src="${img}" alt="${p.name}"/>` :
-            `<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"/></svg><span>Agregar foto</span>`}
-          <input type="file" accept="image/*" onchange="handleImg(event,${p.id})" onclick="event.stopPropagation()"/>
-        </div>` : ''}
-        <div class="cb">
-          <span class="badge ${catBadge[p.cat]}">${catLabels[p.cat]}</span>
-          <div class="cn">${p.name}</div>
-          ${p.sub?`<div class="cs">${p.sub}</div>`:''}
-          <div class="cd" id="desc-${p.id}">${p.desc}</div>
-          <button class="ver-mas" onclick="toggleDesc(${p.id},this)">Ver más</button>
-          ${p.note?`<div class="cnote">⚠️ ${p.note}</div>`:''}
-          <div class="cf" style="margin-top:${p.note?'5px':'0'}">
-            <div><div class="csize">${p.size}</div>${p.persons?`<div class="cpers">${p.persons} pers.</div>`:''}</div>
-            <div class="cprice${isCotizar?' cotizar':''}">${p.price}</div>
+  <!-- DATOS CLIENTE -->
+  <div class="form-sheet">
+    <div class="section-bar">📋 Datos del Cliente</div>
+    <div class="form-inner">
+      <div class="form-row">
+        <div class="form-group"><label class="field-label">Nombre</label><input type="text" id="c-name" placeholder="Nombre completo"></div>
+        <div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="c-phone" placeholder="664 000 0000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="field-label">Fecha de entrega</label><input type="date" id="c-date"></div>
+        <div class="form-group">
+          <label class="field-label">Hora de entrega</label>
+          <div class="time-row">
+            <select id="c-hour"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option selected>12</option></select>
+            <select id="c-min"><option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select>
+            <select id="c-ampm"><option>AM</option><option selected>PM</option></select>
           </div>
         </div>
-      </div>`;
-    }).join('');
+      </div>
+      <div class="form-group">
+        <label class="field-label">Tipo de entrega</label>
+        <div class="entrega-grid">
+          <div class="entrega-btn" id="eb-suc" onclick="selectEntrega('sucursal')"><span class="ei">🏪</span><div class="en">Recoger en sucursal</div></div>
+          <div class="entrega-btn" id="eb-dom" onclick="selectEntrega('domicilio')"><span class="ei">🛵</span><div class="en">Entrega a domicilio</div></div>
+        </div>
+      </div>
+      <div class="form-group" id="group-suc">
+        <label class="field-label" id="suc-label">Sucursal</label>
+        <div class="suc-grid">
+          <div class="suc-btn" onclick="selectSuc(this,'Otay')"><div class="sn">Otay</div><div class="sp">664 973-1089</div></div>
+          <div class="suc-btn" onclick="selectSuc(this,'Zona Río')"><div class="sn">Zona Río</div><div class="sp">664-104-0941</div></div>
+          <div class="suc-btn" onclick="selectSuc(this,'Monarca')"><div class="sn">Monarca</div><div class="sp">664-686-6850</div></div>
+        </div>
+      </div>
+      <div class="form-group" id="group-dir" style="display:none">
+        <label class="field-label">Dirección de entrega</label>
+        <textarea id="c-address" placeholder="Calle, número, colonia, referencias..." style="min-height:52px"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:0"><label class="field-label">Tomó el pedido</label><input type="text" id="c-staff" placeholder="Nombre del colaborador"></div>
+    </div>
+  </div>
+
+  <!-- CARRITO DE PRODUCTOS -->
+  <div class="form-sheet">
+    <div class="section-bar">
+      🛒 Productos del Pedido
+      <span id="cart-count" style="font-size:0.65rem;opacity:0.8"></span>
+    </div>
+    <div class="form-inner">
+      <div id="cart-list">
+        <div class="cart-empty"><div class="ce-icon">🎂</div>Agrega los productos del pedido</div>
+      </div>
+      <button class="add-product-btn" onclick="openBuilder()">＋ Agregar producto</button>
+    </div>
+  </div>
+
+  <!-- ADICIONALES GLOBALES -->
+
+
+
+
+  <!-- COBRO -->
+  <div class="form-sheet">
+    <div class="section-bar">💰 Cobro</div>
+    <div class="form-inner">
+      <div class="totals-grid">
+        <div class="form-group" style="margin-bottom:0"><label class="field-label">Total $</label><input type="number" id="f-total" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="field-label">Anticipo $</label><input type="number" id="f-anticipo" placeholder="0.00" min="0" step="0.01" oninput="calcRest()"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="f-restante" placeholder="0.00" readonly style="background:#EEF1FB;font-weight:700;color:var(--navy)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn-primary" id="send-btn" onclick="sendOrder()">📤 Enviar a Producción</button>
+    <button class="btn-ghost" onclick="clearForm()">Limpiar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ PRODUCT BUILDER (bottom sheet) ══ -->
+<div class="builder-overlay" id="builder-overlay" onclick="closeBuilderOutside(event)">
+<div class="builder-sheet" id="builder-sheet">
+  <div class="builder-header">
+    <span class="builder-title" id="builder-title">Agregar Producto</span>
+    <button class="builder-close" onclick="closeBuilder()">✕</button>
+  </div>
+  <div class="builder-body" id="builder-body">
+    <!-- Dynamic content -->
+  </div>
+</div>
+</div>
+
+<!-- ══ CALENDARIO ══ -->
+<div class="view" id="view-production">
+  <!-- Sucursal selector -->
+  <div id="prod-suc-screen" class="suc-screen">
+    <div class="suc-screen-title">¿En qué sucursal estás?</div>
+    <div class="suc-screen-sub">Selecciona tu sucursal para ver el calendario</div>
+    <div class="suc-big-grid">
+      <div class="suc-big-card" onclick="setProdSuc('Otay')"><div class="suc-big-icon">🏪</div><div class="suc-big-name">Otay</div><div class="suc-big-phone">664 973-1089</div></div>
+      <div class="suc-big-card" onclick="setProdSuc('Zona Río')"><div class="suc-big-icon">🏙️</div><div class="suc-big-name">Zona Río</div><div class="suc-big-phone">664-104-0941</div></div>
+      <div class="suc-big-card" onclick="setProdSuc('Monarca')"><div class="suc-big-icon">👑</div><div class="suc-big-name">Monarca</div><div class="suc-big-phone">664-686-6850</div></div>
+      <div class="suc-big-card" onclick="setProdSuc('Todas')"><div class="suc-big-icon">🗂️</div><div class="suc-big-name">Todas</div><div class="suc-big-phone">Ver todas las sucursales</div></div>
+    </div>
+  </div>
+
+  <!-- Buscador -->
+      <div class="search-bar-wrap">
+        <input class="search-bar-input" id="order-search" type="text" placeholder="Buscar folio, cliente o telefono..." oninput="searchOrders(this.value)" autocomplete="off">
+        <button class="search-bar-clear" id="search-clear" onclick="clearSearch()">x</button>
+      </div>
+      <div id="search-results-container" style="display:none"></div>
+
+      <!-- Calendar board -->
+  <div id="prod-board" style="display:none">
+    <div class="prod-page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:7px">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);letter-spacing:.04em">📅 <span id="prod-suc-label"></span></div>
+          <div style="font-size:.72rem;color:var(--muted)" id="prod-time">—</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:500;cursor:pointer" onclick="loadOrders()">↻ Actualizar</button>
+          <button style="background:#6B729A;color:#fff;border:none;border-radius:7px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:500;cursor:pointer" onclick="changeSuc()">Cambiar sucursal</button>
+        </div>
+      </div>
+
+      <!-- Stats counter -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:.85rem">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;text-align:center;margin-bottom:0.75rem"><div style="font-family:'Bebas Neue',sans-serif;font-size:1.65rem;color:var(--navy);line-height:1" id="st-total">0</div><div style="font-size:.63rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">Total pedidos este mes</div></div><!-- hidden compat --><div style="display:none" id="st-pend"></div><div style="display:none" id="st-hoy"></div><div style="display:none" id="st-hoy-label"></div><div style="display:none" id="st-rdy"></div></div>
+      </div>
+
+      <!-- Calendar -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:0.85rem;overflow:hidden">
+        <!-- Month nav -->
+        <div style="background:var(--navy);padding:10px 1rem;display:flex;align-items:center;justify-content:space-between">
+          <button onclick="calPrevMonth()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.1rem;cursor:pointer;width:32px;height:32px;border-radius:6px">‹</button>
+          <span id="cal-month-label" style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;letter-spacing:0.05em"></span>
+          <button onclick="calNextMonth()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.1rem;cursor:pointer;width:32px;height:32px;border-radius:6px">›</button>
+        </div>
+        <!-- Day headers - generated by JS -->
+        <div id="cal-day-headers" style="display:grid;grid-template-columns:repeat(7,1fr);background:#F4F7FF"></div>
+        <!-- Calendar grid -->
+        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)"></div>
+      </div>
+
+      <!-- Selected day orders -->
+      <div id="cal-day-header" style="display:none;margin-bottom:0.7rem">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--navy);letter-spacing:0.04em" id="cal-day-title"></div>
+        <div style="font-size:0.72rem;color:var(--muted)" id="cal-day-sub"></div>
+      </div>
+      <div class="ogrid" id="orders-grid"><div class="sw"><div class="spin"></div> Cargando...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- IMG MODAL -->
+<div class="modal-overlay" id="img-modal" onclick="closeImgModal(event)">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title" id="img-modal-title">Foto de referencia</span><button class="modal-close" onclick="document.getElementById('img-modal').classList.remove('open')">✕</button></div>
+    <div class="modal-body"><img id="img-modal-src" class="modal-img" src="" alt="Ref"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title" id="edit-modal-title">Editar Pedido</span><button class="modal-close" onclick="closeEdit()">✕</button></div>
+    <div class="modal-body" id="edit-modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ══ CATALOG ══
+// All format IDs that use inches use a plain string with in (no special chars in data attrs)
+// Groups use simple keys - no slashes or special chars
+const GRUPOS_LABEL = {
+  'jacobino':   'Jacobino',
+  'redondo':    'Redondo',
+  'corazon':    'Corazón',
+  'cuadrado':   'Cuadrado',
+  'plancha':    'Plancha',
+  'barra':      'Barra Napolitana',
+  'pisos':      'Pasteles de Pisos',
+  'plancha3l':  'Plancha 3 Leches',
+  'planchazan': 'Plancha Zanahoria'
+};
+
+const FORMATOS = {
+  clasico: [
+    {grupo:'jacobino', items:[{id:'individual', label:'Individual', sub:'1 porción'}]},
+    {grupo:'redondo',  items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'8',label:'8 in',sub:'8-10 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'},{id:'12',label:'12 in',sub:'20-25 porciones'},{id:'14',label:'14 in',sub:'40-50 porciones'}]},
+    {grupo:'corazon',  items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'8',label:'8 in',sub:'8-10 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'},{id:'12',label:'12 in',sub:'20-25 porciones'}]},
+    {grupo:'cuadrado', items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'8',label:'8 in',sub:'8-10 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'},{id:'12',label:'12 in',sub:'20-25 porciones'}]},
+    {grupo:'plancha',  items:[{id:'p25',label:'¼ Plancha',sub:'~25 porciones'},{id:'p50',label:'½ Plancha',sub:'~50 porciones'},{id:'p70',label:'¾ Plancha',sub:'~70 porciones'},{id:'p100',label:'1 Plancha',sub:'~100 porciones'}]},
+
+  ],
+  napolitano: [
+    {grupo:'barra', items:[{id:'barra',label:'Barra',sub:'8-10 porciones'}]}
+  ],
+  treeleches: [
+    {grupo:'redondo',   items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'}]},
+    {grupo:'plancha3l', items:[{id:'p25',label:'¼ Plancha',sub:'~25 porciones'},{id:'p50',label:'½ Plancha',sub:'~50 porciones'},{id:'p70',label:'¾ Plancha',sub:'~70 porciones'},{id:'p100',label:'1 Plancha',sub:'~100 porciones'}]}
+  ],
+  zanahoria: [
+    {grupo:'redondo',    items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'},{id:'12',label:'12 in',sub:'20-25 porciones'}]},
+    {grupo:'corazon',    items:[{id:'6',label:'6 in',sub:'4-5 porciones'},{id:'8',label:'8 in',sub:'8-10 porciones'},{id:'10',label:'10 in',sub:'12-15 porciones'}]},
+    {grupo:'planchazan', items:[{id:'p25',label:'¼ Plancha',sub:'~25 porciones'},{id:'p50',label:'½ Plancha',sub:'~50 porciones'},{id:'p70',label:'¾ Plancha',sub:'~70 porciones'},{id:'p100',label:'1 Plancha',sub:'~100 porciones'}]}
+  ]
+};
+
+// Piso configs: which piso sizes each combo has
+const PISOS_CONFIG = {
+  '2a': {label:'2 Pisos (50 pers.)',  pisos:['Piso inferior 10 in','Piso superior 6 in'],  deposito:350},
+  '2b': {label:'2 Pisos (70 pers.)',  pisos:['Piso inferior 12 in','Piso superior 8 in'],  deposito:350},
+  '3a': {label:'3 Pisos (120 pers.)', pisos:['Piso inferior 14 in','Piso medio 10 in','Piso superior 6 in'], deposito:500}
+};
+
+// Price by tamano id
+const PRECIOS_RELLENO = {
+  'individual':{fresa:40,  platano:20,  cheesecake:null},
+  '6':  {fresa:60,  platano:40,  cheesecake:200},
+  '8':  {fresa:80,  platano:60,  cheesecake:280},
+  '10': {fresa:100, platano:80,  cheesecake:380},
+  '12': {fresa:200, platano:200, cheesecake:580},
+  '14': {fresa:200, platano:200, cheesecake:700},
+  'p25': {fresa:200, platano:200, cheesecake:500},
+  'p50': {fresa:200, platano:200, cheesecake:600},
+  'p70': {fresa:200, platano:200, cheesecake:700},
+  'p100':{fresa:200, platano:200, cheesecake:800},
+  'barra':{fresa:100, platano:100, cheesecake:null}
+};
+
+const SABORES_COMBO = [
+  {id:'Vainilla',icon:'🍦'},{id:'Chocolate',icon:'🍫'},{id:'Red Velvet',icon:'❤️'},
+  {id:'Fresa',icon:'🍓'},{id:'Limón',icon:'🍋'},{id:'Moca',icon:'☕'}
+];
+const SABORES_CUPCAKE = ['Vainilla','Chocolate','Moca','Red Velvet','Blueberry','Limón'];
+
+const RELLENOS_GRATIS = ['M. Fresa','M. Cereza','M. Frambuesa','Nutella','Durazno'];
+const RELLENOS_FRUTA  = ['Fresa','Piña','Coco','Nuez','Cajeta'];
+const RELLENOS_PISO   = ['Crema Chantilly','Crema de Queso','Cheesecake','Nutella','Fresa Natural','M. Fresa','M. Cereza','M. Frambuesa','Durazno','Plátano','Piña','Coco','Nuez','Cajeta'];
+
+const POSTRES = [
+  {id:'Chocoflan',      icon:'🍮', fmts:[{id:'ch6',label:'6 in',sub:'$380'},{id:'ch8',label:'8 in',sub:'$500'},{id:'ch10',label:'10 in',sub:'$700'}]},
+  {id:'Flan',           icon:'🍮', fmts:[{id:'fl6',label:'6 in',sub:'$380'},{id:'fl8',label:'8 in',sub:'$500'},{id:'fl10',label:'10 in',sub:'$700'}]},
+  {id:'Cheesecake',     icon:'🍰', fmts:[{id:'6p',label:'6 in'},{id:'8p',label:'8 in'},{id:'10p',label:'10 in'},{id:'10bl',label:'10 in Blueberry'}]},
+  {id:'Tarta de Queso', icon:'🧁', fmts:[{id:'tq-mini',label:'Mini',sub:'$35 · solo bajo pedido'},{id:'tq-ind',label:'Individual',sub:'$50'},{id:'tq-10',label:'10 in',sub:'$470'}]},
+  {id:'Gelatina de Fruta',icon:'🍓',fmts:[{id:'gf-ind',label:'Individual'},{id:'gf-fam',label:'Familiar 8 pulgadas'}]},
+  {id:'Gelatina Mosaico',icon:'🟩',fmts:[{id:'gm-ind',label:'Individual'},{id:'gm-fam',label:'Familiar 8 pulgadas'}]},
+  {id:'Hojaldre',       icon:'🥐', fmts:[{id:'med',label:'Media Barra'},{id:'com',label:'Barra Completa'}]},
+  {id:'Cupcakes',       icon:'🧁', minQty:12, fmts:[{id:'sr',label:'Sin relleno',sub:'$35'},{id:'rc',label:'Relleno crema',sub:'$40'},{id:'rq',label:'Relleno queso',sub:'$45'},{id:'cq',label:'Cubierta y relleno queso',sub:'$55'}]},
+  {id:'Donas Hojaldre', icon:'🍩', minQty:12, fmts:[{id:'med',label:'Mediana'},{id:'per',label:'Personal'}]}
+];
+const MINI_POSTRES = [
+  {id:'Mini Dona Hojaldre',     icon:'🍩', step:12},
+  {id:'Dona Mini',              icon:'🍩', sub:'$7 c/u',  step:12},
+  {id:'Mini Tarta de Frutas',   icon:'🫐', sub:'$20 c/u', step:12},
+  {id:'Mini Tarta Queso',       icon:'🧀', sub:'$35 c/u · bajo pedido', step:12},
+  {id:'Mini Barra Hojaldre',    icon:'🥖', step:12},
+  {id:'Mini Rollo Pastel',      icon:'🌀', step:12, variants:['Chocolate','Vainilla']},
+  {id:'Mini Pay Queso',         icon:'🧀', step:12},
+  {id:'Mousse',                 icon:'🍫', sub:'$45 c/u', step:12, variants:['Fresa','Chocolate']},
+  {id:'Mini Jacobino de Crepas',icon:'🥞', sub:'$45 c/u', step:12},
+];
+const CREPAS_FMTS = [
+  {id:'cr6',  label:'6 in',  sub:'$480'},
+  {id:'cr8',  label:'8 in',  sub:'$700'},
+  {id:'cr10', label:'10 in', sub:'$1,100'},
+  {id:'cr12', label:'12 in', sub:'$1,500'}
+];
+const CREPAS_RELLENOS = ['Fresa','Oreo','Cajeta','Nutella'];
+
+const ADICIONALES = [
+  {id:'macarrones',    name:'Macarrones',               price:'$30/pza', step:12, unit:'docena'},
+  {id:'merengues',     name:'Merengues',                price:'$20/pza'},
+  {id:'trufas',        name:'Trufas',                   price:'$25/pza'},
+  {id:'fresas-choco',  name:'Fresas con Chocolate',     price:'$25/pza'},
+  {id:'rosas',         name:'Rosas Naturales',          price:'$50/pza'},
+  {id:'corona',        name:'Corona de Merengues',      price:'$100'},
+  {id:'imp-azucar',    name:'Impresión Papel de Azúcar',price:'$200/hoja'},
+  {id:'imp-arroz',     name:'Impresión Papel de Arroz', price:'$200/hoja'},
+  {id:'soletas',       name:'Decorado con Soletas',     price:'+$60'},
+  {id:'enjambre',      name:'Decorado de Enjambre',     price:'+$30'},
+  {id:'fondant-cub',   name:'Cubierta en Fondant',      price:'a cotizar'},
+  {id:'fondant-fig',   name:'Figura en Fondant',        price:'a cotizar'},
+];
+const COMBOS_PISOS_LEGACY={'1-0':[{label:'Piso único',hint:null}],'2-A':[{label:'Piso Superior',hint:'6"'},{label:'Piso Inferior',hint:'10"'}],'2-B':[{label:'Piso Superior',hint:'8"'},{label:'Piso Inferior',hint:'12"'}],'3-0':[{label:'Piso Superior',hint:'6"'},{label:'Piso Medio',hint:'10"'},{label:'Piso Inferior',hint:'14"'}]};
+
+// ══ GLOBAL STATE ══
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbwRy8iNU22N93IqFZKz8fS4T5x70Y6-CM80HOMBbr-gnhqosvBFbm5oEMmB2TEXIf4o7Q/exec';
+const CLOUDINARY_CLOUD='doyqpzclb';
+const CLOUDINARY_PRESET='jacobo_pedidos';
+const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
+let folioCounter=parseInt(localStorage.getItem('jacobo_folio')||'1');
+// Sync folio from sheet to avoid duplicates across branches
+async function syncFolioCounter(){
+  try{
+    const res=await fetch(SCRIPT_URL+'?maxfolio=1&t='+Date.now());
+    const data=await res.json();
+    if(data.maxFolio&&data.maxFolio>=folioCounter){
+      folioCounter=data.maxFolio+1;
+      localStorage.setItem('jacobo_folio',String(folioCounter));
+    }
+  }catch(e){}
+}
+let currentFilter='all',sucView='mine',prodSuc='',orders=[],dateFilter='hoy',expandedFolios=new Set();
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let calSelectedDate=''; // YYYY-MM-DD
+let selectedSuc='',selectedEntrega='';
+let cart=[];
+let adicQty={};ADICIONALES.forEach(a=>{adicQty[a.id]=0;});
+let editingFolio=null;
+let b={};  // builder state
+
+const STATUS_CLS={'Pendiente':'s-pending','En proceso':'s-making','Listo':'s-ready','Entregado':'s-delivered'};
+const NEXT={'Pendiente':'En proceso','En proceso':'Listo','Listo':'Entregado'};
+const NEXT_LBL={'Pendiente':'🔥 Iniciar','En proceso':'✅ Listo','Listo':'📦 Entregar'};
+
+// ══ SETUP ══
+function initSetupBanner(){/* URL pre-loaded, banner already set */}
+function saveScriptUrl(){const v=document.getElementById('script-url-input').value.trim();if(!v.includes('script.google.com')){toast('⚠️','URL inválida');return;}SCRIPT_URL=v;localStorage.setItem('jacobo_script_url',v);initSetupBanner();toast('✓','Sincronización activada ✅');}
+function resetUrl(){
+  const nueva=prompt('Pega aquí la nueva URL de Google Apps Script:');
+  if(!nueva||!nueva.includes('script.google.com')){toast('⚠️','URL inválida, no se cambió');return;}
+  SCRIPT_URL=nueva;
+  localStorage.setItem('jacobo_script_url',nueva);
+  const b=document.getElementById('setup-banner');
+  b.className='setup-banner setup-ok';
+  b.innerHTML='<p>✅ Conectado con Google Sheets</p><button class="setup-btn" onclick="resetUrl()" style="background:var(--red)">Cambiar URL</button>';
+  toast('✓','URL actualizada ✅');
+}
+
+// ══ INIT ══
+document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
+document.getElementById('folio-display').value='';
+renderAdicionales();
+syncFolioCounter();
+
+// ══ ENTREGA ══
+function selectEntrega(t){
+  selectedEntrega=t;
+  document.getElementById('eb-suc').classList.toggle('selected',t==='sucursal');
+  document.getElementById('eb-dom').classList.toggle('selected',t==='domicilio');
+  // Always show sucursal - label changes based on type
+  document.getElementById('group-suc').style.display='';
+  document.getElementById('suc-label').textContent=t==='domicilio'?'Sucursal de salida':'Sucursal';
+  document.getElementById('group-dir').style.display=t==='domicilio'?'':'none';
+}
+function selectSuc(el,n){document.querySelectorAll('.suc-btn').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedSuc=n;}
+
+// ══ ADICIONALES ══
+function renderAdicionales(){/* moved to builder */}
+function chAdic(id,d){/* moved to builder */}
+function getAdic(){return '';}
+
+// ══ CART ══
+function renderCart(){
+  const list=document.getElementById('cart-list');
+  const cnt=document.getElementById('cart-count');
+  cnt.textContent=cart.length?`(${cart.length} producto${cart.length>1?'s':''})`:'';
+  if(!cart.length){list.innerHTML='<div class="cart-empty"><div class="ce-icon">🎂</div>Agrega los productos del pedido</div>';return;}
+  list.innerHTML=cart.map((item,i)=>{
+    const hasPhoto=item.photo&&item.photo.length>10;
+    return`<div class="cart-item">
+      <div class="cart-item-header">
+        <div style="flex:1">
+          <div class="cart-item-num">Producto ${i+1} · ×${item.qty}</div>
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-detail">${item.details}</div>
+        </div>
+        ${hasPhoto
+          ?`<img class="cart-item-img" src="${item.photo}" onclick="openImgModal('${item.photo}','Foto ${i+1}')" alt="Ref">`
+          :`<div class="cart-item-img-placeholder" onclick="addPhotoToItem(${i})" title="Agregar foto">📸</div>`}
+        <button class="cart-edit" onclick="editCartItem(${i})" title="Editar">✏️</button><button class="cart-remove" onclick="removeCartItem(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function removeCartItem(i){cart.splice(i,1);renderCart();}
+function editCartItem(i){
+  var item=cart[i];bReset();
+  b.cat=item._cat||'pastel';b.sabor=item._sabor||'';b.saborEspecial=item._saborEspecial||false;
+  b.fmtGrupo=item._fmtGrupo||'';b.fmtTamano=item._fmtTamano||'';b.fmtLabel=item._fmtLabel||'';
+  b.pisosCombo=item._pisosCombo||'';b.pisosData=item._pisosData||[];b.comboSabores=item._comboSabores||[];
+  b.cremaBase=item._cremaBase||'';b.rellenosGratis=item._rellenosGratis||[];
+  b.rellenosCosto=item._rellenosCosto||{};b.rellenoFruta=item._rellenoFruta||'';
+  b.rellenoCustom=item._rellenoCustom||'';b.crepaFmt=item._crepaFmt||'';b.crepaRelleno=item._crepaRelleno||'';
+  b.crepaMermelada=item._crepaMermelada||false;b.postProduct=item._postProduct||'';
+  b.postFmt=item._postFmt||'';b.postFmtLabel=item._postFmtLabel||'';b.cupcakeSabor=item._cupcakeSabor||'';
+  b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
+  b.adicionales=item._adicionales||{};b.mensaje=item._mensaje||'';b.tema=item._tema||'';
+  b.alergias=item._alergias||'';b.notas=item._notas||'';b.qty=item.qty||1;
+  b.photo=item.photo||null;b.depositoCobrado=item._depositoCobrado||false;b.doblePan=item._doblePan||false;
+  cart.splice(i,1);renderCart();renderBuilder();
+  document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';
+}
+function addPhotoToItem(i){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;
+    toast('⏳','Subiendo foto...');
+    try{
+      const _fecha1=document.getElementById('c-date')?document.getElementById('c-date').value:'';
+      const _folder1='jacobo/'+(_fecha1?_fecha1.slice(0,7):'sin-fecha');
+      const _sigR1=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder1));
+      const _sig1=await _sigR1.json();
+      const fd=new FormData();
+      fd.append('file',file);fd.append('api_key',_sig1.api_key);
+      fd.append('timestamp',String(_sig1.timestamp));fd.append('signature',_sig1.signature);
+      fd.append('folder',_folder1);
+      const res=await fetch('https://api.cloudinary.com/v1_1/'+_sig1.cloud+'/image/upload',{method:'POST',body:fd});
+      const data=await res.json();
+      if(data.secure_url){
+        cart[i].photo=data.secure_url;
+        renderCart();
+        toast('✓','Foto subida ✅');
+      } else {
+        toast('❌','Error al subir foto');
+      }
+    }catch(err){toast('❌','Error al subir foto');}
+  };inp.click();
+}
+
+// ══ BUILDER ══
+function bReset(){
+  b={cat:'pastel',sabor:'',saborEspecial:false,depositoCobrado:false,doblePan:false,crepaFmt:'',crepaRelleno:'',crepaMermelada:false,adicionales:{},
+     fmtGrupo:'',fmtTamano:'',fmtLabel:'',
+     pisosCombo:'',pisosData:[],
+     comboSabores:[],
+     cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
+     postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
+     miniProduct:'',miniVariant:'',panDesc:'',
+     mensaje:'',tema:'',alergias:'',notas:'',impLink:'',
+     qty:1,nota:'',photo:null};
+}
+function openBuilder(){bReset();renderBuilder();document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeBuilder(){document.getElementById('builder-overlay').classList.remove('open');document.body.style.overflow='';}
+function closeBuilderOutside(e){if(e.target===document.getElementById('builder-overlay'))closeBuilder();}
+
+// ── helpers ──
+function getFmtKey(){return b.sabor==='Napolitano'?'napolitano':(b.sabor==='3 Leches'||b.sabor==='3 Leches Chocolate')?'treeleches':b.sabor==='Zanahoria'?'zanahoria':'clasico';}
+function getFmtLabel(grupo,tamId){
+  const fKey=getFmtKey();
+  const grp=(FORMATOS[fKey]||[]).find(g=>g.grupo===grupo);
+  if(!grp)return tamId;
+  const item=grp.items.find(f=>f.id===tamId);
+  return item?item.label:tamId;
+}
+function getPrecio(){return PRECIOS_RELLENO[b.fmtTamano]||{};}
+
+// ── render ──
+function renderBuilder(){
+  const body=document.getElementById('builder-body');
+  const fKey=getFmtKey();
+  const fmtGrupos=FORMATOS[fKey]||[];
+  const isPisos=b.fmtGrupo==='pisos';
+  const isJacobino=b.fmtGrupo==='jacobino';
+  const isBarra=b.fmtGrupo==='barra';
+  const showRellenos=b.fmtTamano&&!isBarra&&!isPisos;
+  const showJacobinoRellenos=isJacobino;
+  const pisosCfg=b.pisosCombo?PISOS_CONFIG[b.pisosCombo]:null;
+
+  body.innerHTML=`
+    <!-- CATEGORÍA -->
+    <div class="form-group" style="margin-bottom:0.65rem">
+      <label class="field-label">Categoría</label>
+      <div class="cat-chips">
+        <div class="cat-chip ${b.cat==='pastel'?'active':''}" onclick="bSetCat('pastel')">🎂 Pasteles / Jacobinos</div>
+        <div class="cat-chip ${b.cat==='pisos'?'active':''}" onclick="bSetCat('pisos')">🏛️ Pasteles de Pisos</div>
+        <div class="cat-chip ${b.cat==='crepas'?'active':''}" onclick="bSetCat('crepas')">🥞 Pasteles de Crepas</div>
+        <div class="cat-chip ${b.cat==='postre'?'active':''}" onclick="bSetCat('postre')">🍮 Postres</div>
+        <div class="cat-chip ${b.cat==='mini'?'active':''}" onclick="bSetCat('mini')">🍬 Mini postres</div>
+        <div class="cat-chip ${b.cat==='pan'?'active':''}" onclick="bSetCat('pan')">🍞 Pan Variado</div>
+      </div>
+    </div>
+
+    <!-- ══ PASTELES ══ -->
+    <div style="display:${b.cat==='pastel'?'block':'none'}">
+      <!-- Paso 1: Sabor -->
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Sabor</div></div>
+      <div class="sabor-grid" style="margin-bottom:0.3rem">
+        ${['Vainilla','Chocolate','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
+          <div class="sabor-card ${b.sabor===s?'selected':''}" onclick="bSelectSabor('${s}',false)">
+            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Trilogía:'✨',Combinado:'🎨',Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋'}[s]||'🎂'}</span>
+            <div class="sabor-name">${s}</div>
+          </div>`).join('')}
+        <div class="sabor-card especial ${b.sabor==='3 Leches'?'selected':''}" onclick="bSelectSabor('3 Leches',true)"><span class="sabor-icon">🥛</span><div class="sabor-name">3 Leches</div></div>
+        <div class="sabor-card especial ${b.sabor==='3 Leches Chocolate'?'selected':''}" onclick="bSelectSabor('3 Leches Chocolate',true)"><span class="sabor-icon">🍫</span><div class="sabor-name">3 Leches Chocolate</div></div>
+        <div class="sabor-card especial ${b.sabor==='Zanahoria'?'selected':''}" onclick="bSelectSabor('Zanahoria',true)"><span class="sabor-icon">🥕</span><div class="sabor-name">Zanahoria</div></div>
+        <div class="sabor-card ${b.sabor==='Napolitano'?'selected':''}" onclick="bSelectSabor('Napolitano',false)"><span class="sabor-icon">🇮🇹</span><div class="sabor-name">Napolitano</div></div>
+      </div>
+      <div style="font-size:0.63rem;color:#92400E;margin-bottom:0.5rem">🟡 Sabores en amarillo tienen tamaños y precios especiales</div>
+
+      ${b.sabor&&(b.sabor==='Trilogía'||b.sabor==='Combinado')?`
+      <div class="form-group" style="margin-bottom:0.5rem">
+        <label class="field-label">${b.sabor==='Combinado'?'Sabores a combinar (elige 2)':'Sabores a combinar (elige 2 o 3)'}</label>
+        <div class="combo-grid" style="margin-top:4px">${SABORES_COMBO.map(s=>`
+          <div class="combo-card ${b.comboSabores.includes(s.id)?'selected':''}" onclick="bToggleCombo('${s.id}')">
+            <span class="combo-icon">${s.icon}</span><div class="combo-name">${s.id}</div>
+          </div>`).join('')}</div>
+        ${b.comboSabores.length?`<div style="font-size:0.65rem;color:var(--muted);margin-top:3px">✓ ${b.comboSabores.join(' + ')}</div>`:''}
+      </div>`:''}
+
+      <!-- Paso 2: Formato -->
+      ${b.sabor&&(b.sabor!=='Trilogía'&&b.sabor!=='Combinado'||b.comboSabores.length>=2)?`
+      <div class="step-header"><div class="step-num">2</div><div class="step-title">Formato y tamaño</div></div>
+      <div class="formato-box" style="margin-bottom:0.5rem">
+        ${fmtGrupos.map(grp=>`
+          <div class="formato-group-label">${GRUPOS_LABEL[grp.grupo]||grp.grupo}</div>
+          <div class="formato-grid">${grp.items.map(f=>`
+            <div class="fmt-btn ${b.fmtGrupo===grp.grupo&&b.fmtTamano===f.id?'selected':''}"
+              onclick="bSelFmt('${grp.grupo}','${f.id}')">
+              <div class="ft">${f.label}</div>
+              <div class="fp">${f.sub||''}</div>
+            </div>`).join('')}
+          </div>`).join('')}
+      </div>`:'' }
+
+      <!-- Paso 3: Pisos (si eligió grupo pisos) -->
+      ${isPisos&&b.fmtTamano?`
+      <div style="margin-top:0.5rem">
+        <div class="step-header"><div class="step-num">3</div><div class="step-title">Sabor de cada piso</div></div>
+        ${pisosCfg?pisosCfg.pisos.map((pisoLabel,i)=>`
+          <div class="piso-card">
+            <div class="piso-title">${pisoLabel}</div>
+            <div class="form-group">
+              <label class="field-label">Sabor del pan</label>
+              <div class="chips">${['Vainilla','Chocolate','Trilogía','Moca','Red Velvet','Blueberry','Limón','Zanahoria'].map(s=>`
+                <div class="chip ${(b.pisosData[i]&&b.pisosData[i].sabor===s)?'selected':''}"
+                  onclick="bSetPisoSabor(${i},'${s}')">${s}</div>`).join('')}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="field-label">Relleno del piso</label>
+              <div class="chips">${RELLENOS_PISO.map(r=>`
+                <div class="chip ${(b.pisosData[i]&&b.pisosData[i].relleno.includes(r))?'selected':''}"
+                  onclick="bTogPisoRel(${i},'${r}')">${r}</div>`).join('')}
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="field-label">Otro relleno especial</label>
+              <input type="text" value="${b.pisosData[i]?b.pisosData[i].custom:''}" placeholder="Dulce de leche..." oninput="bSetPisoCustom(${i},this.value)">
+            </div>
+          </div>`).join(''):''}
+      </div>`:'' }
+
+      <!-- Doble pan option -->
+      ${b.fmtTamano&&(b.fmtGrupo==='redondo'||b.fmtGrupo==='corazon'||b.fmtGrupo==='cuadrado')&&b.sabor!=='3 Leches'&&b.sabor!=='3 Leches Chocolate'?`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.6rem;cursor:pointer;background:#EEF1FB;border-radius:8px;padding:10px 12px" onclick="b.doblePan=!b.doblePan;renderBuilder()">
+        <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${b.doblePan?'var(--navy)':'var(--border)'};background:${b.doblePan?'var(--navy)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${b.doblePan?'<span style="color:white;font-size:0.8rem">✓</span>':''}
+        </div>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700;color:var(--navy)">Pastel Alto / Doble Pan</div>
+          <div style="font-size:0.68rem;color:var(--muted)">El doble de pan — más porciones por tamaño</div>
+        </div>
+      </div>
+      `:''}
+
+      <!-- Rellenos normales (no pisos, no barra) -->
+      ${showRellenos||showJacobinoRellenos?`
+      <div class="step-header"><div class="step-num">${isPisos?'4':'R'}</div><div class="step-title">Relleno / Topping</div></div>
+      <div class="form-group">
+        <label class="field-label">Crema base — elige una (obligatorio)</label>
+        <div class="chips">
+          <div class="chip ${b.cremaBase==='Crema Chantilly'?'selected':''}" onclick="bSetCrema('Crema Chantilly')">Crema Chantilly</div>
+          <div class="chip ${b.cremaBase==='Crema de Queso'?'selected':''}" onclick="bSetCrema('Crema de Queso')">Crema de Queso</div>
+        </div>
+      </div>
+      ${!b.saborEspecial?`<div class="form-group">
+        <label class="field-label">Toppings sin costo</label>
+        <div class="chips">${RELLENOS_GRATIS.map(r=>`<div class="chip ${b.rellenosGratis.includes(r)?'selected':''}" onclick="bTogRelGratis('${r}')">${r}</div>`).join('')}</div>
+      </div>`:''}
+      <div class="form-group">
+        <label class="field-label">Relleno de fruta${getPrecio().fresa?' — +$'+getPrecio().fresa:''} (elige uno o varios)</label>
+        <div class="chips">
+          ${RELLENOS_FRUTA.map(r=>`<div class="chip ${(Array.isArray(b.rellenoFruta)?b.rellenoFruta.includes(r):b.rellenoFruta===r)?'selected':''}" onclick="bSetRellenoFruta('${r}')">${r}</div>`).join('')}
+          ${b.saborEspecial?`<div class="chip ${(Array.isArray(b.rellenoFruta)?b.rellenoFruta.includes('Crema de Queso'):b.rellenoFruta==='Crema de Queso')?'selected':''}" onclick="bSetRellenoFruta('Crema de Queso')">Crema de Queso</div>
+          <div class="chip ${(Array.isArray(b.rellenoFruta)?b.rellenoFruta.includes('Mermelada'):b.rellenoFruta==='Mermelada')?'selected':''}" onclick="bSetRellenoFruta('Mermelada')">Mermelada</div>`:''}
+        </div>
+      </div>
+      <div class="qty-item">
+        <div class="qty-item-name" style="font-size:0.76rem">Relleno de Plátano</div>
+        <div class="qty-item-sub">${getPrecio().platano?'+$'+getPrecio().platano:'+$20–$60'}</div>
+        <div class="qty-ctrl"><button class="qty-btn" id="brc-platano" onclick="bTogRelCosto('Plátano')" style="${b.rellenosCosto['Plátano']?'background:var(--navy);color:white;border-color:var(--navy)':''}">${b.rellenosCosto['Plátano']?'✓':'+'}</button></div>
+      </div>
+      ${!isJacobino?`<div class="qty-item">
+        <div class="qty-item-name" style="font-size:0.76rem">${b.saborEspecial?'Cheesecake / Flan':'Doble Relleno Cheesecake'}</div>
+        <div class="qty-item-sub">${getPrecio().cheesecake?'+$'+getPrecio().cheesecake:'+$200–$700'}</div>
+        <div class="qty-ctrl"><button class="qty-btn" id="brc-cheese" onclick="bTogRelCosto('${b.saborEspecial?'Cheesecake/Flan':'Doble Relleno Cheesecake'}')" style="${(b.rellenosCosto['Doble Relleno Cheesecake']||b.rellenosCosto['Cheesecake/Flan'])?'background:var(--navy);color:white;border-color:var(--navy)':''}">${(b.rellenosCosto['Doble Relleno Cheesecake']||b.rellenosCosto['Cheesecake/Flan'])?'✓':'+'}</button></div>
+      </div>`:''}
+      <div class="form-group" style="margin-top:0.4rem;margin-bottom:0">
+        <label class="field-label">Otro relleno especial</label>
+        <input type="text" id="b-rel-custom" value="${b.rellenoCustom}" placeholder="Dulce de leche, etc..." oninput="b.rellenoCustom=this.value">
+      </div>`:'' }
+    </div>
+
+    <!-- ══ POSTRES ══ -->
+    <div style="display:${b.cat==='postre'?'block':'none'}">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Producto</div></div>
+      <div class="sabor-grid">${POSTRES.map(p=>`
+        <div class="sabor-card ${b.postProduct===p.id?'selected':''}" onclick="bSelectPostre('${p.id}')">
+          <span class="sabor-icon">${p.icon}</span><div class="sabor-name">${p.id}</div>
+        </div>`).join('')}</div>
+      ${b.postProduct?`
+      <div class="step-header" style="margin-top:0.5rem"><div class="step-num">2</div><div class="step-title">Tamaño / presentación</div></div>
+      <div class="formato-box"><div class="formato-grid">
+        ${(POSTRES.find(x=>x.id===b.postProduct)||{fmts:[]}).fmts.map(f=>`
+          <div class="fmt-btn ${b.postFmt===f.id?'selected':''}" onclick="bSelPostreFmt('${f.id}','${f.label||f.id}')">
+            <div class="ft">${f.label||f.id}</div>${f.sub?`<div class="fp">${f.sub}</div>`:''}
+          </div>`).join('')}
+      </div></div>`:''}
+      ${b.postProduct==='Cupcakes'?`
+      <div class="step-header" style="margin-top:0.5rem"><div class="step-num">3</div><div class="step-title">Sabor del pan</div></div>
+      <div class="chips">${SABORES_CUPCAKE.map(s=>`
+        <div class="chip ${b.cupcakeSabor===s?'selected':''}" onclick="bSetCupcakeSabor('${s}')">${s}</div>`).join('')}
+      </div>`:''}
+    </div>
+
+    <!-- ══ PASTELES DE CREPAS ══ -->
+    <div style="display:${b.cat==='crepas'?'block':'none'}">
+      <div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-bottom:0.6rem;font-size:0.75rem;color:#78350F">
+        🥞 <b>Tortilla tradicional con crema de queso</b> — el precio incluye preparación base
+      </div>
+
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Tamaño y precio base</div></div>
+      <div class="formato-box" style="margin-bottom:0.5rem">
+        <div class="formato-grid">
+          ${CREPAS_FMTS.map(f=>`
+            <div class="fmt-btn ${b.crepaFmt===f.id?'selected':''}" onclick="b.crepaFmt='${f.id}';b.crepaMermelada=false;renderBuilder()">
+              <div class="ft">${f.label}</div>
+              <div class="fp" style="font-weight:700;color:${b.crepaFmt===f.id?'white':'var(--red)'}">${f.sub}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      ${b.crepaFmt?`
+      <div class="step-header"><div class="step-num">2</div><div class="step-title">Relleno complementario (incluido)</div></div>
+      <div class="chips" style="margin-bottom:0.6rem">
+        ${CREPAS_RELLENOS.map(r=>`
+          <div class="chip ${b.crepaRelleno===r?'sel selected':''}" onclick="b.crepaRelleno=b.crepaRelleno==='${r}'?'':'${r}';renderBuilder()">${r}</div>`).join('')}
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer;background:#FFF0F0;border-radius:8px;padding:10px 12px;border:1.5px solid #FCA5A5" onclick="b.crepaMermelada=!b.crepaMermelada;renderBuilder()">
+        <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${b.crepaMermelada?'var(--red)':'var(--border)'};background:${b.crepaMermelada?'var(--red)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${b.crepaMermelada?'<span style="color:white;font-size:0.8rem">✓</span>':''}
+        </div>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700;color:#B91C1C">🍒🫐 Mermelada de frutos rojos</div>
+          <div style="font-size:0.68rem;color:#991B1B">Costo adicional: ${b.crepaFmt==='cr12'?'+$150':'+$100'}</div>
+        </div>
+      </div>
+      `:''}
+    </div>
+
+    <!-- ══ MINI POSTRES ══ -->
+    <div style="display:${b.cat==='mini'?'block':'none'}">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Producto</div></div>
+      <div class="sabor-grid">${MINI_POSTRES.map(p=>`
+        <div class="sabor-card ${b.miniProduct===p.id?'selected':''}" onclick="bSelectMini('${p.id}')">
+          <span class="sabor-icon">${p.icon}</span>
+          <div class="sabor-name">${p.id}</div>
+          ${p.sub?`<div style="font-size:0.58rem;font-weight:700;color:var(--red);margin-top:1px">${p.sub}</div>`:''}
+        </div>`).join('')}</div>
+      ${b.miniProduct==='Mini Rollo Pastel'||b.miniProduct==='Mousse'?`
+      <div class="step-header" style="margin-top:0.5rem"><div class="step-num">2</div><div class="step-title">Sabor</div></div>
+      <div class="chips">
+        ${(MINI_POSTRES.find(p=>p.id===b.miniProduct)?.variants||[]).map(v=>`
+          <div class="chip ${b.miniVariant===v?'selected':''}" onclick="bSetMiniVariant('${v}')">${v}</div>`).join('')}
+      </div>`:''}
+    </div>
+
+
+    <!-- ══ PAN VARIADO ══ -->
+    <div style="display:${b.cat==='pan'?'block':'none'}">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Tipo de pan</div></div>
+      <textarea placeholder="Ej: Cuernitos, teleras, bolillos, pan dulce surtido..."
+        style="width:100%;min-height:80px;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:0.85rem;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:0.4rem"
+        oninput="b.panDesc=this.value">${b.panDesc||''}</textarea>
+      <div style="font-size:0.72rem;color:var(--muted)">📝 Describe el tipo de pan que se necesita</div>
+    </div>
+
+    <!-- ══ PASTELES DE PISOS ══ -->
+    <div style="display:${b.cat==='pisos'?'block':'none'}">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">¿Cuántos pisos?</div></div>
+      <div class="formato-box" style="margin-bottom:0.5rem">
+        <div class="formato-grid">
+          ${Object.entries(PISOS_CONFIG).map(([key,cfg])=>`
+            <div class="fmt-btn ${b.pisosCombo===key?'selected':''}" onclick="bSelFmt('pisos','${key}')">
+              <div class="ft">${cfg.label}</div>
+              <div class="fp">Depósito $${cfg.deposito}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      ${b.pisosCombo?`
+        <div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:8px;padding:10px 12px;margin-bottom:0.6rem">
+          <div style="font-size:0.78rem;font-weight:700;color:#92400E">Deposito de bases: $${PISOS_CONFIG[b.pisosCombo].deposito}</div>
+          <div style="font-size:0.72rem;color:#78350F">Se cobra aparte - cliente devuelve con su nota</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;cursor:pointer" onclick="b.depositoCobrado=!b.depositoCobrado;renderBuilder()">
+          <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${b.depositoCobrado?'var(--navy)':'var(--border)'};background:${b.depositoCobrado?'var(--navy)':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            ${b.depositoCobrado?'<span style="color:white;font-size:0.8rem">v</span>':''}
+          </div>
+          <span style="font-size:0.8rem;font-weight:600;color:var(--navy)">Deposito cobrado al cliente</span>
+        </div>
+        <div class="step-header"><div class="step-num">2</div><div class="step-title">Sabor y relleno por piso</div></div>
+        ${PISOS_CONFIG[b.pisosCombo].pisos.map((pisoLabel,i)=>`
+          <div class="piso-card">
+            <div class="piso-title">${pisoLabel}</div>
+            <div class="form-group">
+              <label class="field-label">Sabor</label>
+              <div class="chips">${['Vainilla','Chocolate','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','Napolitano','Zanahoria'].map(s=>`
+                <div class="chip ${(b.pisosData[i]&&b.pisosData[i].sabor===s)?'selected':''}" onclick="bSetPisoSabor(${i},'${s}')">${s}</div>`).join('')}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="field-label">Base de crema (elige una)</label>
+              <div class="chips">
+                ${['Crema Chantilly','Crema de Queso'].map(c=>`
+                  <div class="chip ${(b.pisosData[i]&&b.pisosData[i].crema===c)?'selected':''}" onclick="bSetPisoCrema(${i},'${c}')">${c}</div>`).join('')}
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="field-label">Relleno adicional</label>
+              <div class="chips">${RELLENOS_PISO.map(r=>`
+                <div class="chip ${(b.pisosData[i]&&b.pisosData[i].relleno.includes(r))?'selected':''}" onclick="bTogPisoRel(${i},'${r}')">${r}</div>`).join('')}
+              </div>
+            </div>
+          </div>`).join('')}
+      `:''}
+    </div>
+
+        <!-- FOTO -->
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
+      <label class="field-label">Foto de referencia (opcional)</label>
+      <div class="photo-area ${b.photo?'has-photo':''}" style="margin-top:5px" ${b.photo?'':'onclick="bTakePhoto()"'}>
+        ${b.photo
+          ?`<img src="${b.photo}" alt="Ref"><button class="photo-remove" onclick="bRemovePhoto(event)">✕</button>`
+          :`<div class="photo-icon">📷</div><div class="photo-text">Tomar foto o elegir imagen</div><div class="photo-sub">Cámara o galería del iPad</div>`}
+      </div>
+      <input type="file" id="b-photo-input" accept="image/*" style="display:none" onchange="bHandlePhoto(event)">
+    </div>
+
+    <!-- DETALLES DEL PRODUCTO -->
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
+      <div class="step-header"><div class="step-num">📝</div><div class="step-title">Detalles de este producto</div></div>
+      ${b.cat!=='pan'?`
+      <div class="form-group"><label class="field-label">Mensaje / Dedicatoria</label>
+        <input type="text" id="b-mensaje" value="${b.mensaje}" placeholder='"¡Feliz Cumpleaños Ana!"' oninput="b.mensaje=this.value">
+      </div>
+      <div class="form-group"><label class="field-label">Tema / Decoración</label>
+        <input type="text" id="b-tema" value="${b.tema}" placeholder="Flores rosas, Hello Kitty..." oninput="b.tema=this.value">
+      </div>
+      <div class="form-group"><label class="field-label">Alergias o restricciones</label>
+        <input type="text" id="b-alergias" value="${b.alergias}" placeholder="Sin gluten, sin lactosa..." oninput="b.alergias=this.value">
+      </div>
+`:''}
+            <div class="form-group"><label class="field-label">🖨️ Link de impresiones (Drive)</label>
+        <input type="url" id="b-implink" value="${b.impLink||''}" placeholder="https://drive.google.com/..." oninput="b.impLink=this.value" style="font-size:0.75rem">
+        <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Pega el link de Drive con las imágenes de impresión de azúcar</div>
+      </div>
+      <div class="form-group" style="margin-bottom:0"><label class="field-label">Notas adicionales</label>
+        <textarea id="b-notas" placeholder="Cualquier detalle especial..." oninput="b.notas=this.value">${b.notas}</textarea>
+      </div>
+    </div>
+
+    <!-- ADICIONALES DEL PRODUCTO -->
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border);display:${b.cat==='pan'?'none':'block'}">
+      <div class="step-header" style="margin-top:0"><div class="step-num">➕</div><div class="step-title">Adicionales para este producto</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      ${ADICIONALES.map(a=>{
+        const qty=b.adicionales[a.id]||0;
+        const step=a.step||1;
+        const label=a.step?`${qty} pz (${qty/step} doc.)`:String(qty);
+        const active=qty>0;
+        return`<div style="background:${active?'var(--navy)':'var(--faint)'};border:1.5px solid ${active?'var(--navy)':'var(--border)'};border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:0.75rem;font-weight:600;color:${active?'#fff':'var(--text)'};line-height:1.2">${a.name}</div>
+          <div style="font-size:0.67rem;color:${active?'rgba(255,255,255,0.7)':'var(--muted)'};">${a.price}${a.step?' · por docena':''}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+            <button class="qb" onclick="bChAdic('${a.id}',-${step})">−</button>
+            <span class="qn" style="min-width:40px;text-align:center;color:${active?'#fff':'var(--navy)'}">${label}</span>
+            <button class="qb" onclick="bChAdic('${a.id}',${step})">+</button>
+          </div>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>
+
+    <!-- CANTIDAD -->
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
+      <label class="field-label">Cantidad de piezas${getMinQty()>1?' (mínimo '+getMinQty()+')':''}</label>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:5px;">
+        <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(-1)">−</button>
+        <span id="b-qty-display" style="font-size:1.1rem;font-weight:700;color:var(--navy);min-width:24px;text-align:center">${b.qty}</span>
+        <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(1)">+</button>
+        <input type="text" id="b-nota" value="${b.nota}" placeholder="Nota del producto..." style="flex:1;font-size:0.82rem" oninput="b.nota=this.value">
+      </div>
+    </div>
+
+    <div style="margin-top:1rem">
+      <button class="btn-primary green" onclick="bAddToCart()">✅ Agregar al pedido</button>
+    </div>
+  `;
+}
+
+// ── Builder actions ──
+function bChAdic(id, delta){
+  if(!b.adicionales)b.adicionales={};
+  const a=ADICIONALES.find(x=>x.id===id);
+  const step=a?.step||1;
+  const cur=b.adicionales[id]||0;
+  const next=Math.max(0,cur+delta);
+  if(next===0)delete b.adicionales[id];
+  else b.adicionales[id]=next;
+  renderBuilder();
+}
+
+function bSetCat(cat){b.cat=cat;if(cat==='pan'&&b.qty<12)b.qty=12;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaMermelada=false;b.comboSabores=[];renderBuilder();}
+
+function bSelectSabor(s,esp){
+  b.sabor=s;b.saborEspecial=esp;
+  b.fmtGrupo='';b.fmtTamano='';b.fmtLabel='';
+  b.cremaBase='';b.rellenosGratis=[];b.rellenosCosto={};b.rellenoFruta='';b.rellenoCustom='';
+  b.comboSabores=[];b.pisosCombo='';b.pisosData=[];
+  renderBuilder();
+}
+
+function bToggleCombo(s){
+  const max=b.sabor==='Combinado'?2:3;
+  if(b.comboSabores.includes(s))b.comboSabores=b.comboSabores.filter(x=>x!==s);
+  else if(b.comboSabores.length<max)b.comboSabores.push(s);
+  else toast('⚠️',`Máximo ${max} sabores para ${b.sabor}`);
+  renderBuilder();
+}
+
+function bSelFmt(grupo,tamId){
+  b.fmtGrupo=grupo;b.fmtTamano=tamId;
+  b.fmtLabel=getFmtLabel(grupo,tamId);
+  b.cremaBase='';b.rellenoFruta=[];b.rellenosCosto={};
+  if(grupo==='pisos'){
+    b.pisosCombo=tamId;
+    const cfg=PISOS_CONFIG[tamId];
+    b.pisosData=cfg?cfg.pisos.map(()=>({sabor:'',relleno:[],custom:''})):[];
+  } else {
+    b.pisosCombo='';b.pisosData=[];
+  }
+  renderBuilder();
+}
+
+function bSetPisoCrema(i,c){
+  if(!b.pisosData[i])b.pisosData[i]={sabor:'',crema:'',relleno:[]};
+  b.pisosData[i].crema=c;
+  renderBuilder();
+}
+function bSetPisoSabor(i,s){if(!b.pisosData[i])b.pisosData[i]={sabor:'',relleno:[],custom:''};b.pisosData[i].sabor=s;renderBuilder();}
+function bTogPisoRel(i,r){if(!b.pisosData[i])return;const arr=b.pisosData[i].relleno;if(arr.includes(r))b.pisosData[i].relleno=arr.filter(x=>x!==r);else arr.push(r);renderBuilder();}
+function bSetPisoCustom(i,v){if(!b.pisosData[i])return;b.pisosData[i].custom=v;}
+
+function bSetCrema(v){b.cremaBase=v;renderBuilder();}
+function bTogRelGratis(r){if(b.rellenosGratis.includes(r))b.rellenosGratis=b.rellenosGratis.filter(x=>x!==r);else b.rellenosGratis.push(r);renderBuilder();}
+function bSetRellenoFruta(r){
+  if(!Array.isArray(b.rellenoFruta))b.rellenoFruta=[];
+  if(b.rellenoFruta.includes(r)){
+    b.rellenoFruta=b.rellenoFruta.filter(x=>x!==r);
+  } else {
+    if(b.rellenoFruta.length>=3){toast('⚠️','Máximo 3 rellenos de fruta');return;}
+    b.rellenoFruta.push(r);
+  }
+  renderBuilder();
+}
+function bTogRelCosto(r){
+  if(b.rellenosCosto[r])delete b.rellenosCosto[r];else b.rellenosCosto[r]=true;
+  renderBuilder();
+}
+
+function bSelectPostre(id){
+  b.postProduct=id;b.postFmt='';b.postFmtLabel='';b.cupcakeSabor='';
+  const p=POSTRES.find(x=>x.id===id);
+  if(p&&p.minQty&&b.qty<p.minQty)b.qty=p.minQty;
+  renderBuilder();
+}
+function bSelPostreFmt(id,label){b.postFmt=id;b.postFmtLabel=label;renderBuilder();}
+function bSetCupcakeSabor(s){b.cupcakeSabor=s;renderBuilder();}
+function bSelectMini(id){
+  b.miniProduct=id;b.miniVariant='';
+  // Set minimum quantity to step for mini postres
+  const p=MINI_POSTRES.find(x=>x.id===id);
+  if(p&&p.step&&b.qty<p.step)b.qty=p.step;
+  renderBuilder();
+}
+function bSetMiniVariant(v){b.miniVariant=v;renderBuilder();}
+
+function bChangeCant(d){
+  const minQ=getMinQty();
+  b.qty=Math.max(minQ,b.qty+d);
+  const el=document.getElementById('b-qty-display');
+  if(el)el.textContent=b.qty;
+}
+function getMinQty(){
+  if(b.cat==='mini'){
+    const p=MINI_POSTRES.find(x=>x.id===b.miniProduct);
+    return p&&p.step?p.step:1;
+  }
+  if(b.cat==='postre'){
+    const p=POSTRES.find(x=>x.id===b.postProduct);
+    return p&&p.minQty?p.minQty:1;
+  }
+  return 1;
+}
+function bTakePhoto(){document.getElementById('b-photo-input').click();}
+async function bHandlePhoto(e){
+  const file=e.target.files[0];if(!file)return;
+  // Show loading state
+  const area=document.querySelector('.photo-area');
+  if(area){area.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--muted)"><div class="spin" style="border-color:rgba(27,42,107,.3);border-top-color:var(--navy);width:24px;height:24px;margin:0 auto 8px"></div><div style="font-size:.8rem">Subiendo foto...</div></div>';}
+  try{
+    const _fecha2=document.getElementById('c-date')?document.getElementById('c-date').value:'';
+    const _folder2='jacobo/'+(_fecha2?_fecha2.slice(0,7):'sin-fecha');
+    const _sigR2=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder2));
+    const _sig2=await _sigR2.json();
+    const fd=new FormData();
+    fd.append('file',file);fd.append('api_key',_sig2.api_key);
+    fd.append('timestamp',String(_sig2.timestamp));fd.append('signature',_sig2.signature);
+    fd.append('folder',_folder2);
+    const res=await fetch('https://api.cloudinary.com/v1_1/'+_sig2.cloud+'/image/upload',{method:'POST',body:fd});
+    const data=await res.json();
+    if(data.secure_url){
+      b.photo=data.secure_url;
+      toast('✓','Foto subida ✅');
+    } else {
+      toast('❌','Error al subir foto');
+      b.photo=null;
+    }
+  }catch(err){
+    toast('❌','Error al subir foto');
+    b.photo=null;
+  }
+  renderBuilder();
+}
+function bRemovePhoto(e){e.stopPropagation();b.photo=null;renderBuilder();}
+
+function bAddToCart(){
+  let name='',details='';
+  if(b.cat==='pisos'){
+    if(!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
+    const cfg=PISOS_CONFIG[b.pisosCombo];
+    name=`Pastel de Pisos ${b.sabor} · ${cfg.label}`;
+    if(b.doblePan)details+=`🍞 PASTEL ALTO / DOBLE PAN\n`;
+    if(b.comboSabores.length)details+=`Sabores: ${b.comboSabores.join(' + ')}\n`;
+    cfg.pisos.forEach((piso,i)=>{
+      const pd=b.pisosData[i]||{};
+      const rel=(pd.relleno||[]).join(', ');
+      details+=`${piso}: ${pd.sabor||'—'} | Base: ${pd.crema||'—'}${rel?' | '+rel:''}\n`;
+    });
+    details+=`💰 Depósito bases: $${cfg.deposito} — ${b.depositoCobrado?'✅ Cobrado':'⚠️ PENDIENTE DE COBRAR'}\n`;
+  } else if(b.cat==='pastel'){
+    if(!b.sabor){toast('⚠️','Elige el sabor');return;}
+    if(b.sabor==='Combinado'&&b.comboSabores.length!==2){toast('⚠️','Combinado requiere exactamente 2 sabores');return;}
+    if(b.sabor==='Trilogía'&&b.comboSabores.length<2){toast('⚠️','Trilogía requiere 2 o 3 sabores');return;}
+    if(b.sabor!=='Napolitano'&&!b.fmtGrupo){toast('⚠️','Elige el formato');return;}
+    if(b.fmtGrupo==='pisos'&&!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
+    // Name
+    if(b.fmtGrupo==='barra')name='Barra Napolitana';
+    else if(b.fmtGrupo==='jacobino')name=`Jacobino ${b.sabor} (Individual)`;
+    else if(b.fmtGrupo==='pisos')name=`Pastel ${b.sabor} · ${PISOS_CONFIG[b.pisosCombo]?.label||'Pisos'}`;
+    else name=`Pastel ${b.sabor} · ${GRUPOS_LABEL[b.fmtGrupo]||b.fmtGrupo} ${b.fmtLabel}`;
+    if(b.doblePan)details+=`🍞 PASTEL ALTO / DOBLE PAN\n`;
+    if(b.comboSabores.length)details+=`Sabores: ${b.comboSabores.join(' + ')}\n`;
+    // Pisos details
+    if(b.fmtGrupo==='pisos'&&b.pisosData.length){
+      const cfg=PISOS_CONFIG[b.pisosCombo];
+      b.pisosData.forEach((p,i)=>{
+        const lbl=cfg?cfg.pisos[i]:'Piso '+(i+1);
+        const rel=[...(p.relleno||[]),p.custom].filter(Boolean).join(', ');
+        if(p.sabor||rel)details+=`${lbl}: ${p.sabor||'—'}${rel?' | '+rel:''}\n`;
+      });
+    }
+    if(b.cremaBase)details+=`Base: ${b.cremaBase}\n`;
+    if(b.rellenosGratis.length)details+=`Toppings: ${b.rellenosGratis.join(', ')}\n`;
+    if(b.rellenoFruta&&b.rellenoFruta.length)details+=`Relleno: ${Array.isArray(b.rellenoFruta)?b.rellenoFruta.join(', '):b.rellenoFruta}\n`;
+    const ck=Object.keys(b.rellenosCosto);if(ck.length)details+=`Extra: ${ck.join(', ')}\n`;
+    if(b.rellenoCustom)details+=`Especial: ${b.rellenoCustom}\n`;
+  } else if(b.cat==='crepas'){
+    if(!b.crepaFmt){toast('⚠️','Elige el tamaño');return;}
+    const fmt=CREPAS_FMTS.find(f=>f.id===b.crepaFmt);
+    name=`Pastel de Crepas · ${fmt.label} (${fmt.sub})`;
+    if(b.crepaRelleno)details+=`Relleno: ${b.crepaRelleno}\n`;
+    if(b.crepaMermelada)details+=`🍒 Mermelada de frutos rojos ${b.crepaFmt==='cr12'?'+$150':'+$100'}\n`;
+  } else if(b.cat==='postre'){
+    if(!b.postProduct){toast('⚠️','Elige el producto');return;}
+    name=b.postProduct+(b.postFmtLabel?` · ${b.postFmtLabel}`:'');
+    if(b.cupcakeSabor)details=`Sabor: ${b.cupcakeSabor}\n`;
+  } else if(b.cat==='mini'){
+    if(!b.miniProduct){toast('⚠️','Elige el producto');return;}
+    name=b.miniProduct;
+    if(b.miniVariant)details=`Sabor: ${b.miniVariant}\n`;
+  } else if(b.cat==='pan'){
+    if(!b.panDesc||!b.panDesc.trim()){toast('⚠️','Describe el tipo de pan');return;}
+    name='Pan Variado';
+    details=`Tipo: ${b.panDesc.trim()}\n`;
+  }
+  // Common details
+  if(b.mensaje)details+=`💬 ${b.mensaje}\n`;
+  if(b.tema)details+=`🎨 ${b.tema}\n`;
+  if(b.alergias)details+=`⚠️ ${b.alergias}\n`;
+  if(b.impLink&&b.impLink.trim())details+=`🖨️ ImpLink: ${b.impLink.trim()}\n`;
+  if(b.notas)details+=`📝 ${b.notas}\n`;
+  if(b.nota)details+=`Nota: ${b.nota}`;
+  const aKeys=Object.keys(b.adicionales||{});
+  if(aKeys.length){
+    const aStr=aKeys.map(id=>{
+      const a=ADICIONALES.find(x=>x.id===id);
+      const q=b.adicionales[id];
+      return a?.step?`${a.name} ×${q} (${q/a.step} doc.)`:a?`${a.name} ×${q}`:`${id} ×${q}`;
+    }).join(', ');
+    details+=`\nAdicionales: ${aStr}`;
+  }
+  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan});
+  renderCart();closeBuilder();
+  toast('✓',`"${name}" agregado`);
+}
+
+// ══ MISC ══
+function calcRest(){const t=parseFloat(document.getElementById('f-total').value)||0,a=parseFloat(document.getElementById('f-anticipo').value)||0;document.getElementById('f-restante').value=(t-a).toFixed(2);}
+document.getElementById('f-total').addEventListener('input',calcRest);
+
+// ══ SEND ORDER ══
+
+async function sendOrder(){
+  // ── Validaciones obligatorias ──
+  const folioVal=document.getElementById('folio-display').value.trim();
+  if(!folioVal){toast('⚠️','Escribe el número de folio');return;}
+
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){toast('⚠️','Ingresa el nombre del cliente');return;}
+
+  const phone=document.getElementById('c-phone').value.trim();
+  if(!phone){toast('⚠️','Ingresa el teléfono del cliente');return;}
+
+  const fecha=document.getElementById('c-date').value;
+  if(!fecha){toast('⚠️','Selecciona la fecha de entrega');return;}
+
+  if(!selectedEntrega){toast('⚠️','Selecciona el tipo de entrega');return;}
+
+  if(!selectedSuc){toast('⚠️','Selecciona la sucursal');return;}
+
+  if(selectedEntrega==='domicilio'){
+    const dir=document.getElementById('c-address').value.trim();
+    if(!dir){toast('⚠️','Ingresa la dirección de entrega');return;}
   }
 
+  const total=parseFloat(document.getElementById('f-total').value)||0;
+  if(!total||total<=0){toast('⚠️','Ingresa el precio total del pedido');return;}
+
+  if(!cart.length){toast('⚠️','Agrega al menos un producto');return;}
+
+  if(!SCRIPT_URL){toast('⚠️','Sin conexión a Google Sheets');return;}
+
+  const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
+  const folio=parseInt(folioVal);
+  const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
+  const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
+  try{
+    // Split: send data via GET (reliable CORS), image via separate POST
+    const imgUrl=payload.imagen;
+    const payloadSinImg={...payload, imagen: imgUrl ? '🖼️ Ver foto en Cloudinary' : ''};
+    const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payloadSinImg));
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),15000); // 15 sec timeout
+    const res=await fetch(url,{signal:controller.signal});
+    clearTimeout(timeout);
+    const result=await res.json();
+    if(result.ok){
+      // If there's an image URL, update it separately
+      if(imgUrl&&imgUrl.startsWith('http')){
+        const imgPayload={_updateImagen:true,folio:payload.folio,imagen:imgUrl};
+        fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(imgPayload)));
+      }
+      clearForm();updateBadge();
+      toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
+    } else {
+      toast('❌','Error: '+(result.error||'intenta de nuevo'));
+    }
+  }catch(e){
+    btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
+    if(e.name==='AbortError'){
+      toast('❌','Tiempo de espera agotado. Intenta de nuevo.');
+    } else {
+      toast('❌','Error al enviar. Verifica tu conexión.');
+    }
+  }
+  btn.disabled=false;btn.innerHTML='📤 Enviar a Producción';
 }
 
-function toggleDesc(id, btn) {
-  const el = document.getElementById('desc-'+id);
-  if (!el) return;
-  el.classList.toggle('expanded');
-  btn.textContent = el.classList.contains('expanded') ? 'Ver menos' : 'Ver más';
+function clearForm(){
+  ['c-name','c-phone','c-staff','c-address','f-total','f-anticipo','f-restante'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('c-hour').value='12';document.getElementById('c-min').value='00';document.getElementById('c-ampm').value='PM';
+  document.querySelectorAll('.suc-btn,.entrega-btn').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('group-suc').style.display='';document.getElementById('group-dir').style.display='none';
+  cart=[];renderCart();
+  ADICIONALES.forEach(a=>{adicQty[a.id]=0;});renderAdicionales();
+  selectedSuc='';selectedEntrega='';
+  document.getElementById('folio-display').value='';
 }
 
-function triggerUpload(id) {
-  const idx = getFiltered().findIndex(p => p.id === id);
-  if (idx >= 0) {
-    const inputs = document.querySelectorAll('.img-slot input[type=file]');
-    if (inputs[idx]) inputs[idx].click();
+// ══ PRODUCTION ══
+function setProdSuc(suc){prodSuc=suc;calMonth=new Date().getMonth();calYear=new Date().getFullYear();calSelectedDate='';document.getElementById('prod-suc-screen').style.display='none';document.getElementById('prod-board').style.display='block';document.getElementById('prod-suc-label').textContent=suc==='Todas'?'Todas las sucursales':suc;loadOrders();}
+function changeSuc(){prodSuc='';document.getElementById('prod-suc-screen').style.display='flex';document.getElementById('prod-board').style.display='none';}
+function setSucView(v,btn){sucView=v;document.querySelectorAll('.svc-pill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderOrders();}
+
+async function loadOrders(){
+  if(!SCRIPT_URL){document.getElementById('orders-grid').innerHTML=`<div class="empty-state"><div class="empty-icon">⚙️</div><div class="empty-title">Sin conexión</div></div>`;return;}
+  document.getElementById('orders-grid').innerHTML='<div class="spinner-wrap"><div class="spin"></div> Cargando...</div>';
+  try{
+    const res=await fetch(SCRIPT_URL+'?t='+Date.now());const raw=await res.json();
+    orders=raw.filter(r=>r['Cliente']&&r['Cliente']!=='Cliente').map(r=>({folio:r['Folio'],cliente:r['Cliente'],telefono:r['Teléfono'],tipoEntrega:r['Tipo Entrega']||'',sucursal:(r['Sucursal']||'').trim(),direccion:r['Dirección']||'',fechaEntrega:(()=>{
+  const v=r['Fecha Entrega'];
+  if(!v)return'';
+  const sv=String(v).replace(/^'/,'').trim();
+  // Perfect: YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(sv))return sv;
+  // Display format like "20/05/2026" or "05/20/2026"
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(sv)){
+    const p=sv.split('/');
+    // Try both DD/MM/YYYY and MM/DD/YYYY — pick the one that makes sense
+    const y=p[2],m=p[1],d=p[0];
+    if(parseInt(m)<=12)return y+'-'+m+'-'+d;
+    return y+'-'+p[0]+'-'+p[1];
+  }
+  // Bad format (1899-12-30...) — ignore
+  if(sv.startsWith('1899')||sv.startsWith('1900'))return '';
+  // Any other date string — try parsing
+  const d=new Date(sv);
+  if(!isNaN(d.getTime())&&d.getFullYear()>2020){
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  return '';
+})(),hora:(()=>{
+  const v=r['Hora'];
+  if(!v)return'';
+  const s=String(v);
+  // If it looks like a time "12:00 PM" keep it
+  if(s.includes('AM')||s.includes('PM')||s.includes(':'))return s.split('T')[0].includes('-')?'':s;
+  // Bad date format
+  if(s.startsWith('1899')||s.startsWith('1900'))return'';
+  return s;
+})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',historial:r['Historial']||''})).reverse();
+    renderCalendar();document.getElementById('prod-time').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});updateBadge();
+  }catch(e){document.getElementById('orders-grid').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error de conexión</div></div>`;}
+}
+
+
+function joinDetails(s){return(s||'').split(' | ').join('\n');}
+// ══ CALENDAR ══
+function searchOrders(query){
+  var q=query.trim().toLowerCase();
+  var clearBtn=document.getElementById('search-clear');
+  var container=document.getElementById('search-results-container');
+  clearBtn.style.display=q?'block':'none';
+  if(!q){container.style.display='none';container.innerHTML='';return;}
+  var vis=prodSuc&&prodSuc!=='Todas'?orders.filter(function(o){return(o.sucursal||'').trim().toLowerCase()===(prodSuc||'').trim().toLowerCase();}):orders;
+  var results=vis.filter(function(o){
+    var folioStr=String(o.folio||'');
+    var folioPad=folioStr.padStart(4,'0');
+    return folioStr.toLowerCase().includes(q)||folioPad.toLowerCase().includes(q)||(o.cliente||'').toLowerCase().includes(q)||(o.telefono||'').toLowerCase().includes(q);
+  }).slice(0,10);
+  if(!results.length){
+    container.style.display='block';
+    container.innerHTML='<div class="search-results-wrap"><div class="search-results-title">Sin resultados</div><div style="padding:12px;font-size:0.8rem;color:var(--muted);text-align:center">No se encontraron pedidos</div></div>';
+    return;
+  }
+  var statusColors={'Pendiente':'#FEF9EC','En proceso':'#EFF6FF','Listo':'#F0FFF4','Entregado':'#F9FAFB'};
+  var statusText={'Pendiente':'Pendiente','En proceso':'En proceso','Listo':'Listo','Entregado':'Entregado'};
+  var months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var items=results.map(function(o){
+    var parts=(o.fechaEntrega||'').split('-');
+    var dateLabel=parts.length===3?parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0]:'Sin fecha';
+    var st=o.status||'Pendiente';
+    var bg=statusColors[st]||'#fff';
+    var stLabel=statusText[st]||st;
+    var folioPad=String(o.folio||'').padStart(4,'0');
+    return '<div class="search-result-item" data-fecha="'+(o.fechaEntrega||'')+'" data-folio="'+(o.folio||'')+'" data-suc="'+(o.sucursal||'')+'" onclick="jumpToOrder(this.dataset.fecha,this.dataset.folio,this.dataset.suc)">'
+      +'<span class="search-result-status" style="background:'+bg+'">'+stLabel+'</span>'
+      +'<div class="search-result-folio">Folio #'+folioPad+'</div>'
+      +'<div class="search-result-name">'+(o.cliente||'Sin nombre')+'</div>'
+      +'<div class="search-result-meta">'+(o.telefono||'')+(o.telefono&&dateLabel?' &middot; ':'')+dateLabel+(o.sucursal?' &middot; '+o.sucursal:'')+'</div>'
+      +'</div>';
+  }).join('');
+  container.style.display='block';
+  container.innerHTML='<div class="search-results-wrap"><div class="search-results-title">'+results.length+' resultado'+(results.length!==1?'s':'')+'</div>'+items+'</div>';
+}
+
+function clearSearch(){
+  document.getElementById('order-search').value='';
+  searchOrders('');
+}
+
+function jumpToOrder(fechaEntrega,folio,suc){
+  clearSearch();
+  if(!fechaEntrega)return;
+  var sucScreen=document.getElementById('prod-suc-screen');
+  if(sucScreen&&sucScreen.style.display!=='none'){
+    setProdSuc(suc||'Todas');
+  } else if(suc&&prodSuc&&prodSuc!=='Todas'&&(suc||'').trim().toLowerCase()!==(prodSuc||'').trim().toLowerCase()){
+    setProdSuc('Todas');
+  }
+  var parts=fechaEntrega.split('-');
+  if(parts.length===3){
+    calYear=parseInt(parts[0]);
+    calMonth=parseInt(parts[1])-1;
+    calSelectedDate=fechaEntrega;
+  }
+  renderCalendar();
+  setTimeout(function(){
+    var grid=document.getElementById('orders-grid');
+    if(grid)grid.scrollIntoView({behavior:'smooth',block:'start'});
+    setTimeout(function(){
+      var cards=document.querySelectorAll('.oc-card');
+      var folioPad=String(folio).padStart(4,'0');
+      cards.forEach(function(card){
+        var folioEl=card.querySelector('.oc-folio');
+        if(folioEl&&folioEl.textContent.toUpperCase().includes(folioPad)){
+          card.style.outline='3px solid var(--navy)';
+          card.style.borderRadius='12px';
+          card.scrollIntoView({behavior:'smooth',block:'center'});
+          setTimeout(function(){card.style.outline='';card.style.borderRadius='';},2500);
+        }
+      });
+    },500);
+  },200);
+}
+
+function renderCalendar(){
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay = new Date(calYear, calMonth+1, 0);
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
+  // Render day headers
+  const dayHeaders = document.getElementById('cal-day-headers');
+  if(dayHeaders) dayHeaders.innerHTML = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d=>`<div style="text-align:center;font-size:0.62rem;font-weight:700;color:var(--muted);padding:5px 0;text-transform:uppercase;letter-spacing:0.05em">${d}</div>`).join('');
+
+  // Count orders per day
+  const ordersByDay = {};
+  const visOrders = prodSuc==='Todas' ? orders : orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+  visOrders.forEach(o=>{
+    if(!o.fechaEntrega) return;
+    if(!ordersByDay[o.fechaEntrega]) ordersByDay[o.fechaEntrega] = {total:0,pend:0,proc:0,listo:0};
+    ordersByDay[o.fechaEntrega].total++;
+    if(o.status==='Pendiente') ordersByDay[o.fechaEntrega].pend++;
+    if(o.status==='En proceso') ordersByDay[o.fechaEntrega].proc++;
+    if(o.status==='Listo') ordersByDay[o.fechaEntrega].listo++;
+  });
+
+  // Build calendar grid
+  const startDow = firstDay.getDay(); // 0=Sun
+  let html = '';
+  // Empty cells before first day
+  for(let i=0;i<startDow;i++){
+    html += '<div style="background:var(--card);min-height:52px"></div>';
+  }
+  // Days
+  for(let d=1;d<=lastDay.getDate();d++){
+    const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const dayOrders = ordersByDay[dateStr];
+    const isToday = dateStr===todayStr;
+    const isPast = dateStr<todayStr;
+    const isSelected = dateStr===calSelectedDate;
+    const bgColor = isSelected?'var(--navy)':isToday?'var(--faint)':isPast?'#F8F9FA':'var(--card)';
+    const numColor = isSelected?'#fff':isToday?'var(--navy)':isPast?'#AAAAAA':'var(--text)';
+    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'}">
+      <div style="font-size:0.78rem;font-weight:${isToday?'700':'500'};color:${numColor};margin-bottom:3px">${d}</div>
+      ${dayOrders?`
+        <div style="display:flex;flex-wrap:wrap;gap:2px">
+          ${dayOrders.pend>0?`<span style="background:#FEF3C7;color:#92400E;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.pend}P</span>`:''}
+          ${dayOrders.proc>0?`<span style="background:#DBEAFE;color:#1E40AF;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.proc}E</span>`:''}
+          ${dayOrders.listo>0?`<span style="background:#D1FAE5;color:#065F46;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.listo}L</span>`:''}
+        </div>`:''}
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+
+  // Update stats
+  const allVis = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+  var _calMonthStr=calYear+'-'+String(calMonth+1).padStart(2,'0');document.getElementById('st-total').textContent = allVis.filter(function(o){return(o.fechaEntrega||'').slice(0,7)===_calMonthStr;}).length;
+  document.getElementById('st-pend').textContent = allVis.filter(o=>o.status==='Pendiente').length;
+  document.getElementById('st-rdy').textContent = allVis.filter(o=>o.status==='Listo').length;
+
+  // If a day is selected, show its orders
+  if(calSelectedDate){
+    calShowDay(calSelectedDate);
+  } else {
+    // Show today's pending by default
+    const todayPend = allVis.filter(o=>o.fechaEntrega===todayStr&&o.status!=='Entregado').length;
+    document.getElementById('st-hoy').textContent = todayPend;
+    document.getElementById('st-hoy-label').textContent = 'Pendientes hoy';
+    document.getElementById('cal-day-header').style.display='none';
+    document.getElementById('orders-grid').innerHTML = '<div class="empty"><div class="empty-i">👆</div><div class="empty-t">Toca un día</div><p>Selecciona un día en el calendario para ver sus pedidos</p></div>';
   }
 }
 
-function handleImg(event, id) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => { imgStore[id] = e.target.result; render(); };
-  reader.readAsDataURL(file);
+function calSelectDay(dateStr){
+  calSelectedDate = calSelectedDate===dateStr ? '' : dateStr;
+  renderCalendar();
 }
 
-document.getElementById('suc').addEventListener('change', function() {
-  const s = SECS[this.value];
-  document.getElementById('footer-suc').textContent = s
-    ? `${s.label} · ${s.info}`
-    : 'Pastelería y Panadería Jacobo · Tijuana, B.C. · Guía de Precios 2025';
-});
+function calShowDay(dateStr){
+  const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>{function toMin(h){if(!h)return 9999;var m=h.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}return toMin(a.hora)-toMin(b.hora);});
+  const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const parts=dateStr.split('-');
+  const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
+  const pend=dayOrders.filter(o=>o.status==='Pendiente'||o.status==='En proceso').length;
 
-render();
+  document.getElementById('cal-day-header').style.display='block';
+  document.getElementById('cal-day-title').textContent='📋 Pedidos del '+dateLabel;
+  document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos · '+pend+' pendientes';
+  document.getElementById('st-hoy').textContent=pend;
+  document.getElementById('st-hoy-label').textContent='Pendientes ese día';
+
+  if(!dayOrders.length){
+    document.getElementById('orders-grid').innerHTML='<div class="empty"><div class="empty-i">🎂</div><div class="empty-t">Sin pedidos</div><p>No hay pedidos para este día</p></div>';
+    return;
+  }
+  renderOrdersList(dayOrders);
+}
+
+function calPrevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}calSelectedDate='';renderCalendar();}
+function calNextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}calSelectedDate='';renderCalendar();}
+
+function renderOrders(){
+  // In calendar mode, just refresh the calendar
+  renderCalendar();
+  return;
+}
+
+
+function renderProductLines(prodLines){
+  if(!prodLines.length)return'';
+  var EM='\u2014';
+  var html='<div class="oc-products"><div class="oc-products-title">Productos</div>';
+  prodLines.forEach(function(p){
+    var di=p.indexOf(' '+EM+' ');
+    var pname=di>=0?p.slice(0,di):p;
+    var raw=di>=0?p.slice(di+3):'';
+    var specs=[];
+    if(raw){
+      if(raw.indexOf(' | ')>=0){
+        specs=raw.split(' | ').map(function(s){return s.trim();}).filter(Boolean);
+      } else {
+        var labels=['Base:','Toppings:','Topping:','Fruta:','Extra:','Relleno:','Rellenos:','Especial:','Sabor:','Piso ','Adicionales:','Nota:','Notas:'];
+        var regex=new RegExp('(?=(?:'+labels.map(function(l){return l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|')+'))');
+        specs=raw.split(regex).map(function(s){return s.trim();}).filter(Boolean);
+        if(specs.length<=1)specs=raw?[raw]:[];
+      }
+    }
+    html+='<div class="oc-product-item"><div class="oc-product-name">'+pname+'</div>';
+    if(specs.length){
+      html+='<div class="oc-product-detail">';
+      specs.forEach(function(s){
+        var temaEmoji='\ud83c\udfa8';
+        var mensajeEmoji='\ud83d\udcac';
+        var alertEmoji='\u26a0';
+        var colon=s.indexOf(':');
+        var hasLabel=colon>0&&colon<30;
+        var label=hasLabel?s.slice(0,colon+1):'';
+        var val=hasLabel?s.slice(colon+1).trim():s;
+        var sl=s.toLowerCase();
+        var icon='&#9658;';
+        if(sl.startsWith('base:')){icon='&#127854;';label='Relleno:';}
+        else if(sl.startsWith('topping'))icon='&#127827;';
+        else if(sl.startsWith('fruta:'))icon='&#127825;';
+        else if(sl.startsWith('extra:'))icon='&#10024;';
+        else if(sl.startsWith('relleno'))icon='&#127854;';
+        else if(sl.startsWith('especial:'))icon='&#11088;';
+        else if(sl.startsWith('sabor:'))icon='&#129473;';
+        else if(sl.startsWith('piso'))icon='&#127959;';
+        else if(sl.startsWith('nota'))icon='&#128203;';
+        else if(sl.startsWith('adicionales:'))icon='&#10133;';
+        if(s.indexOf(temaEmoji)>=0){label='Tem\u00e1tica:';val=s.replace(temaEmoji,'').trim();icon='&#127775;';}
+        if(s.indexOf(mensajeEmoji)>=0){label='Mensaje:';val=s.replace(mensajeEmoji,'').trim();icon='&#128172;';}
+        if(s.indexOf(alertEmoji)>=0&&!hasLabel){label='Alergia:';val=s.replace(alertEmoji,'').trim();icon='&#9888;';}
+        html+='<div class="oc-spec-row"><span class="oc-spec-label">'+icon+' '+label+'</span><span class="oc-spec-val">'+val+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function renderOrdersList(visOrders){
+  let vis=visOrders;
+  // Stats handled by renderCalendar
+  const grid=document.getElementById('orders-grid');
+  if(!vis.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">🎂</div><div class="empty-title">Sin pedidos</div><p>Los pedidos aparecerán aquí</p></div>`;return;}
+  // Sort by time (date already filtered by calShowDay)
+  vis.sort((a,b)=>{
+    const da=(a.fechaEntrega||'9999')+(a.hora||'');
+    const db=(b.fechaEntrega||'9999')+(b.hora||'');
+    return da.localeCompare(db);
+  });
+
+  grid.innerHTML=vis.map(o=>{
+    const folio='#'+String(o.folio).padStart(4,'0');
+    const isToday=o.fechaEntrega&&!o.fechaEntrega.startsWith('1899')&&o.fechaEntrega===new Date().toISOString().slice(0,10);
+    const dateStr=(()=>{
+      const fe=o.fechaEntrega;
+      if(!fe||fe.startsWith('1899')||fe.startsWith('1900'))return'Sin fecha';
+      // Parse YYYY-MM-DD directly without new Date() to avoid timezone issues
+      const parts=fe.split('-');
+      if(parts.length===3){
+        const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+        return parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
+      }
+      return fe;
+    })();
+    const showTag=sucView==='all'&&o.sucursal;
+    const entIcon=o.tipoEntrega==='domicilio'?'🛵 Domicilio':'🏪 Sucursal';
+    const prodLines=(o.productos||'').split(' || ').filter(Boolean);
+    const imgUrl=o.imagen&&o.imagen.startsWith('http')?o.imagen:'';
+    const isExpanded=expandedFolios.has(String(o.folio));
+    return`<div class="order-card${isToday?' urgente':''}">
+      ${imgUrl?`<div class="oc-imgs"><img class="oc-img-thumb" src="${imgUrl}" onclick="openImgModal('${imgUrl}','Folio ${folio}')" onerror="this.style.display='none'" alt="Ref"></div>`:''}
+      <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div></div>
+      <div class="oc-body">
+        ${renderProductLines(prodLines)}
+        <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
+        ${(function(){var tipoRow=o.tipoEntrega==='domicilio'?'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">\u{1F6F5} Domicilio desde '+(o.sucursal||'\u2014')+'</span></div>':'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">'+entIcon+'</span></div>'+(o.sucursal?'<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">'+o.sucursal+'</span></div>':'');var dirRow=o.direccion?'<div class="oc-row"><span class="oc-key">'+(o.tipoEntrega==="domicilio"?"Direcci\u00f3n de env\u00edo":"Direcci\u00f3n")+'</span><span class="oc-val">'+o.direccion+'</span></div>':'';return tipoRow+dirRow;})()}
+        ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
+        ${(function(){var impRow='';var lines=(o.productos||'').split(' || ');lines.forEach(function(l){  var m=l.match(/🖨️ ImpLink: (.+?)(?:\\n|$|\s*\|\|)/);  if(m&&m[1])impRow='<div class="oc-imp-link"><span>🖨️</span><a href="'+m[1].trim()+'" target="_blank" class="oc-imp-link-btn">Ver imágenes de impresión</a></div>';});return impRow;})()}${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${o.impresionUrls?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Imágenes de impresión</div><div class="oc-imp-grid">'+o.impresionUrls.split('|').filter(Boolean).map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión\')">'+'<a href="'+u+'" download="impresion-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
+        ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
+        ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
+      </div>
+      <div class="oc-footer">
+        <button class="oc-btn" onclick="openEditModal('${o.folio}')">✏️ Editar</button>
+        <button class="oc-btn danger" onclick="delOrder('${o.folio}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function advStatus(folio){
+  const o=orders.find(x=>String(x.folio)===String(folio));
+  if(!o||!NEXT[o.status])return;
+  const ns=NEXT[o.status];
+  const quien=prompt('¿Quién hace este cambio?','');
+  if(quien===null)return;
+  o.status=ns;
+  renderCalendar();
+  updateBadge();
+  toast('✓',`Folio #${String(o.folio).padStart(4,'0')} → ${ns}`);
+  try{
+    const payload={_update:true,folio:o.folio,estado:ns,quien:quien||'Sin nombre',fechaCambio:new Date().toLocaleString('es-MX')};
+    fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload)));
+  }catch(e){}
+}
+function delOrder(folio){
+  const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
+  const ex=document.getElementById('del-confirm-bar');if(ex)ex.remove();
+  const bar=document.createElement('div');bar.id='del-confirm-bar';
+  bar.setAttribute('data-folio',folio);
+  bar.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1B2A6B;color:white;padding:12px 16px;border-radius:10px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:90vw';
+  bar.innerHTML='<span style="font-size:0.82rem">¿Eliminar folio #'+String(o.folio).padStart(4,'0')+'?</span>'
+    +'<button onclick="execDelete()" style="background:#C0392B;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8rem">Sí, eliminar</button>'
+    +'<button onclick="document.getElementById(\'del-confirm-bar\').remove()" style="background:rgba(255,255,255,0.2);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem">Cancelar</button>';
+  document.body.appendChild(bar);
+  setTimeout(function(){var b=document.getElementById('del-confirm-bar');if(b)b.remove();},5000);
+}
+async function execDelete(){
+  const bar=document.getElementById('del-confirm-bar');
+  const folio=bar?bar.getAttribute('data-folio'):null;
+  if(bar)bar.remove();if(!folio)return;
+  const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
+  toast('⏳','Eliminando...');
+  try{
+    const res=await fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify({_delete:true,folio:o.folio})));
+    const result=await res.json();
+    if(result.ok){
+      orders=orders.filter(x=>String(x.folio)!==String(folio));
+      renderOrders();renderCalendar();updateBadge();
+      toast('✓','Pedido eliminado');
+    } else {toast('❌','Error al eliminar');}
+  }catch(e){toast('❌','Error de conexión');}
+}
+
+function openEditModal(folio){
+  const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
+  editingFolio=o.folio;document.getElementById('edit-modal-title').textContent=`Editar Folio #${String(o.folio).padStart(4,'0')}`;
+  document.getElementById('edit-modal-body').innerHTML=`
+    <div class="form-row"><div class="form-group"><label class="field-label">Cliente</label><input type="text" id="e-cliente" value="${o.cliente||''}"></div><div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="e-tel" value="${o.telefono||''}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="field-label">Fecha entrega</label><input type="date" id="e-fecha" value="${o.fechaEntrega||''}"></div><div class="form-group"><label class="field-label">Hora</label><input type="text" id="e-hora" value="${o.hora||''}" placeholder="3:00 PM"></div></div>
+    <div class="form-group"><label class="field-label">Tipo de entrega</label><select id="e-tipo"><option value="sucursal" ${o.tipoEntrega==='sucursal'?'selected':''}>Recoger en sucursal</option><option value="domicilio" ${o.tipoEntrega==='domicilio'?'selected':''}>Domicilio</option></select></div>
+    <div class="form-group"><label class="field-label">Sucursal</label><select id="e-suc"><option ${o.sucursal==='Otay'?'selected':''}>Otay</option><option ${o.sucursal==='Zona Río'?'selected':''}>Zona Río</option><option ${o.sucursal==='Monarca'?'selected':''}>Monarca</option></select></div>
+    <div class="form-group"><label class="field-label">Dirección</label><input type="text" id="e-dir" value="${o.direccion||''}"></div>
+    <div class="form-group"><label class="field-label">Productos</label><textarea id="e-prods" style="min-height:80px">${o.productos||''}</textarea></div>
+    <div class="form-group"><label class="field-label">Adicionales</label><input type="text" id="e-adic" value="${o.adicionales||''}"></div>
+    <div class="form-group"><label class="field-label">Notas generales</label><textarea id="e-notas">${o.notas||''}</textarea></div>
+    <div class="totals-grid" style="margin-bottom:0.7rem">
+      <div class="form-group" style="margin-bottom:0"><label class="field-label">Total $</label><input type="number" id="e-total" value="${o.total||0}" step="0.01"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="field-label">Anticipo $</label><input type="number" id="e-anticipo" value="${o.anticipo||0}" step="0.01"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="e-restante" value="${o.restante||0}" step="0.01"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>`;
+  document.getElementById('edit-modal').classList.add('open');
+}
+async function saveEdit(){
+  const saveBtn=document.getElementById('edit-save-btn');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.innerHTML='<div class="spin"></div> Guardando...';}
+  const payload={_edit:true,folio:editingFolio,
+    cliente:document.getElementById('e-cliente').value,
+    telefono:document.getElementById('e-tel').value,
+    fechaEntrega:document.getElementById('e-fecha').value,
+    hora:document.getElementById('e-hora').value,
+    tipoEntrega:document.getElementById('e-tipo').value,
+    sucursal:document.getElementById('e-suc').value,
+    direccion:document.getElementById('e-dir').value,
+    productos:document.getElementById('e-prods').value,
+    adicionales:document.getElementById('e-adic').value,
+    notas:document.getElementById('e-notas').value,
+    total:parseFloat(document.getElementById('e-total').value)||0,
+    anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
+    restante:parseFloat(document.getElementById('e-restante').value)||0
+  };
+  try{
+    const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),15000);
+    await fetch(url,{signal:controller.signal});
+    clearTimeout(timeout);
+    closeEditModal();
+    toast('✓','Pedido actualizado ✅');
+    await loadOrders();
+  }catch(e){
+    if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Guardar';}
+    toast('❌','Error al guardar. Intenta de nuevo.');
+  }
+}
+function closeEdit(){closeEditModal();}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');}
+function openImgModal(src,title){document.getElementById('img-modal-src').src=src;document.getElementById('img-modal-title').textContent=title||'Foto';document.getElementById('img-modal').classList.add('open');}
+function closeImgModal(e){if(e.target===document.getElementById('img-modal'))document.getElementById('img-modal').classList.remove('open');}
+function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderOrders();}
+
+function setDateFilter(type,btn){
+  dateFilter=type;
+  document.querySelectorAll('#df-hoy,#df-manana,#df-semana,#df-todos').forEach(b=>{if(b)b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  if(type!=='custom'){const inp=document.getElementById('df-custom');if(inp)inp.value='';}
+  renderOrders();
+}
+
+function getDateFilteredOrders(list){
+  const today=new Date().toISOString().slice(0,10);
+  const tomorrow=new Date(Date.now()+86400000).toISOString().slice(0,10);
+  const weekEnd=new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+  if(dateFilter==='hoy') return list.filter(o=>o.fechaEntrega===today||!o.fechaEntrega);
+  if(dateFilter==='manana') return list.filter(o=>o.fechaEntrega===tomorrow);
+  if(dateFilter==='semana') return list.filter(o=>o.fechaEntrega>=today&&o.fechaEntrega<=weekEnd);
+  if(dateFilter==='custom'){
+    const v=document.getElementById('df-custom')?.value;
+    return v?list.filter(o=>o.fechaEntrega===v):list;
+  }
+  return list;
+}
+
+function toggleExpand(folio){
+  if(expandedFolios.has(folio))expandedFolios.delete(folio);
+  else expandedFolios.add(folio);
+  renderOrders();
+}
+function updateBadge(){const todayStr=new Date().toISOString().slice(0,10);const vis=prodSuc&&prodSuc!=='Todas'?orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase()):orders;const n=vis.filter(o=>o.fechaEntrega===todayStr&&(o.status==='Pendiente'||o.status==='En proceso')).length;document.getElementById('pending-badge').textContent=n||'';}
+function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();}
+function toast(icon,msg){const ti=document.getElementById('toast-icon');const tm=document.getElementById('toast-msg');const t=document.getElementById('toast');if(!ti||!tm||!t)return;ti.textContent=icon;tm.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+
+initSetupBanner();
+// Load orders on start to populate badge
+if(SCRIPT_URL)loadOrders();
+setInterval(()=>{if(document.getElementById('view-production').classList.contains('active')&&prodSuc)loadOrders();},3600000);
 </script>
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1B2A6B;color:white;padding:10px 18px;border-radius:8px;font-size:0.82rem;display:flex;align-items:center;gap:8px;opacity:0;transition:all 0.3s;z-index:10000;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.25)"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+<style>#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}</style>
 </body>
 </html>
