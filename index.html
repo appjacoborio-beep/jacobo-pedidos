@@ -676,7 +676,17 @@ function renderCart(){
     </div>`;
   }).join('');
 }
-function removeCartItem(i){cart.splice(i,1);renderCart();}
+function removeCartItem(i){
+  const item=cart[i];if(!item)return;
+  const ex=document.getElementById('del-confirm-bar');if(ex)ex.remove();
+  const bar=document.createElement('div');bar.id='del-confirm-bar';
+  bar.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1B2A6B;color:white;padding:12px 16px;border-radius:10px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:90vw';
+  bar.innerHTML='<span style="font-size:0.82rem">¿Quitar '+item.name+' del pedido?</span>'
+    +'<button onclick="cart.splice('+i+',1);renderCart();document.getElementById(\'del-confirm-bar\').remove();" style="background:#C0392B;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8rem">Sí, quitar</button>'
+    +'<button onclick="document.getElementById(\'del-confirm-bar\').remove()" style="background:rgba(255,255,255,0.2);color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem">Cancelar</button>';
+  document.body.appendChild(bar);
+  setTimeout(function(){var b=document.getElementById('del-confirm-bar');if(b)b.remove();},5000);
+}
 function editCartItem(i){
   var item=cart[i];bReset();
   b.cat=item._cat||'pastel';b.sabor=item._sabor||'';b.saborEspecial=item._saborEspecial||false;
@@ -779,9 +789,9 @@ function renderBuilder(){
       <!-- Paso 1: Sabor -->
       <div class="step-header"><div class="step-num">1</div><div class="step-title">Sabor</div></div>
       <div class="sabor-grid" style="margin-bottom:0.3rem">
-        ${['Vainilla','Chocolate','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
+        ${['Vainilla','Chocolate','Fresa','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
           <div class="sabor-card ${b.sabor===s?'selected':''}" onclick="bSelectSabor('${s}',false)">
-            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Trilogía:'✨',Combinado:'🎨',Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋'}[s]||'🎂'}</span>
+            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Fresa:'🍓',Trilogía:'✨',Combinado:'🎨',Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋'}[s]||'🎂'}</span>
             <div class="sabor-name">${s}</div>
           </div>`).join('')}
         <div class="sabor-card especial ${b.sabor==='3 Leches'?'selected':''}" onclick="bSelectSabor('3 Leches',true)"><span class="sabor-icon">🥛</span><div class="sabor-name">3 Leches</div></div>
@@ -1362,21 +1372,14 @@ async function sendOrder(){
   const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
   const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
   try{
-    // Split: send data via GET (reliable CORS), image via separate POST
-    const imgUrl=payload.imagen;
-    const payloadSinImg={...payload, imagen: imgUrl ? '🖼️ Ver foto en Cloudinary' : ''};
-    const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payloadSinImg));
+    // Send everything in one request (image is a Cloudinary URL, small enough for GET)
+    const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),15000); // 15 sec timeout
     const res=await fetch(url,{signal:controller.signal});
     clearTimeout(timeout);
     const result=await res.json();
     if(result.ok){
-      // If there's an image URL, update it separately
-      if(imgUrl&&imgUrl.startsWith('http')){
-        const imgPayload={_updateImagen:true,folio:payload.folio,imagen:imgUrl};
-        fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(imgPayload)));
-      }
       clearForm();updateBadge();
       toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
     } else {
