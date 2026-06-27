@@ -1610,7 +1610,7 @@ function calSelectDay(dateStr){
 
 function calShowDay(dateStr){
   const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
-  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>{function toMin(h){if(!h)return 9999;var m=h.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}return toMin(a.hora)-toMin(b.hora);});
+  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>{function toMin(h){if(!h)return 9999;var s=String(h).trim();var m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}return toMin(a.hora)-toMin(b.hora);});
   const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   const parts=dateStr.split('-');
   const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
@@ -1701,7 +1701,7 @@ function renderOrdersList(visOrders){
   if(!vis.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">🎂</div><div class="empty-title">Sin pedidos</div><p>Los pedidos aparecerán aquí</p></div>`;return;}
   // Sort by time (date already filtered by calShowDay)
   vis.sort((a,b)=>{
-    function toMinRL(h){if(!h)return 9999;var m=h.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}
+    function toMinRL(h){if(!h)return 9999;var s=String(h).trim();var m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}
     const da=(a.fechaEntrega||'9999')+String(toMinRL(a.hora)).padStart(4,'0');
     const db=(b.fechaEntrega||'9999')+String(toMinRL(b.hora)).padStart(4,'0');
     return da.localeCompare(db);
