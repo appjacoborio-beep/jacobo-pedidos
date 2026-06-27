@@ -139,6 +139,12 @@ textarea{resize:vertical;min-height:60px;}
 .combo-card.selected .combo-name{color:white;}
 
 /* PHOTO */
+.photos-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;margin-bottom:4px;}
+.photo-thumb-wrap{position:relative;width:80px;height:80px;border-radius:8px;overflow:visible;flex-shrink:0;}
+.photo-thumb-wrap img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;display:block;}
+.photo-thumb-del{position:absolute;top:-6px;right:-6px;background:#C0392B;color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;line-height:1;}
+.photo-add-btn{width:80px;height:80px;border:2px dashed var(--navy);border-radius:8px;background:var(--navy-faint);color:var(--navy);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.68rem;font-weight:600;gap:3px;flex-shrink:0;}
+
 .photo-area{border:2px dashed var(--border);border-radius:9px;background:var(--navy-faint);cursor:pointer;transition:all 0.2s;text-align:center;padding:1.25rem;position:relative;overflow:hidden;}
 .photo-area.has-photo{padding:0;border-style:solid;}
 .photo-area:hover{border-color:var(--navy);background:#E8EBF7;}
@@ -611,7 +617,7 @@ let calSelectedDate=''; // YYYY-MM-DD
 let selectedSuc='',selectedEntrega='';
 let cart=[];
 let adicQty={};ADICIONALES.forEach(a=>{adicQty[a.id]=0;});
-let editingFolio=null;
+let editingFolio=null;let eEditPhotos=[];
 let b={};  // builder state
 
 const STATUS_CLS={'Pendiente':'s-pending','En proceso':'s-making','Listo':'s-ready','Entregado':'s-delivered'};
@@ -692,7 +698,7 @@ function editCartItem(i){
   b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
   b.adicionales=item._adicionales||{};b.mensaje=item._mensaje||'';b.tema=item._tema||'';
   b.alergias=item._alergias||'';b.notas=item._notas||'';b.qty=item.qty||1;
-  b.photo=item.photo||null;b.depositoCobrado=item._depositoCobrado||false;b.doblePan=item._doblePan||false;
+  b.photos=Array.isArray(item.photos)?[...item.photos]:(item.photo&&item.photo.startsWith('http')?[item.photo]:[]);b.depositoCobrado=item._depositoCobrado||false;b.doblePan=item._doblePan||false;
   cart.splice(i,1);renderCart();renderBuilder();
   document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';
 }
@@ -732,7 +738,7 @@ function bReset(){
      cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
      postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
      miniProduct:'',miniVariant:'',panDesc:'',
-     mensaje:'',tema:'',alergias:'',notas:'',impLink:'',fondantDesc:'',
+     mensaje:'',tema:'',alergias:'',notas:'',impLink:'',fondantDesc:'',photos:[],
      qty:1,nota:'',photo:null};
 }
 function openBuilder(){bReset();renderBuilder();document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
@@ -1033,13 +1039,9 @@ function renderBuilder(){
     </div>
 
         <!-- FOTO -->
-    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
-      <label class="field-label">Foto de referencia (opcional)</label>
-      <div class="photo-area ${b.photo?'has-photo':''}" style="margin-top:5px" ${b.photo?'':'onclick="bTakePhoto()"'}>
-        ${b.photo
-          ?`<img src="${b.photo}" alt="Ref"><button class="photo-remove" onclick="bRemovePhoto(event)">✕</button>`
-          :`<div class="photo-icon">📷</div><div class="photo-text">Tomar foto o elegir imagen</div><div class="photo-sub">Cámara o galería del iPad</div>`}
-      </div>
+        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
+      <label class="field-label">📷 Fotos de referencia</label>
+      <div class="photos-grid" id="b-photos-grid"></div>
       <input type="file" id="b-photo-input" accept="image/*" style="display:none" onchange="bHandlePhoto(event)">
     </div>
 
@@ -1101,6 +1103,7 @@ function renderBuilder(){
 
     <div style="margin-top:1rem">
       <button class="btn-primary green" onclick="bAddToCart()">✅ Agregar al pedido</button>\n    </div>\n  `;
+  renderBPhotos();
   var wrap=document.getElementById('fondant-desc-wrap');
   var inp=document.getElementById('fondant-desc-input');
   if(wrap){
@@ -1213,36 +1216,50 @@ function getMinQty(){
   return 1;
 }
 function bTakePhoto(){document.getElementById('b-photo-input').click();}
+function renderBPhotos(){
+  var grid=document.getElementById('b-photos-grid');
+  if(!grid)return;
+  if(!Array.isArray(b.photos))b.photos=[];
+  var html='';
+  b.photos.forEach(function(url,i){
+    html+='<div class="photo-thumb-wrap">';
+    html+='<img src="'+url+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\'" onerror="this.style.display=\'none\'" alt="Foto">';
+    html+='<button class="photo-thumb-del" onclick="bRemovePhoto('+i+')">&#x2715;</button>';
+    html+='</div>';
+  });
+  html+='<button class="photo-add-btn" onclick="document.getElementById(\'b-photo-input\').click()">';
+  html+='<span style="font-size:1.4rem">📷</span>';
+  html+='<span>'+(b.photos.length?'+ Agregar':'Agregar foto')+'</span></button>';
+  grid.innerHTML=html;
+}
 async function bHandlePhoto(e){
-  const file=e.target.files[0];if(!file)return;
-  // Show loading state
-  const area=document.querySelector('.photo-area');
-  if(area){area.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--muted)"><div class="spin" style="border-color:rgba(27,42,107,.3);border-top-color:var(--navy);width:24px;height:24px;margin:0 auto 8px"></div><div style="font-size:.8rem">Subiendo foto...</div></div>';}
+  var file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  toast('⏳','Subiendo foto...');
   try{
-    const _fecha2=document.getElementById('c-date')?document.getElementById('c-date').value:'';
-    const _folder2='jacobo/'+(_fecha2?_fecha2.slice(0,7):'sin-fecha');
-    const _sigR2=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder2));
-    const _sig2=await _sigR2.json();
-    const fd=new FormData();
+    var _fecha2=document.getElementById('c-date')?document.getElementById('c-date').value:'';
+    var _folder2='jacobo/'+(_fecha2?_fecha2.slice(0,7):'sin-fecha');
+    var _sigR2=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder2));
+    var _sig2=await _sigR2.json();
+    var fd=new FormData();
     fd.append('file',file);fd.append('api_key',_sig2.api_key);
     fd.append('timestamp',String(_sig2.timestamp));fd.append('signature',_sig2.signature);
     fd.append('folder',_folder2);
-    const res=await fetch('https://api.cloudinary.com/v1_1/'+_sig2.cloud+'/image/upload',{method:'POST',body:fd});
-    const data=await res.json();
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+_sig2.cloud+'/image/upload',{method:'POST',body:fd});
+    var data=await res.json();
     if(data.secure_url){
-      b.photo=data.secure_url;
+      if(!Array.isArray(b.photos))b.photos=[];
+      b.photos.push(data.secure_url);
+      renderBPhotos();
       toast('✓','Foto subida ✅');
-    } else {
-      toast('❌','Error al subir foto');
-      b.photo=null;
-    }
-  }catch(err){
-    toast('❌','Error al subir foto');
-    b.photo=null;
-  }
-  renderBuilder();
+    } else {toast('❌','Error al subir foto');}
+  }catch(err){toast('❌','Error al subir foto');}
 }
-function bRemovePhoto(e){e.stopPropagation();b.photo=null;renderBuilder();}
+function bRemovePhoto(i){
+  if(!Array.isArray(b.photos))return;
+  b.photos.splice(i,1);
+  renderBPhotos();
+}
 
 function bAddToCart(){
   let name='',details='';
@@ -1321,7 +1338,7 @@ function bAddToCart(){
     }).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan});
+  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[]});
   renderCart();closeBuilder();
   toast('✓',`"${name}" agregado`);
 }
@@ -1365,8 +1382,8 @@ async function sendOrder(){
   const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
   const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
-  const firstPhoto=cart.find(i=>i.photo&&i.photo.startsWith('http'))?.photo||'';
-  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:firstPhoto,imagenUrl:firstPhoto};
+  var allPhotos=cart.flatMap(function(i){return Array.isArray(i.photos)?i.photos:(i.photo&&i.photo.startsWith('http')?[i.photo]:[]);});var firstPhoto=allPhotos[0]||'';
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
@@ -1724,10 +1741,10 @@ function renderOrdersList(visOrders){
     const showTag=sucView==='all'&&o.sucursal;
     const entIcon=o.tipoEntrega==='domicilio'?'🛵 Domicilio':'🏪 Sucursal';
     const prodLines=(o.productos||'').split(' || ').filter(Boolean);
-    const imgUrl=o.imagen&&o.imagen.startsWith('http')?o.imagen:'';
+    var imgUrls=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});var imgUrl=imgUrls[0]||'';
     const isExpanded=expandedFolios.has(String(o.folio));
     return`<div class="order-card${isToday?' urgente':''}">
-      ${imgUrl?`<div class="oc-imgs"><img class="oc-img-thumb" src="${imgUrl}" onclick="openImgModal('${imgUrl}','Folio ${folio}')" onerror="this.style.display='none'" alt="Ref"></div>`:''}
+      ${imgUrls.length?'<div class="oc-imgs">'+imgUrls.map(function(u,i){return '<img class="oc-img-thumb" src="'+u+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';}).join('')+'</div>':''}
       <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div></div>
       <div class="oc-body">
         ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";if(prods.toLowerCase().includes("fondant")||adic.toLowerCase().includes("fondant")){var m=prods.match(/🎭 Fondant: ([^\n|]+)/);return '<div class="oc-fondant-badge">🎭 FONDANT!'+(m?' · '+m[1].trim():'')+"</div>";}return '';})()}
@@ -1793,8 +1810,12 @@ async function execDelete(){
 
 function openEditModal(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
-  editingFolio=o.folio;document.getElementById('edit-modal-title').textContent=`Editar Folio #${String(o.folio).padStart(4,'0')}`;
+  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent=`Editar Folio #${String(o.folio).padStart(4,'0')}`;
   document.getElementById('edit-modal-body').innerHTML=`
+    <div class="form-group"><label class="field-label">📷 Fotos del pedido</label>
+      <div class="photos-grid" id="e-photos-grid"></div>
+      <input type="file" id="e-photo-input" accept="image/*" style="display:none" onchange="eHandlePhoto(event)">
+    </div>
     <div class="form-row"><div class="form-group"><label class="field-label">Cliente</label><input type="text" id="e-cliente" value="${o.cliente||''}"></div><div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="e-tel" value="${o.telefono||''}"></div></div>
     <div class="form-row"><div class="form-group"><label class="field-label">Fecha entrega</label><input type="date" id="e-fecha" value="${o.fechaEntrega||''}"></div><div class="form-group"><label class="field-label">Hora</label><input type="text" id="e-hora" value="${o.hora||''}" placeholder="3:00 PM"></div></div>
     <div class="form-group"><label class="field-label">Tipo de entrega</label><select id="e-tipo"><option value="sucursal" ${o.tipoEntrega==='sucursal'?'selected':''}>Recoger en sucursal</option><option value="domicilio" ${o.tipoEntrega==='domicilio'?'selected':''}>Domicilio</option></select></div>
@@ -1810,6 +1831,42 @@ function openEditModal(folio){
     </div>
     <div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>`;
   document.getElementById('edit-modal').classList.add('open');
+}
+function eRenderPhotos(){
+  var grid=document.getElementById('e-photos-grid');
+  if(!grid)return;
+  var html='';
+  eEditPhotos.forEach(function(u,i){
+    html+='<div class="photo-thumb-wrap">';
+    html+='<img src="'+u+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';
+    html+='<button class="photo-thumb-del" onclick="eRemovePhoto('+i+')">&#x2715;</button>';
+    html+='</div>';
+  });
+  html+='<button class="photo-add-btn" onclick="document.getElementById(\'e-photo-input\').click()"><span style="font-size:1.4rem">📷</span><span>+ Agregar</span></button>';
+  grid.innerHTML=html;
+}
+function eRemovePhoto(i){eEditPhotos.splice(i,1);eRenderPhotos();}
+async function eHandlePhoto(e){
+  var file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  toast('⏳','Subiendo foto...');
+  try{
+    var fecha=document.getElementById('e-fecha')?document.getElementById('e-fecha').value:'';
+    var folder='jacobo/'+(fecha?fecha.slice(0,7):'sin-fecha');
+    var sigRes=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(folder));
+    var sig=await sigRes.json();
+    var fd=new FormData();
+    fd.append('file',file);fd.append('api_key',sig.api_key);
+    fd.append('timestamp',String(sig.timestamp));fd.append('signature',sig.signature);
+    fd.append('folder',folder);
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+sig.cloud+'/image/upload',{method:'POST',body:fd});
+    var data=await res.json();
+    if(data.secure_url){
+      eEditPhotos.push(data.secure_url);
+      eRenderPhotos();
+      toast('✓','Foto agregada ✅');
+    } else {toast('❌','Error al subir foto');}
+  }catch(err){toast('❌','Error al subir foto');}
 }
 async function saveEdit(){
   const saveBtn=document.getElementById('edit-save-btn');
@@ -1827,7 +1884,8 @@ async function saveEdit(){
     notas:document.getElementById('e-notas').value,
     total:parseFloat(document.getElementById('e-total').value)||0,
     anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
-    restante:parseFloat(document.getElementById('e-restante').value)||0
+    restante:parseFloat(document.getElementById('e-restante').value)||0,
+    imagen:eEditPhotos.join('|')
   };
   try{
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
