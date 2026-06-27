@@ -1808,30 +1808,32 @@ async function execDelete(){
   }catch(e){toast('❌','Error de conexión');}
 }
 
+function eAttr(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+function eHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function openEditModal(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
-  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent=`Editar Folio #${String(o.folio).padStart(4,'0')}`;
-  document.getElementById('edit-modal-body').innerHTML=`
-    <div class="form-group"><label class="field-label">📷 Fotos del pedido</label>
-      <div class="photos-grid" id="e-photos-grid"></div>
-      <input type="file" id="e-photo-input" accept="image/*" style="display:none" onchange="eHandlePhoto(event)">
-    </div>
-    <div class="form-row"><div class="form-group"><label class="field-label">Cliente</label><input type="text" id="e-cliente" value="${o.cliente||''}"></div><div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="e-tel" value="${o.telefono||''}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="field-label">Fecha entrega</label><input type="date" id="e-fecha" value="${o.fechaEntrega||''}"></div><div class="form-group"><label class="field-label">Hora</label><input type="text" id="e-hora" value="${o.hora||''}" placeholder="3:00 PM"></div></div>
-    <div class="form-group"><label class="field-label">Tipo de entrega</label><select id="e-tipo"><option value="sucursal" ${o.tipoEntrega==='sucursal'?'selected':''}>Recoger en sucursal</option><option value="domicilio" ${o.tipoEntrega==='domicilio'?'selected':''}>Domicilio</option></select></div>
-    <div class="form-group"><label class="field-label">Sucursal</label><select id="e-suc"><option ${o.sucursal==='Otay'?'selected':''}>Otay</option><option ${o.sucursal==='Zona Río'?'selected':''}>Zona Río</option><option ${o.sucursal==='Monarca'?'selected':''}>Monarca</option></select></div>
-    <div class="form-group"><label class="field-label">Dirección</label><input type="text" id="e-dir" value="${o.direccion||''}"></div>
-    <div class="form-group"><label class="field-label">Productos</label><textarea id="e-prods" style="min-height:80px">${o.productos||''}</textarea></div>
-    <div class="form-group"><label class="field-label">Adicionales</label><input type="text" id="e-adic" value="${o.adicionales||''}"></div>
-    <div class="form-group"><label class="field-label">Notas generales</label><textarea id="e-notas">${o.notas||''}</textarea></div>
-    <div class="totals-grid" style="margin-bottom:0.7rem">
-      <div class="form-group" style="margin-bottom:0"><label class="field-label">Total $</label><input type="number" id="e-total" value="${o.total||0}" step="0.01"></div>
-      <div class="form-group" style="margin-bottom:0"><label class="field-label">Anticipo $</label><input type="number" id="e-anticipo" value="${o.anticipo||0}" step="0.01"></div>
-      <div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="e-restante" value="${o.restante||0}" step="0.01"></div>
-    </div>
-    <div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>`;
+  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
+  document.getElementById('edit-modal-body').innerHTML=
+    '<div class="form-group"><label class="field-label">📷 Fotos del pedido</label>'+
+      '<div class="photos-grid" id="e-photos-grid"></div>'+
+      '<input type="file" id="e-photo-input" accept="image/*" style="display:none" onchange="eHandlePhoto(event)">'+
+    '</div>'+
+    '<div class="form-row"><div class="form-group"><label class="field-label">Cliente</label><input type="text" id="e-cliente" value="'+eAttr(o.cliente)+'"></div><div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="e-tel" value="'+eAttr(o.telefono)+'"></div></div>'+
+    '<div class="form-row"><div class="form-group"><label class="field-label">Fecha entrega</label><input type="date" id="e-fecha" value="'+eAttr(o.fechaEntrega)+'"></div><div class="form-group"><label class="field-label">Hora</label><input type="text" id="e-hora" value="'+eAttr(o.hora)+'" placeholder="3:00 PM"></div></div>'+
+    '<div class="form-group"><label class="field-label">Tipo de entrega</label><select id="e-tipo"><option value="sucursal"'+(o.tipoEntrega==='sucursal'?' selected':'')+'>Recoger en sucursal</option><option value="domicilio"'+(o.tipoEntrega==='domicilio'?' selected':'')+'>Domicilio</option></select></div>'+
+    '<div class="form-group"><label class="field-label">Sucursal</label><select id="e-suc"><option'+(o.sucursal==='Otay'?' selected':'')+'>Otay</option><option'+(o.sucursal==='Zona Río'?' selected':'')+'>Zona Río</option><option'+(o.sucursal==='Monarca'?' selected':'')+'>Monarca</option></select></div>'+
+    '<div class="form-group"><label class="field-label">Dirección</label><input type="text" id="e-dir" value="'+eAttr(o.direccion)+'"></div>'+
+    '<div class="form-group"><label class="field-label">Productos</label><textarea id="e-prods" style="min-height:80px">'+eHtml(o.productos)+'</textarea></div>'+
+    '<div class="form-group"><label class="field-label">Adicionales</label><input type="text" id="e-adic" value="'+eAttr(o.adicionales)+'"></div>'+
+    '<div class="form-group"><label class="field-label">Notas generales</label><textarea id="e-notas">'+eHtml(o.notas)+'</textarea></div>'+
+    '<div class="totals-grid" style="margin-bottom:0.7rem">'+
+      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Total $</label><input type="number" id="e-total" value="'+eAttr(o.total||0)+'" step="0.01"></div>'+
+      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Anticipo $</label><input type="number" id="e-anticipo" value="'+eAttr(o.anticipo||0)+'" step="0.01"></div>'+
+      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="e-restante" value="'+eAttr(o.restante||0)+'" step="0.01"></div>'+
+    '</div>'+
+    '<div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>';
   document.getElementById('edit-modal').classList.add('open');
-  setTimeout(function(){eRenderPhotos();},10);
+  eRenderPhotos();
 }
 function eRenderPhotos(){
   var grid=document.getElementById('e-photos-grid');
