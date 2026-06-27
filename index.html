@@ -1831,6 +1831,7 @@ function openEditModal(folio){
     </div>
     <div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>`;
   document.getElementById('edit-modal').classList.add('open');
+  setTimeout(function(){eRenderPhotos();},10);
 }
 function eRenderPhotos(){
   var grid=document.getElementById('e-photos-grid');
