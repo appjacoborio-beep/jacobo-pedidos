@@ -1223,7 +1223,7 @@ function renderBPhotos(){
   var html='';
   b.photos.forEach(function(url,i){
     html+='<div class="photo-thumb-wrap">';
-    html+='<img src="'+url+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\'" onerror="this.style.display=\'none\'" alt="Foto">';
+    html+='<img src="'+url+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';
     html+='<button class="photo-thumb-del" onclick="bRemovePhoto('+i+')">&#x2715;</button>';
     html+='</div>';
   });
