@@ -757,6 +757,7 @@ function getFmtLabel(grupo,tamId){
 function getPrecio(){return PRECIOS_RELLENO[b.fmtTamano]||{};}
 
 // ── render ──
+function bEsc(v){return String(v||'').replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$\{/g,'\\${');}
 function renderBuilder(){
   const body=document.getElementById('builder-body');
   const fKey=getFmtKey();
@@ -984,7 +985,7 @@ function renderBuilder(){
       <div class="step-header"><div class="step-num">1</div><div class="step-title">Tipo de pan</div></div>
       <textarea placeholder="Ej: Cuernitos, teleras, bolillos, pan dulce surtido..."
         style="width:100%;min-height:80px;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:0.85rem;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:0.4rem"
-        oninput="b.panDesc=this.value">${b.panDesc||''}</textarea>
+        oninput="b.panDesc=this.value">${bEsc(b.panDesc)}</textarea>
       <div style="font-size:0.72rem;color:var(--muted)">📝 Describe el tipo de pan que se necesita</div>
     </div>
 
@@ -1050,13 +1051,13 @@ function renderBuilder(){
       <div class="step-header"><div class="step-num">📝</div><div class="step-title">Detalles de este producto</div></div>
       ${b.cat!=='pan'?`
       <div class="form-group"><label class="field-label">Mensaje / Dedicatoria</label>
-        <input type="text" id="b-mensaje" value="${b.mensaje}" placeholder='"¡Feliz Cumpleaños Ana!"' oninput="b.mensaje=this.value">
+        <input type="text" id="b-mensaje" value="${bEsc(b.mensaje)}" placeholder='"¡Feliz Cumpleaños Ana!"' oninput="b.mensaje=this.value">
       </div>
       <div class="form-group"><label class="field-label">Tema / Decoración</label>
-        <input type="text" id="b-tema" value="${b.tema}" placeholder="Flores rosas, Hello Kitty..." oninput="b.tema=this.value">
+        <input type="text" id="b-tema" value="${bEsc(b.tema)}" placeholder="Flores rosas, Hello Kitty..." oninput="b.tema=this.value">
       </div>
       <div class="form-group"><label class="field-label">Alergias o restricciones</label>
-        <input type="text" id="b-alergias" value="${b.alergias}" placeholder="Sin gluten, sin lactosa..." oninput="b.alergias=this.value">
+        <input type="text" id="b-alergias" value="${bEsc(b.alergias)}" placeholder="Sin gluten, sin lactosa..." oninput="b.alergias=this.value">
       </div>
 `:''}
             <div class="form-group"><label class="field-label">🖨️ Link de impresiones (Drive)</label>
@@ -1064,7 +1065,7 @@ function renderBuilder(){
         <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Pega el link de Drive con las imágenes de impresión de azúcar</div>
       </div>
       <div class="form-group" style="margin-bottom:0"><label class="field-label">Notas adicionales</label>
-        <textarea id="b-notas" placeholder="Cualquier detalle especial..." oninput="b.notas=this.value">${b.notas}</textarea>
+        <textarea id="b-notas" placeholder="Cualquier detalle especial..." oninput="b.notas=this.value">${bEsc(b.notas)}</textarea>
       </div>
     </div>
 
@@ -1097,7 +1098,7 @@ function renderBuilder(){
         <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(-1)">−</button>
         <span id="b-qty-display" style="font-size:1.1rem;font-weight:700;color:var(--navy);min-width:24px;text-align:center">${b.qty}</span>
         <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(1)">+</button>
-        <input type="text" id="b-nota" value="${b.nota}" placeholder="Nota del producto..." style="flex:1;font-size:0.82rem" oninput="b.nota=this.value">
+        <input type="text" id="b-nota" value="${bEsc(b.nota)}" placeholder="Nota del producto..." style="flex:1;font-size:0.82rem" oninput="b.nota=this.value">
       </div>
     </div>
 
