@@ -1966,43 +1966,40 @@ function printNota(folio){
 
   // Parser que desglosa un item en campos clave-valor
   function parseItem(linea){
-    // Quitar ImpLink
-    linea = linea.replace(/🖨️ ImpLink:.*?(\n|$|\s*\|\|)/g,'').trim();
+    linea = linea.replace(/\uD83D\uDDB8\uFE0F ImpLink:.*?(\n|$|\s*\|\|)/g,'').trim();
     var campos = [];
-
-    // Extraer encabezado: "[1] Pastel Combinado · Redondo 10 in ×1 — Sabores: X"
-    var encabezado = linea.split('|')[0].trim();
-
-    // Tipo de producto (antes del ·)
+    var partes = linea.split('|').map(function(p){return p.trim();}).filter(Boolean);
+    var encabezado = partes[0] || '';
     var tipoParte = encabezado.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
     var tipo = tipoParte ? tipoParte[1].trim() : '';
-
-    // Tamaño (entre · y —)
     var tamanoParte = encabezado.match(/·\s*(.+?)(?:\s*—|$)/);
-    var tamano = tamanoParte ? tamanoParte[1].trim() : '';
-
-    // Sabores (después de — Sabores: o — )
-    var saboresParte = encabezado.match(/—\s*(?:Sabores?:\s*)?(.+)$/);
-    var sabores = saboresParte ? saboresParte[1].trim() : '';
-
-    if(tipo) campos.push({k:'Producto', v:tipo});
+    var tamanoRaw = tamanoParte ? tamanoParte[1].trim() : '';
+    var cantMatch = tamanoRaw.match(/×(\d+)/);
+    var cantidad = cantMatch ? cantMatch[1] : '1';
+    var tamano = tamanoRaw.replace(/×\d+/,'').trim();
+    var baseParte = encabezado.match(/—\s*(?:Sabores?:\s*|Base:\s*)?(.+)$/);
+    var base = baseParte ? baseParte[1].trim() : '';
+    var labelMap = {
+      'base':'Base','relleno':'Relleno','especial':'Relleno Especial',
+      'toppings':'Relleno','topping':'Relleno','sabores':'Sabor','sabor':'Sabor',
+      'mensaje':'Mensaje','temática':'Temática','tematica':'Temática',
+      'dec':'Decoración','dec.':'Decoración','nota':'Notas','notas':'Notas'
+    };
+    if(tipo) campos.push({k:'Tipo', v:tipo});
     if(tamano) campos.push({k:'Tamaño', v:tamano});
-    if(sabores) campos.push({k:'Sabor', v:sabores});
-
-    // Resto de campos separados por |
-    var partes = linea.split('|').slice(1);
-    partes.forEach(function(p){
-      p = p.trim();
-      if(!p) return;
-      var match = p.match(/^([^:]+):\s*(.+)$/);
+    if(parseInt(cantidad)>1) campos.push({k:'Cantidad', v:'×'+cantidad});
+    if(base) campos.push({k:'Base', v:base});
+    partes.slice(1).forEach(function(p){
+      var limpio = p.replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[\u2600-\u27BF]/g,'').trim();
+      if(!limpio) return;
+      var match = limpio.match(/^([^:]+):\s*(.+)$/);
       if(match){
-        var k = match[1].trim().replace(/[🎨🎭🖨️✨🎂]/g,'').trim();
-        var v = match[2].trim();
-        campos.push({k:k, v:v});
+        var rawKey = match[1].trim().toLowerCase();
+        var val = match[2].trim();
+        var label = labelMap[rawKey] || match[1].trim();
+        campos.push({k:label, v:val});
       } else {
-        // Sin clave, es una nota/decoración
-        var limpio = p.replace(/[🎨🎭🖨️✨🎂]/g,'').trim();
-        if(limpio) campos.push({k:'Dec.', v:limpio});
+        if(limpio) campos.push({k:'Notas', v:limpio});
       }
     });
     return campos;
@@ -2011,25 +2008,26 @@ function printNota(folio){
   function renderItem(linea){
     var campos = parseItem(linea);
     if(!campos.length) return '';
-    return '<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'+
+    return '<table style="width:100%;border-collapse:collapse">'+
       campos.map(function(c){
         return '<tr>'+
-          '<td style="font-weight:700;font-size:10px;color:#1B2A6B;padding:2px 8px 2px 2px;white-space:nowrap;vertical-align:top;width:90px">'+c.k+'</td>'+
-          '<td style="font-size:10.5px;padding:2px 2px;border-bottom:1px solid #ddd;vertical-align:top">'+c.v+'</td>'+
+          '<td style="font-weight:700;font-size:11px;color:#1B2A6B;padding:3px 10px 3px 2px;white-space:nowrap;vertical-align:top;width:95px">'+c.k+'</td>'+
+          '<td style="font-size:11px;padding:3px 2px;border-bottom:1px solid #ddd;vertical-align:top;line-height:1.4">'+c.v+'</td>'+
         '</tr>';
       }).join('')+
     '</table>';
   }
 
   function renderProds(txt){
-    if(!txt) return '<div style="font-size:10px;color:#888">—</div>';
+    if(!txt) return '<div style="font-size:11px;color:#888">—</div>';
     var items = txt.split(' || ').filter(function(l){
       return l.trim() && !l.includes('ImpLink:');
     });
     return items.map(function(item, i){
-      return (items.length>1?'<div style="font-size:9px;font-weight:700;color:#1B2A6B;margin-bottom:3px">Producto '+(i+1)+'</div>':'')+
-        renderItem(item);
-    }).join('<hr style="border:none;border-top:1px dashed #1B2A6B;margin:6px 0">');
+      var header = items.length>1 ?
+        '<div style="font-size:11px;font-weight:800;color:white;background:#1B2A6B;padding:3px 8px;border-radius:3px;margin-bottom:5px">PRODUCTO '+(i+1)+'</div>' : '';
+      return header + renderItem(item);
+    }).join('<div style="border-top:1.5px dashed #1B2A6B;margin:8px 0"></div>');
   }
 
   var prodsTxt=buildProds(o.productos);
