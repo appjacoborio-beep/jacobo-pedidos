@@ -1394,7 +1394,6 @@ async function sendOrder(){
     clearTimeout(timeout);
     const result=await res.json();
     if(result.ok){
-      // If there's an image URL, update it separately
       clearForm();updateBadge();
       toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
     } else {
