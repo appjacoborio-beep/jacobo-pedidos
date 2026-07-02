@@ -1658,114 +1658,58 @@ function renderOrders(){
 
 function renderProductLines(prodLines){
   if(!prodLines.length)return'';
+  var EM='\u2014';
   var html='<div class="oc-products"><div class="oc-products-title">Productos</div>';
-
-  // Mapa de emojis a etiquetas
-  function detectEmoji(p){
-    if(p.indexOf('\uD83D\uDCAC')>=0&&p.indexOf('\uD83D\uDCAC')<=3)return'Mensaje';
-    if(p.indexOf('\uD83C\uDFA8')>=0&&p.indexOf('\uD83C\uDFA8')<=3)return'Tema/Decoración';
-    if(p.indexOf('\u26A0')>=0&&p.indexOf('\u26A0')<=3)return'Alergias';
-    if(p.indexOf('\uD83D\uDCDD')>=0&&p.indexOf('\uD83D\uDCDD')<=3)return'Notas adicionales';
-    return null;
-  }
-
-  var labelMap={
-    'base':'Base','relleno':'Relleno','rellenos':'Relleno',
-    'especial':'Relleno Especial','toppings':'Relleno','topping':'Relleno',
-    'extra':'Extra','sabores':'Sabor','sabor':'Sabor',
-    'mensaje':'Mensaje','temática':'Tema/Decoración','tematica':'Tema/Decoración',
-    'tema':'Tema/Decoración','dec':'Decoración','dec.':'Decoración',
-    'nota':'Nota del producto','notas':'Notas adicionales',
-    'alergias':'Alergias','alergia':'Alergias',
-    'fruta':'Fruta','piso':'Piso','adicionales':'Adicionales'
-  };
-
-  var iconMap={
-    'Base':'','Relleno':'','Relleno Especial':'',
-    'Sabor':'','Extra':'','Tema/Decoración':'',
-    'Mensaje':'','Alergias':'','Notas adicionales':'',
-    'Nota del producto':'','Decoración':'',
-    'Fruta':'','Piso':'','Adicionales':'',
-    'Cantidad':'','Tamaño':''
-  };
-
-  var saboresKnown=['Vainilla','Chocolate','Fresa','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
-
-  prodLines.forEach(function(linea, idx){
-    linea = linea.replace(/\uD83D\uDDB8\uFE0F ImpLink:[^\|]*/g,'').trim();
-    if(!linea)return;
-
-    var partes = linea.split('|').map(function(p){return p.trim();}).filter(Boolean);
-    var enc = partes[0]||'';
-
-    // Extraer producto y sabor
-    var tipoParte = enc.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
-    var tipoRaw = tipoParte?tipoParte[1].trim():'';
-    var producto=tipoRaw, sabor='';
-    for(var s=0;s<saboresKnown.length;s++){
-      if(tipoRaw.indexOf(saboresKnown[s])>=0){
-        sabor=saboresKnown[s];
-        producto=tipoRaw.replace(saboresKnown[s],'').trim();
-        break;
-      }
-    }
-
-    // Tamaño y cantidad
-    var tamParte=enc.match(/·\s*(.+?)(?:\s*—|$)/);
-    var tamRaw=tamParte?tamParte[1].trim():'';
-    var cantM=tamRaw.match(/×(\d+)/);
-    var cantidad=cantM?cantM[1]:'1';
-    var tamano=tamRaw.replace(/×\d+/,'').trim();
-
-    // Base
-    var baseParte=enc.match(/—\s*(?:Sabores?:\s*|Base:\s*)?(.+)$/);
-    var base=baseParte?baseParte[1].trim():'';
-
-    // Fondant check
-    var hasFondant=linea.toLowerCase().includes('fondant');
-
-    html+='<div class="oc-product-item">';
-    html+='<div class="oc-product-name">';
-    if(prodLines.length>1)html+='<span style="color:var(--navy);font-weight:700">['+( idx+1)+'] </span>';
-    html+=producto;
-    if(hasFondant)html+=' <span class="oc-fondant-badge">🎭 FONDANT</span>';
-    html+='</div>';
-    html+='<div class="oc-product-detail">';
-
-    function row(label, val){
-      html+='<div class="oc-spec-row"><span class="oc-spec-label">'+label+':</span><span class="oc-spec-val">'+val+'</span></div>';
-    }
-
-    if(sabor) row('Sabor', sabor);
-    if(tamano) row('Tamaño', tamano);
-    if(parseInt(cantidad)>1) row('Cantidad', '×'+cantidad);
-    if(base) row('Base', base);
-
-    partes.slice(1).forEach(function(p){
-      var emojiLabel=detectEmoji(p);
-      var limpio=p.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]\uFE0F?/g,'').trim();
-      if(!limpio)return;
-      if(emojiLabel){
-        var vm=limpio.match(/^[^:]+:\s*(.+)$/);
-        row(emojiLabel, vm?vm[1].trim():limpio);
+  prodLines.forEach(function(p){
+    var di=p.indexOf(' '+EM+' ');
+    var pname=di>=0?p.slice(0,di):p;
+    var raw=di>=0?p.slice(di+3):'';
+    var specs=[];
+    if(raw){
+      if(raw.indexOf(' | ')>=0){
+        specs=raw.split(' | ').map(function(s){return s.trim();}).filter(Boolean);
       } else {
-        var m=limpio.match(/^([^:]+):\s*(.+)$/);
-        if(m){
-          var rk=m[1].trim().toLowerCase();
-          row(labelMap[rk]||m[1].trim(), m[2].trim());
-        } else if(limpio){
-          row('Notas', limpio);
-        }
+        var labels=['Base:','Toppings:','Topping:','Fruta:','Extra:','Relleno:','Rellenos:','Especial:','Sabor:','Piso ','Adicionales:','Nota:','Notas:'];
+        var regex=new RegExp('(?=(?:'+labels.map(function(l){return l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|')+'))');
+        specs=raw.split(regex).map(function(s){return s.trim();}).filter(Boolean);
+        if(specs.length<=1)specs=raw?[raw]:[];
       }
-    });
-
-    html+='</div></div>';
+    }
+    html+='<div class="oc-product-item"><div class="oc-product-name">'+pname+'</div>';
+    if(specs.length){
+      html+='<div class="oc-product-detail">';
+      specs.forEach(function(s){
+        var temaEmoji='\ud83c\udfa8';
+        var mensajeEmoji='\ud83d\udcac';
+        var alertEmoji='\u26a0';
+        var colon=s.indexOf(':');
+        var hasLabel=colon>0&&colon<30;
+        var label=hasLabel?s.slice(0,colon+1):'';
+        var val=hasLabel?s.slice(colon+1).trim():s;
+        var sl=s.toLowerCase();
+        var icon='&#9658;';
+        if(sl.startsWith('base:')){icon='&#127854;';label='Relleno:';}
+        else if(sl.startsWith('topping'))icon='&#127827;';
+        else if(sl.startsWith('fruta:'))icon='&#127825;';
+        else if(sl.startsWith('extra:'))icon='&#10024;';
+        else if(sl.startsWith('relleno'))icon='&#127854;';
+        else if(sl.startsWith('especial:'))icon='&#11088;';
+        else if(sl.startsWith('sabor:'))icon='&#129473;';
+        else if(sl.startsWith('piso'))icon='&#127959;';
+        else if(sl.startsWith('nota'))icon='&#128203;';
+        else if(sl.startsWith('adicionales:'))icon='&#10133;';
+        if(s.indexOf(temaEmoji)>=0){label='Tem\u00e1tica:';val=s.replace(temaEmoji,'').trim();icon='&#127775;';}
+        if(s.indexOf(mensajeEmoji)>=0){label='Mensaje:';val=s.replace(mensajeEmoji,'').trim();icon='&#128172;';}
+        if(s.indexOf(alertEmoji)>=0&&!hasLabel){label='Alergia:';val=s.replace(alertEmoji,'').trim();icon='&#9888;';}
+        html+='<div class="oc-spec-row"><span class="oc-spec-label">'+icon+' '+label+'</span><span class="oc-spec-val">'+val+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
   });
-
   html+='</div>';
   return html;
 }
-
 
 function renderOrdersList(visOrders){
   let vis=visOrders;
@@ -2249,78 +2193,26 @@ function printNota(folio){
 
   function resumeProds(txt){
     if(!txt) return '—';
-    var saboresKnown=['Vainilla','Chocolate','Fresa','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
-    function detectEmoji(p){
-      if(p.indexOf('\uD83D\uDCAC')>=0&&p.indexOf('\uD83D\uDCAC')<=3)return'Mensaje';
-      if(p.indexOf('\uD83C\uDFA8')>=0&&p.indexOf('\uD83C\uDFA8')<=3)return'Tema/Dec.';
-      if(p.indexOf('\u26A0')>=0&&p.indexOf('\u26A0')<=3)return'Alergias';
-      if(p.indexOf('\uD83D\uDCDD')>=0&&p.indexOf('\uD83D\uDCDD')<=3)return'Notas';
-      return null;
-    }
-    var lm={'base':'Base','relleno':'Relleno','toppings':'Relleno','topping':'Relleno',
-      'especial':'Relleno Especial','extra':'Extra','sabor':'Sabor','sabores':'Sabor',
-      'mensaje':'Mensaje','temática':'Tema/Dec.','tematica':'Tema/Dec.','tema':'Tema/Dec.',
-      'dec':'Tema/Dec.','dec.':'Tema/Dec.','nota':'Notas','notas':'Notas',
-      'alergias':'Alergias','alergia':'Alergias'};
-    var showFields=['Base','Relleno','Relleno Especial','Extra','Sabor','Mensaje','Tema/Dec.'];
-
     return txt.split(' || ').filter(function(l){
       return l.trim() && !l.includes('ImpLink:');
     }).map(function(item, i){
+      // Extraer info básica: tipo+sabor, tamaño
       item = item.replace(/\uD83D\uDDB8\uFE0F ImpLink:[^\|]*/g,'').trim();
-      var partes = item.split('|').map(function(p){return p.trim();}).filter(Boolean);
-      var enc = partes[0]||'';
-
-      // Tipo y sabor
+      var enc = item.split('|')[0];
       var tipoParte = enc.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
-      var tipoRaw = tipoParte?tipoParte[1].trim():'';
-      var producto=tipoRaw, sabor='';
-      for(var s=0;s<saboresKnown.length;s++){
-        if(tipoRaw.indexOf(saboresKnown[s])>=0){sabor=saboresKnown[s];producto=tipoRaw.replace(saboresKnown[s],'').trim();break;}
-      }
-      var tamParte=enc.match(/·\s*(.+?)(?:\s*—|$)/);
-      var tamRaw=tamParte?tamParte[1].trim():'';
-      var cantM=tamRaw.match(/×(\d+)/);
-      var cant=cantM?' ×'+cantM[1]:'';
-      var tam=tamRaw.replace(/×\d+/,'').trim();
-      var base=enc.match(/—\s*(?:Sabores?:\s*|Base:\s*)?(.+)$/);
-      var baseVal=base?base[1].trim():'';
-
-      // Detalles adicionales
-      var detalles=[];
-      if(sabor) detalles.push({k:'Sabor',v:sabor});
-      if(baseVal) detalles.push({k:'Base',v:baseVal});
-
-      partes.slice(1).forEach(function(p){
-        var emojiLabel=detectEmoji(p);
-        var limpio=p.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]\uFE0F?/g,'').trim();
-        if(!limpio)return;
-        if(emojiLabel){
-          var vm=limpio.match(/^[^:]+:\s*(.+)$/);
-          detalles.push({k:emojiLabel,v:vm?vm[1].trim():limpio});
-        } else {
-          var m=limpio.match(/^([^:]+):\s*(.+)$/);
-          if(m){
-            var rk=m[1].trim().toLowerCase();
-            var lbl=lm[rk]||m[1].trim();
-            if(showFields.indexOf(lbl)>=0) detalles.push({k:lbl,v:m[2].trim()});
-          }
-        }
-      });
-
-      var detalleHtml=detalles.map(function(d){
-        return '<span style="margin-right:8px"><b>'+d.k+':</b> '+d.v+'</span>';
-      }).join('');
-
-      return '<div style="padding:3px 0;border-bottom:1px solid rgba(27,42,107,0.15);font-size:inherit">'+
-        '<div><b>'+(i+1)+'. '+producto+'</b>'+(tam?' — '+tam:'')+(cant?cant:'')+'</div>'+
-        (detalleHtml?'<div style="font-size:0.9em;color:#333;margin-top:1px">'+detalleHtml+'</div>':'')+
+      var tipo = tipoParte ? tipoParte[1].trim() : '';
+      var tamParte = enc.match(/·\s*(.+?)(?:\s*—|$)/);
+      var tam = tamParte ? tamParte[1].replace(/×\d+/,'').trim() : '';
+      var cantM = tamParte ? tamParte[1].match(/×(\d+)/) : null;
+      var cant = cantM ? ' ×'+cantM[1] : '';
+      return '<div style="padding:2px 0;border-bottom:1px solid rgba(27,42,107,0.15);font-size:inherit">'+
+        '<b>'+(i+1)+'. '+tipo+'</b>'+(tam?' — '+tam:'')+(cant?cant:'')+
       '</div>';
     }).join('');
   }
 
   function notaTicket(bg){
-    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:8px 12px;box-sizing:border-box;height:100%;overflow:hidden;font-size:8px">'+
+    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:8px 12px;box-sizing:border-box;height:100%;overflow:hidden;font-size:9px">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;padding-bottom:5px;border-bottom:1.5px solid #1B2A6B">'+
         '<div style="display:flex;align-items:center;gap:6px">'+
           '<img src="'+LOGO+'" style="width:34px;height:34px;object-fit:contain">'+
