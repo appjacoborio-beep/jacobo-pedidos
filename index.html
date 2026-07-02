@@ -1658,58 +1658,114 @@ function renderOrders(){
 
 function renderProductLines(prodLines){
   if(!prodLines.length)return'';
-  var EM='\u2014';
   var html='<div class="oc-products"><div class="oc-products-title">Productos</div>';
-  prodLines.forEach(function(p){
-    var di=p.indexOf(' '+EM+' ');
-    var pname=di>=0?p.slice(0,di):p;
-    var raw=di>=0?p.slice(di+3):'';
-    var specs=[];
-    if(raw){
-      if(raw.indexOf(' | ')>=0){
-        specs=raw.split(' | ').map(function(s){return s.trim();}).filter(Boolean);
-      } else {
-        var labels=['Base:','Toppings:','Topping:','Fruta:','Extra:','Relleno:','Rellenos:','Especial:','Sabor:','Piso ','Adicionales:','Nota:','Notas:'];
-        var regex=new RegExp('(?=(?:'+labels.map(function(l){return l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|')+'))');
-        specs=raw.split(regex).map(function(s){return s.trim();}).filter(Boolean);
-        if(specs.length<=1)specs=raw?[raw]:[];
+
+  // Mapa de emojis a etiquetas
+  function detectEmoji(p){
+    if(p.indexOf('\uD83D\uDCAC')>=0&&p.indexOf('\uD83D\uDCAC')<=3)return'Mensaje';
+    if(p.indexOf('\uD83C\uDFA8')>=0&&p.indexOf('\uD83C\uDFA8')<=3)return'Tema/Decoración';
+    if(p.indexOf('\u26A0')>=0&&p.indexOf('\u26A0')<=3)return'Alergias';
+    if(p.indexOf('\uD83D\uDCDD')>=0&&p.indexOf('\uD83D\uDCDD')<=3)return'Notas adicionales';
+    return null;
+  }
+
+  var labelMap={
+    'base':'Base','relleno':'Relleno','rellenos':'Relleno',
+    'especial':'Relleno Especial','toppings':'Relleno','topping':'Relleno',
+    'extra':'Extra','sabores':'Sabor','sabor':'Sabor',
+    'mensaje':'Mensaje','temática':'Tema/Decoración','tematica':'Tema/Decoración',
+    'tema':'Tema/Decoración','dec':'Decoración','dec.':'Decoración',
+    'nota':'Nota del producto','notas':'Notas adicionales',
+    'alergias':'Alergias','alergia':'Alergias',
+    'fruta':'Fruta','piso':'Piso','adicionales':'Adicionales'
+  };
+
+  var iconMap={
+    'Base':'','Relleno':'','Relleno Especial':'',
+    'Sabor':'','Extra':'','Tema/Decoración':'',
+    'Mensaje':'','Alergias':'','Notas adicionales':'',
+    'Nota del producto':'','Decoración':'',
+    'Fruta':'','Piso':'','Adicionales':'',
+    'Cantidad':'','Tamaño':''
+  };
+
+  var saboresKnown=['Vainilla','Chocolate','Fresa','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
+
+  prodLines.forEach(function(linea, idx){
+    linea = linea.replace(/\uD83D\uDDB8\uFE0F ImpLink:[^\|]*/g,'').trim();
+    if(!linea)return;
+
+    var partes = linea.split('|').map(function(p){return p.trim();}).filter(Boolean);
+    var enc = partes[0]||'';
+
+    // Extraer producto y sabor
+    var tipoParte = enc.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
+    var tipoRaw = tipoParte?tipoParte[1].trim():'';
+    var producto=tipoRaw, sabor='';
+    for(var s=0;s<saboresKnown.length;s++){
+      if(tipoRaw.indexOf(saboresKnown[s])>=0){
+        sabor=saboresKnown[s];
+        producto=tipoRaw.replace(saboresKnown[s],'').trim();
+        break;
       }
     }
-    html+='<div class="oc-product-item"><div class="oc-product-name">'+pname+'</div>';
-    if(specs.length){
-      html+='<div class="oc-product-detail">';
-      specs.forEach(function(s){
-        var temaEmoji='\ud83c\udfa8';
-        var mensajeEmoji='\ud83d\udcac';
-        var alertEmoji='\u26a0';
-        var colon=s.indexOf(':');
-        var hasLabel=colon>0&&colon<30;
-        var label=hasLabel?s.slice(0,colon+1):'';
-        var val=hasLabel?s.slice(colon+1).trim():s;
-        var sl=s.toLowerCase();
-        var icon='&#9658;';
-        if(sl.startsWith('base:')){icon='&#127854;';label='Relleno:';}
-        else if(sl.startsWith('topping'))icon='&#127827;';
-        else if(sl.startsWith('fruta:'))icon='&#127825;';
-        else if(sl.startsWith('extra:'))icon='&#10024;';
-        else if(sl.startsWith('relleno'))icon='&#127854;';
-        else if(sl.startsWith('especial:'))icon='&#11088;';
-        else if(sl.startsWith('sabor:'))icon='&#129473;';
-        else if(sl.startsWith('piso'))icon='&#127959;';
-        else if(sl.startsWith('nota'))icon='&#128203;';
-        else if(sl.startsWith('adicionales:'))icon='&#10133;';
-        if(s.indexOf(temaEmoji)>=0){label='Tem\u00e1tica:';val=s.replace(temaEmoji,'').trim();icon='&#127775;';}
-        if(s.indexOf(mensajeEmoji)>=0){label='Mensaje:';val=s.replace(mensajeEmoji,'').trim();icon='&#128172;';}
-        if(s.indexOf(alertEmoji)>=0&&!hasLabel){label='Alergia:';val=s.replace(alertEmoji,'').trim();icon='&#9888;';}
-        html+='<div class="oc-spec-row"><span class="oc-spec-label">'+icon+' '+label+'</span><span class="oc-spec-val">'+val+'</span></div>';
-      });
-      html+='</div>';
-    }
+
+    // Tamaño y cantidad
+    var tamParte=enc.match(/·\s*(.+?)(?:\s*—|$)/);
+    var tamRaw=tamParte?tamParte[1].trim():'';
+    var cantM=tamRaw.match(/×(\d+)/);
+    var cantidad=cantM?cantM[1]:'1';
+    var tamano=tamRaw.replace(/×\d+/,'').trim();
+
+    // Base
+    var baseParte=enc.match(/—\s*(?:Sabores?:\s*|Base:\s*)?(.+)$/);
+    var base=baseParte?baseParte[1].trim():'';
+
+    // Fondant check
+    var hasFondant=linea.toLowerCase().includes('fondant');
+
+    html+='<div class="oc-product-item">';
+    html+='<div class="oc-product-name">';
+    if(prodLines.length>1)html+='<span style="color:var(--navy);font-weight:700">['+( idx+1)+'] </span>';
+    html+=producto;
+    if(hasFondant)html+=' <span class="oc-fondant-badge">🎭 FONDANT</span>';
     html+='</div>';
+    html+='<div class="oc-product-detail">';
+
+    function row(label, val){
+      html+='<div class="oc-spec-row"><span class="oc-spec-label">'+label+':</span><span class="oc-spec-val">'+val+'</span></div>';
+    }
+
+    if(sabor) row('Sabor', sabor);
+    if(tamano) row('Tamaño', tamano);
+    if(parseInt(cantidad)>1) row('Cantidad', '×'+cantidad);
+    if(base) row('Base', base);
+
+    partes.slice(1).forEach(function(p){
+      var emojiLabel=detectEmoji(p);
+      var limpio=p.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]\uFE0F?/g,'').trim();
+      if(!limpio)return;
+      if(emojiLabel){
+        var vm=limpio.match(/^[^:]+:\s*(.+)$/);
+        row(emojiLabel, vm?vm[1].trim():limpio);
+      } else {
+        var m=limpio.match(/^([^:]+):\s*(.+)$/);
+        if(m){
+          var rk=m[1].trim().toLowerCase();
+          row(labelMap[rk]||m[1].trim(), m[2].trim());
+        } else if(limpio){
+          row('Notas', limpio);
+        }
+      }
+    });
+
+    html+='</div></div>';
   });
+
   html+='</div>';
   return html;
 }
+
 
 function renderOrdersList(visOrders){
   let vis=visOrders;
@@ -1966,54 +2022,95 @@ function printNota(folio){
 
   // Parser que desglosa un item en campos clave-valor
   function parseItem(linea){
-    linea = linea.replace(/\uD83D\uDDB8\uFE0F ImpLink:.*?(\n|$|\s*\|\|)/g,'').trim();
+    // Quitar ImpLink
+    linea = linea.replace(/\uD83D\uDDB8\uFE0F ImpLink:[^\|]*/g,'').trim();
     var campos = [];
     var partes = linea.split('|').map(function(p){return p.trim();}).filter(Boolean);
-    var encabezado = partes[0] || '';
-    var tipoParte = encabezado.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
-    var tipo = tipoParte ? tipoParte[1].trim() : '';
-    var tamanoParte = encabezado.match(/·\s*(.+?)(?:\s*—|$)/);
-    var tamanoRaw = tamanoParte ? tamanoParte[1].trim() : '';
-    var cantMatch = tamanoRaw.match(/×(\d+)/);
-    var cantidad = cantMatch ? cantMatch[1] : '1';
-    var tamano = tamanoRaw.replace(/×\d+/,'').trim();
-    var baseParte = encabezado.match(/—\s*(?:Sabores?:\s*|Base:\s*)?(.+)$/);
-    var base = baseParte ? baseParte[1].trim() : '';
-    var labelMap = {
-      'base':'Base','relleno':'Relleno','especial':'Relleno Especial',
-      'toppings':'Relleno','topping':'Relleno','sabores':'Sabor','sabor':'Sabor',
-      'mensaje':'Mensaje','temática':'Temática','tematica':'Temática',
-      'dec':'Decoración','dec.':'Decoración','nota':'Notas','notas':'Notas'
+    var enc = partes[0]||'';
+
+    // Producto y sabor del encabezado
+    var saboresKnown=['Vainilla','Chocolate','Fresa','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
+    var tipoParte=enc.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
+    var tipoRaw=tipoParte?tipoParte[1].trim():'';
+    var producto=tipoRaw, sabor='';
+    for(var s=0;s<saboresKnown.length;s++){
+      if(tipoRaw.indexOf(saboresKnown[s])>=0){
+        sabor=saboresKnown[s];
+        producto=tipoRaw.replace(saboresKnown[s],'').trim();
+        break;
+      }
+    }
+
+    // Tamaño y cantidad
+    var tamParte=enc.match(/·\s*(.+?)(?:\s*—|$)/);
+    var tamRaw=tamParte?tamParte[1].trim():'';
+    var cantM=tamRaw.match(/×(\d+)/);
+    var cantidad=cantM?cantM[1]:'1';
+    var tamano=tamRaw.replace(/×\d+/,'').trim();
+
+    // Base (después del —)
+    var baseParte=enc.match(/—\s*(?:Sabores?:\s*|Base:\s*)?(.+)$/);
+    var base=baseParte?baseParte[1].trim():'';
+
+    if(producto) campos.push({k:'Producto',v:producto});
+    if(sabor) campos.push({k:'Sabor',v:sabor});
+    if(tamano) campos.push({k:'Tamaño',v:tamano});
+    if(parseInt(cantidad)>1) campos.push({k:'Cantidad',v:'×'+cantidad});
+    if(base) campos.push({k:'Base',v:base});
+
+    // Mapa texto→etiqueta
+    var lm={
+      'base':'Base','relleno':'Relleno','relleno especial':'Relleno Especial',
+      'especial':'Relleno Especial','toppings':'Relleno','topping':'Relleno',
+      'extra':'Extra','sabores':'Sabor','sabor':'Sabor',
+      'mensaje':'Mensaje','temática':'Tema/Decoración','tematica':'Tema/Decoración',
+      'tema':'Tema/Decoración','dec':'Decoración','dec.':'Decoración',
+      'nota':'Nota del producto','notas':'Notas adicionales',
+      'alergias':'Alergias o Restricciones','alergia':'Alergias o Restricciones',
+      'alergias o restricciones':'Alergias o Restricciones'
     };
-    if(tipo) campos.push({k:'Tipo', v:tipo});
-    if(tamano) campos.push({k:'Tamaño', v:tamano});
-    if(parseInt(cantidad)>1) campos.push({k:'Cantidad', v:'×'+cantidad});
-    if(base) campos.push({k:'Base', v:base});
+
+    // Mapa emoji→etiqueta (detectar ANTES de limpiar)
+    function detectEmoji(p){
+      if(p.indexOf('\uD83D\uDCAC')>=0&&p.indexOf('\uD83D\uDCAC')<=3) return 'Mensaje';        // 💬
+      if(p.indexOf('\uD83C\uDFA8')>=0&&p.indexOf('\uD83C\uDFA8')<=3) return 'Tema/Decoración'; // 🎨
+      if(p.indexOf('\u26A0')>=0&&p.indexOf('\u26A0')<=3) return 'Alergias o Restricciones';   // ⚠️
+      if(p.indexOf('\uD83D\uDCDD')>=0&&p.indexOf('\uD83D\uDCDD')<=3) return 'Notas adicionales';// 📝
+      return null;
+    }
+
     partes.slice(1).forEach(function(p){
-      var limpio = p.replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[\u2600-\u27BF]/g,'').trim();
+      var emojiLabel=detectEmoji(p);
+      // Limpiar emojis
+      var limpio=p.replace(/[\uD800-\uDFFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]\uFE0F?/g,'').trim();
       if(!limpio) return;
-      var match = limpio.match(/^([^:]+):\s*(.+)$/);
-      if(match){
-        var rawKey = match[1].trim().toLowerCase();
-        var val = match[2].trim();
-        var label = labelMap[rawKey] || match[1].trim();
-        campos.push({k:label, v:val});
+
+      if(emojiLabel){
+        // Si tiene "Label: valor" quitar el label redundante
+        var vm=limpio.match(/^[^:]+:\s*(.+)$/);
+        campos.push({k:emojiLabel,v:vm?vm[1].trim():limpio});
       } else {
-        if(limpio) campos.push({k:'Notas', v:limpio});
+        var m=limpio.match(/^([^:]+):\s*(.+)$/);
+        if(m){
+          var rk=m[1].trim().toLowerCase();
+          campos.push({k:lm[rk]||m[1].trim(),v:m[2].trim()});
+        } else {
+          campos.push({k:'Notas',v:limpio});
+        }
       }
     });
     return campos;
   }
 
+
   function renderItem(linea, fs){
-    fs = fs || '9.5px';
     var campos = parseItem(linea);
     if(!campos.length) return '';
     return '<table style="width:100%;border-collapse:collapse">'+
       campos.map(function(c){
         return '<tr>'+
-          '<td style="font-weight:700;font-size:'+fs+';color:#1B2A6B;padding:2px 8px 2px 2px;white-space:nowrap;vertical-align:top;width:90px">'+c.k+'</td>'+
-          '<td style="font-size:'+fs+';padding:2px 2px;border-bottom:1px solid #ddd;vertical-align:top;line-height:1.5">'+c.v+'</td>'+
+          '<td style="font-weight:700;font-size:inherit;color:#1B2A6B;padding:2px 8px 2px 2px;white-space:nowrap;vertical-align:top;width:90px">'+c.k+'</td>'+
+          '<td style="font-size:inherit;padding:2px 2px;border-bottom:1px solid #ddd;vertical-align:top;line-height:1.5">'+c.v+'</td>'+
         '</tr>';
       }).join('')+
     '</table>';
@@ -2116,45 +2213,117 @@ function printNota(folio){
     var sz = fs || '12px';
     var contenido =
       '<div style="margin-bottom:6px">'+
-        '<div style="background:#1B2A6B;color:white;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border-radius:3px 3px 0 0;text-align:center">Datos del Cliente</div>'+
+        '<div style="background:#1B2A6B;color:white;font-size:0.8em;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:3px 3px 0 0;text-align:center">Datos del Cliente</div>'+
         '<div style="border:1.5px solid #1B2A6B;border-top:none;border-radius:0 0 3px 3px;padding:6px 8px">'+
-          '<div style="display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;min-width:100px;font-size:'+sz+'">Nombre:</span><span style="font-size:'+sz+';border-bottom:1px solid #bbb;flex:1">'+(o.cliente||'—')+'</span></div>'+
-          '<div style="display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;min-width:100px;font-size:'+sz+'">Teléfono:</span><span style="font-size:'+sz+';border-bottom:1px solid #bbb;flex:1">'+(o.telefono||'—')+'</span></div>'+
-          '<div style="display:flex;gap:6px"><span style="font-weight:700;min-width:100px;font-size:'+sz+'">Sucursal/Dom:</span><span style="font-size:'+sz+';border-bottom:1px solid #bbb;flex:1">'+(o.sucursal||'—')+(o.direccion?' — '+o.direccion:'')+'</span></div>'+
+          '<div style="display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;min-width:100px;font-size:inherit">Nombre:</span><span style="font-size:inherit;border-bottom:1px solid #bbb;flex:1">'+(o.cliente||'—')+'</span></div>'+
+          '<div style="display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;min-width:100px;font-size:inherit">Teléfono:</span><span style="font-size:inherit;border-bottom:1px solid #bbb;flex:1">'+(o.telefono||'—')+'</span></div>'+
+          '<div style="display:flex;gap:6px"><span style="font-weight:700;min-width:100px;font-size:inherit">Sucursal/Dom:</span><span style="font-size:inherit;border-bottom:1px solid #bbb;flex:1">'+(o.sucursal||'—')+(o.direccion?' — '+o.direccion:'')+'</span></div>'+
         '</div>'+
       '</div>'+
       '<div style="margin-bottom:6px">'+
-        '<div style="background:#1B2A6B;color:white;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border-radius:3px 3px 0 0;text-align:center">Producto</div>'+
+        '<div style="background:#1B2A6B;color:white;font-size:0.8em;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:3px 3px 0 0;text-align:center">Producto</div>'+
         '<div style="border:1.5px solid #1B2A6B;border-top:none;border-radius:0 0 3px 3px;padding:6px 8px">'+
           renderProds(o.productos, sz)+
         '</div>'+
       '</div>'+
       (o.notas||o.adicionales?
         '<div style="margin-bottom:6px">'+
-          '<div style="background:#1B2A6B;color:white;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border-radius:3px 3px 0 0;text-align:center">Notas y Adicionales</div>'+
+          '<div style="background:#1B2A6B;color:white;font-size:0.8em;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:3px 3px 0 0;text-align:center">Notas y Adicionales</div>'+
           '<div style="border:1.5px solid #1B2A6B;border-top:none;border-radius:0 0 3px 3px;padding:6px 8px">'+
-            (o.notas?'<div style="font-size:'+sz+';margin-bottom:3px"><b>Notas:</b> '+o.notas+'</div>':'')+
-            (o.adicionales?'<div style="font-size:'+sz+'"><b>Adicionales:</b> '+o.adicionales+'</div>':'')+
+            (o.notas?'<div style="font-size:inherit;margin-bottom:3px"><b>Notas:</b> '+o.notas+'</div>':'')+
+            (o.adicionales?'<div style="font-size:inherit"><b>Adicionales:</b> '+o.adicionales+'</div>':'')+
           '</div>'+
         '</div>' : '')+
       '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:8px;padding-top:6px;border-top:1.5px dashed #1B2A6B">'+
         '<div style="border-top:1px solid #333;width:130px;font-size:10px;text-align:center;padding-top:3px;font-weight:600">Elaboró: '+(o.colaborador||'_______________')+'</div>'+
-        '<table style="font-size:'+sz+';border-collapse:collapse">'+
+        '<table style="font-size:inherit;border-collapse:collapse">'+
           '<tr><td style="padding:2px 8px 2px 0;font-weight:700">Total $</td><td style="border-bottom:1.5px solid #333;min-width:70px;text-align:right;padding:2px 4px;font-weight:600">'+(o.total?'$'+parseFloat(o.total).toFixed(2):'$')+'</td></tr>'+
           '<tr><td style="padding:2px 8px 2px 0;font-weight:700">Anticipo $</td><td style="border-bottom:1.5px solid #333;min-width:70px;text-align:right;padding:2px 4px;font-weight:600">'+(o.anticipo?'$'+parseFloat(o.anticipo).toFixed(2):'$')+'</td></tr>'+
           '<tr><td style="padding:2px 8px 2px 0;font-weight:700">Restante $</td><td style="border-bottom:1.5px solid #333;min-width:70px;text-align:right;padding:2px 4px;font-weight:600">'+(o.restante?'$'+parseFloat(o.restante).toFixed(2):'$')+'</td></tr>'+
         '</table>'+
       '</div>';
-    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:10px 12px;box-sizing:border-box">'+
+    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:8px 10px;box-sizing:border-box;font-size:'+sz+'">'+
       header(showFolioGrande)+contenido+
     '</div>';
   }
 
+  function resumeProds(txt){
+    if(!txt) return '—';
+    var saboresKnown=['Vainilla','Chocolate','Fresa','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
+    function detectEmoji(p){
+      if(p.indexOf('\uD83D\uDCAC')>=0&&p.indexOf('\uD83D\uDCAC')<=3)return'Mensaje';
+      if(p.indexOf('\uD83C\uDFA8')>=0&&p.indexOf('\uD83C\uDFA8')<=3)return'Tema/Dec.';
+      if(p.indexOf('\u26A0')>=0&&p.indexOf('\u26A0')<=3)return'Alergias';
+      if(p.indexOf('\uD83D\uDCDD')>=0&&p.indexOf('\uD83D\uDCDD')<=3)return'Notas';
+      return null;
+    }
+    var lm={'base':'Base','relleno':'Relleno','toppings':'Relleno','topping':'Relleno',
+      'especial':'Relleno Especial','extra':'Extra','sabor':'Sabor','sabores':'Sabor',
+      'mensaje':'Mensaje','temática':'Tema/Dec.','tematica':'Tema/Dec.','tema':'Tema/Dec.',
+      'dec':'Tema/Dec.','dec.':'Tema/Dec.','nota':'Notas','notas':'Notas',
+      'alergias':'Alergias','alergia':'Alergias'};
+    var showFields=['Base','Relleno','Relleno Especial','Extra','Sabor','Mensaje','Tema/Dec.'];
+
+    return txt.split(' || ').filter(function(l){
+      return l.trim() && !l.includes('ImpLink:');
+    }).map(function(item, i){
+      item = item.replace(/\uD83D\uDDB8\uFE0F ImpLink:[^\|]*/g,'').trim();
+      var partes = item.split('|').map(function(p){return p.trim();}).filter(Boolean);
+      var enc = partes[0]||'';
+
+      // Tipo y sabor
+      var tipoParte = enc.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
+      var tipoRaw = tipoParte?tipoParte[1].trim():'';
+      var producto=tipoRaw, sabor='';
+      for(var s=0;s<saboresKnown.length;s++){
+        if(tipoRaw.indexOf(saboresKnown[s])>=0){sabor=saboresKnown[s];producto=tipoRaw.replace(saboresKnown[s],'').trim();break;}
+      }
+      var tamParte=enc.match(/·\s*(.+?)(?:\s*—|$)/);
+      var tamRaw=tamParte?tamParte[1].trim():'';
+      var cantM=tamRaw.match(/×(\d+)/);
+      var cant=cantM?' ×'+cantM[1]:'';
+      var tam=tamRaw.replace(/×\d+/,'').trim();
+      var base=enc.match(/—\s*(?:Sabores?:\s*|Base:\s*)?(.+)$/);
+      var baseVal=base?base[1].trim():'';
+
+      // Detalles adicionales
+      var detalles=[];
+      if(sabor) detalles.push({k:'Sabor',v:sabor});
+      if(baseVal) detalles.push({k:'Base',v:baseVal});
+
+      partes.slice(1).forEach(function(p){
+        var emojiLabel=detectEmoji(p);
+        var limpio=p.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]\uFE0F?/g,'').trim();
+        if(!limpio)return;
+        if(emojiLabel){
+          var vm=limpio.match(/^[^:]+:\s*(.+)$/);
+          detalles.push({k:emojiLabel,v:vm?vm[1].trim():limpio});
+        } else {
+          var m=limpio.match(/^([^:]+):\s*(.+)$/);
+          if(m){
+            var rk=m[1].trim().toLowerCase();
+            var lbl=lm[rk]||m[1].trim();
+            if(showFields.indexOf(lbl)>=0) detalles.push({k:lbl,v:m[2].trim()});
+          }
+        }
+      });
+
+      var detalleHtml=detalles.map(function(d){
+        return '<span style="margin-right:8px"><b>'+d.k+':</b> '+d.v+'</span>';
+      }).join('');
+
+      return '<div style="padding:3px 0;border-bottom:1px solid rgba(27,42,107,0.15);font-size:inherit">'+
+        '<div><b>'+(i+1)+'. '+producto+'</b>'+(tam?' — '+tam:'')+(cant?cant:'')+'</div>'+
+        (detalleHtml?'<div style="font-size:0.9em;color:#333;margin-top:1px">'+detalleHtml+'</div>':'')+
+      '</div>';
+    }).join('');
+  }
+
   function notaTicket(bg){
-    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:8px 12px;box-sizing:border-box">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding-bottom:6px;border-bottom:1.5px solid #1B2A6B">'+
+    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:8px 12px;box-sizing:border-box;height:100%;overflow:hidden;font-size:8px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;padding-bottom:5px;border-bottom:1.5px solid #1B2A6B">'+
         '<div style="display:flex;align-items:center;gap:6px">'+
-          '<img src="'+LOGO+'" style="width:36px;height:36px;object-fit:contain">'+
+          '<img src="'+LOGO+'" style="width:34px;height:34px;object-fit:contain">'+
           '<div>'+
             '<div style="font-size:10px;font-weight:800;color:#1B2A6B">Pedidos Especiales</div>'+
             '<div style="font-size:7.5px;color:#444">Pastelería y Panadería Jacobo</div>'+
@@ -2162,7 +2331,7 @@ function printNota(folio){
           '</div>'+
         '</div>'+
         '<div style="text-align:center">'+
-          '<div style="border:2px solid #1B2A6B;border-radius:5px;padding:3px 8px">'+
+          '<div style="border:2px solid #1B2A6B;border-radius:5px;padding:2px 8px">'+
             '<div style="font-size:7px;font-weight:700;color:#1B2A6B;letter-spacing:1px">FOLIO</div>'+
             '<div style="font-size:18px;font-weight:900;color:#C0392B;line-height:1">N\u00ba '+folioStr+'</div>'+
           '</div>'+
@@ -2170,35 +2339,41 @@ function printNota(folio){
           '<div style="font-size:7.5px;color:#444"><b>Elaboración:</b> '+(o.fechaPedido||'—')+'</div>'+
         '</div>'+
       '</div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 10px;font-size:8.5px;margin-bottom:6px">'+
-        '<div><b>Cliente:</b><br>'+(o.cliente||'—')+'</div>'+
-        '<div><b>Teléfono:</b><br>'+(o.telefono||'—')+'</div>'+
-        '<div><b>Sucursal:</b><br>'+(o.sucursal||'—')+'</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px 10px;font-size:9px;margin-bottom:5px">'+
+        '<div><b>Cliente:</b> '+(o.cliente||'—')+'</div>'+
+        '<div><b>Tel:</b> '+(o.telefono||'—')+'</div>'+
+        '<div><b>Sucursal:</b> '+(o.sucursal||'—')+'</div>'+
       '</div>'+
-      '<div style="font-size:8.5px;margin-bottom:5px">'+renderProds(o.productos)+'</div>'+
-      (o.notas?'<div style="font-size:8px;margin-bottom:5px"><b>Notas:</b> '+o.notas+'</div>':'')+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px dashed #1B2A6B;padding-top:5px">'+
-        '<div style="border-top:1px solid #333;width:110px;font-size:7.5px;text-align:center;padding-top:2px">Elaboró: '+(o.colaborador||'_______________')+'</div>'+
-        '<table style="font-size:8.5px;border-collapse:collapse">'+
+      '<div style="margin-bottom:5px">'+
+        '<div style="background:#1B2A6B;color:white;font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;margin-bottom:3px">PRODUCTOS</div>'+
+        resumeProds(o.productos)+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px dashed #1B2A6B;padding-top:4px;margin-top:4px">'+
+        '<div>'+
+          '<div style="border-top:1px solid #333;width:110px;font-size:7.5px;text-align:center;padding-top:2px">Elaboró: '+(o.colaborador||'_______________')+'</div>'+
+          '<div style="font-size:6px;color:#555;max-width:180px;margin-top:4px">En caso de inconveniente con su pedido, notifíquelo al personal de sucursal. Reemplazo aplica solo en productos de vitrina (entregar 90% de la mercancía). No aplica en pedidos personalizados.</div>'+
+        '</div>'+
+        '<table style="font-size:9px;border-collapse:collapse">'+
           '<tr><td style="padding:1px 6px 1px 0;font-weight:700">Total $</td><td style="border-bottom:1px solid #333;min-width:60px;text-align:right;padding:1px 3px">'+(o.total?'$'+parseFloat(o.total).toFixed(2):'$')+'</td></tr>'+
           '<tr><td style="padding:1px 6px 1px 0;font-weight:700">Anticipo $</td><td style="border-bottom:1px solid #333;min-width:60px;text-align:right;padding:1px 3px">'+(o.anticipo?'$'+parseFloat(o.anticipo).toFixed(2):'$')+'</td></tr>'+
           '<tr><td style="padding:1px 6px 1px 0;font-weight:700">Restante $</td><td style="border-bottom:1px solid #333;min-width:60px;text-align:right;padding:1px 3px">'+(o.restante?'$'+parseFloat(o.restante).toFixed(2):'$')+'</td></tr>'+
         '</table>'+
       '</div>'+
-      '<div style="font-size:6.5px;color:#555;margin-top:6px;padding-top:4px;border-top:1px solid #ddd">En caso de que identifique que su pastel tiene algún inconveniente, favor de notificarlo lo antes posible al personal de sucursal, para poder hacer el ajuste correspondiente o de ser necesario, el reemplazo del producto si es un artículo de vitrina (es necesario entregar el 90% de la mercancía para que se pueda realizar el cambio) (reemplazo de pastel no aplicable para pedidos personalizados).</div>'+
     '</div>';
   }
 
   var pw='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Nota #'+folioStr+'</title>'+
     '<style>'+
-      '@page{size:letter portrait;margin:12mm}'+
-      'body{margin:0;font-family:Arial,sans-serif;height:100%}'+
-      'html{height:100%}'+
-      '.pag{width:100%;display:flex;flex-direction:column;gap:6px;box-sizing:border-box}'+
-      '.row{display:flex;flex-direction:row;gap:6px}'+
-      '.col{width:50%;box-sizing:border-box;display:flex;flex-direction:column}'+
-      '.col>.box{flex:1}'+
-      '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.np{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}}'+
+      '@page{size:letter portrait;margin:8mm}'+
+      'body{margin:0;font-family:Arial,sans-serif}'+
+      '*{box-sizing:border-box}'+
+      '.pag{width:100%;display:flex;flex-direction:column;gap:4px}'+
+      '.row{display:flex;flex-direction:row;gap:4px}'+
+      '.col{width:50%;overflow:hidden;height:150mm}'+
+      '.col>div{height:100%;overflow:hidden}'+
+      '.rosa{width:100%;overflow:hidden;height:90mm}'+
+      '.rosa>div{height:100%;overflow:hidden}'+
+      '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.np{display:none!important}}'+
     '</style>'+
     '</head><body>'+
     '<div class="pag">'+
@@ -2206,12 +2381,27 @@ function printNota(folio){
         '<div class="col">'+nota('#FFF9C4',false,'16px')+'</div>'+
         '<div class="col">'+nota('#FFFFFF',false,'16px')+'</div>'+
       '</div>'+
-      notaTicket('#FFD6E0')+
+      '<div class="rosa">'+notaTicket('#FFD6E0')+'</div>'+
     '</div>'+
     '<div class="np" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:999">'+
       '<button onclick="window.print()" style="background:#1B2A6B;color:white;border:none;padding:10px 28px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3)">&#128424; Imprimir / Guardar PDF</button>'+
       '<button onclick="window.close()" style="background:#eee;color:#333;border:none;padding:10px 18px;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2)">Cerrar</button>'+
     '</div>'+
+    '<script>'+
+    'function fitNota(box){'+
+      'if(!box)return;'+
+      'var fs=16;'+
+      'box.style.fontSize=fs+"px";'+
+      'while(box.scrollHeight>box.clientHeight&&fs>7){'+
+        'fs=fs-0.5;'+
+        'box.style.fontSize=fs+"px";'+
+      '}'+
+    '}'+
+    'function fitAll(){'+
+      'document.querySelectorAll(".col>div,.rosa>div").forEach(function(b){fitNota(b);});'+
+    '}'+
+    'window.onload=function(){fitAll();};'+
+    'window.onbeforeprint=function(){fitAll();};'+
     '<\/script>'+
     '</body></html>';
 
