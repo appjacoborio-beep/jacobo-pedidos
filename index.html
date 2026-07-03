@@ -1412,6 +1412,7 @@ async function sendOrder(){
     const result=await res.json();
     if(result.ok){
       clearForm();updateBadge();
+      btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
       toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
     } else {
       btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
