@@ -710,17 +710,20 @@ function addPhotoToItem(i){
   inp.onchange=async e=>{
     const file=e.target.files[0];if(!file)return;
     toast('⏳','Subiendo foto...');
+    const _controller1=new AbortController();
+    const _timeout1=setTimeout(()=>_controller1.abort(),20000);
     try{
       const _fecha1=document.getElementById('c-date')?document.getElementById('c-date').value:'';
       const _folder1='jacobo/'+(_fecha1?_fecha1.slice(0,7):'sin-fecha');
-      const _sigR1=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder1));
+      const _sigR1=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder1),{signal:_controller1.signal});
       const _sig1=await _sigR1.json();
       const fd=new FormData();
       fd.append('file',file);fd.append('api_key',_sig1.api_key);
       fd.append('timestamp',String(_sig1.timestamp));fd.append('signature',_sig1.signature);
       fd.append('folder',_folder1);
-      const res=await fetch('https://api.cloudinary.com/v1_1/'+_sig1.cloud+'/image/upload',{method:'POST',body:fd});
+      const res=await fetch('https://api.cloudinary.com/v1_1/'+_sig1.cloud+'/image/upload',{method:'POST',body:fd,signal:_controller1.signal});
       const data=await res.json();
+      clearTimeout(_timeout1);
       if(data.secure_url){
         cart[i].photo=data.secure_url;
         renderCart();
@@ -728,7 +731,11 @@ function addPhotoToItem(i){
       } else {
         toast('❌','No se pudo subir la foto. El pedido se puede guardar sin imagen.');
       }
-    }catch(err){toast('❌','Sin conexión para subir foto. Puedes guardar sin imagen y agregar después.');}
+    }catch(err){
+      clearTimeout(_timeout1);
+      if(err.name==='AbortError'){toast('❌','Se tardó demasiado subiendo la foto. Verifica tu conexión e intenta de nuevo.');}
+      else{toast('❌','Sin conexión para subir foto. Puedes guardar sin imagen y agregar después.');}
+    }
   };inp.click();
 }
 
@@ -1240,24 +1247,31 @@ async function bHandlePhoto(e){
   var file=e.target.files[0];if(!file)return;
   e.target.value='';
   toast('⏳','Subiendo foto...');
+  var _controller2=new AbortController();
+  var _timeout2=setTimeout(function(){_controller2.abort();},20000);
   try{
     var _fecha2=document.getElementById('c-date')?document.getElementById('c-date').value:'';
     var _folder2='jacobo/'+(_fecha2?_fecha2.slice(0,7):'sin-fecha');
-    var _sigR2=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder2));
+    var _sigR2=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder2),{signal:_controller2.signal});
     var _sig2=await _sigR2.json();
     var fd=new FormData();
     fd.append('file',file);fd.append('api_key',_sig2.api_key);
     fd.append('timestamp',String(_sig2.timestamp));fd.append('signature',_sig2.signature);
     fd.append('folder',_folder2);
-    var res=await fetch('https://api.cloudinary.com/v1_1/'+_sig2.cloud+'/image/upload',{method:'POST',body:fd});
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+_sig2.cloud+'/image/upload',{method:'POST',body:fd,signal:_controller2.signal});
     var data=await res.json();
+    clearTimeout(_timeout2);
     if(data.secure_url){
       if(!Array.isArray(b.photos))b.photos=[];
       b.photos.push(data.secure_url);
       renderBPhotos();
       toast('✓','Foto subida ✅');
     } else {toast('❌','No se pudo subir la foto. El pedido se puede guardar sin imagen.');}
-  }catch(err){toast('❌','Sin conexión para subir foto. Puedes guardar el pedido sin imagen y agregar la foto después.');}
+  }catch(err){
+    clearTimeout(_timeout2);
+    if(err.name==='AbortError'){toast('❌','Se tardó demasiado subiendo la foto. Verifica tu conexión e intenta de nuevo.');}
+    else{toast('❌','Sin conexión para subir foto. Puedes guardar el pedido sin imagen y agregar la foto después.');}
+  }
 }
 function bRemovePhoto(i){
   if(!Array.isArray(b.photos))return;
@@ -1911,23 +1925,30 @@ async function eHandlePhoto(e){
   var file=e.target.files[0];if(!file)return;
   e.target.value='';
   toast('⏳','Subiendo foto...');
+  var _controller3=new AbortController();
+  var _timeout3=setTimeout(function(){_controller3.abort();},20000);
   try{
     var fecha=document.getElementById('e-fecha')?document.getElementById('e-fecha').value:'';
     var folder='jacobo/'+(fecha?fecha.slice(0,7):'sin-fecha');
-    var sigRes=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(folder));
+    var sigRes=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(folder),{signal:_controller3.signal});
     var sig=await sigRes.json();
     var fd=new FormData();
     fd.append('file',file);fd.append('api_key',sig.api_key);
     fd.append('timestamp',String(sig.timestamp));fd.append('signature',sig.signature);
     fd.append('folder',folder);
-    var res=await fetch('https://api.cloudinary.com/v1_1/'+sig.cloud+'/image/upload',{method:'POST',body:fd});
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+sig.cloud+'/image/upload',{method:'POST',body:fd,signal:_controller3.signal});
     var data=await res.json();
+    clearTimeout(_timeout3);
     if(data.secure_url){
       eEditPhotos.push(data.secure_url);
       eRenderPhotos();
       toast('✓','Foto agregada ✅');
     } else {toast('❌','No se pudo subir la foto. Intenta de nuevo o guarda sin imagen.');}
-  }catch(err){toast('❌','Sin conexión para subir foto. Puedes guardar el pedido sin imagen.');}
+  }catch(err){
+    clearTimeout(_timeout3);
+    if(err.name==='AbortError'){toast('❌','Se tardó demasiado subiendo la foto. Verifica tu conexión e intenta de nuevo.');}
+    else{toast('❌','Sin conexión para subir foto. Puedes guardar el pedido sin imagen.');}
+  }
 }
 async function saveEdit(){
   const saveBtn=document.getElementById('edit-save-btn');
