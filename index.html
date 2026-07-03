@@ -671,7 +671,8 @@ function renderCart(){
   cnt.textContent=cart.length?`(${cart.length} producto${cart.length>1?'s':''})`:'';
   if(!cart.length){list.innerHTML='<div class="cart-empty"><div class="ce-icon">🎂</div>Agrega los productos del pedido</div>';return;}
   list.innerHTML=cart.map((item,i)=>{
-    const hasPhoto=item.photo&&item.photo.length>10;
+    const photoList=Array.isArray(item.photos)&&item.photos.length?item.photos:(item.photo&&item.photo.length>10?[item.photo]:[]);
+    const hasPhoto=photoList.length>0;
     return`<div class="cart-item">
       <div class="cart-item-header">
         <div style="flex:1">
@@ -680,7 +681,7 @@ function renderCart(){
           <div class="cart-item-detail">${item.details}</div>
         </div>
         ${hasPhoto
-          ?`<img class="cart-item-img" src="${item.photo}" onclick="openImgModal('${item.photo}','Foto ${i+1}')" alt="Ref">`
+          ?`<img class="cart-item-img" src="${photoList[0]}" onclick="openImgModal('${photoList[0]}','Foto ${i+1}')" alt="Ref">`
           :`<div class="cart-item-img-placeholder" onclick="addPhotoToItem(${i})" title="Agregar foto">📸</div>`}
         <button class="cart-edit" onclick="editCartItem(${i})" title="Editar">✏️</button><button class="cart-remove" onclick="removeCartItem(${i})">✕</button>
       </div>
@@ -725,6 +726,8 @@ function addPhotoToItem(i){
       const data=await res.json();
       clearTimeout(_timeout1);
       if(data.secure_url){
+        if(!Array.isArray(cart[i].photos))cart[i].photos=[];
+        cart[i].photos.push(data.secure_url);
         cart[i].photo=data.secure_url;
         renderCart();
         toast('✓','Foto subida ✅');
