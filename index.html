@@ -598,7 +598,7 @@ const ADICIONALES = [
 const COMBOS_PISOS_LEGACY={'1-0':[{label:'Piso único',hint:null}],'2-A':[{label:'Piso Superior',hint:'6"'},{label:'Piso Inferior',hint:'10"'}],'2-B':[{label:'Piso Superior',hint:'8"'},{label:'Piso Inferior',hint:'12"'}],'3-0':[{label:'Piso Superior',hint:'6"'},{label:'Piso Medio',hint:'10"'},{label:'Piso Inferior',hint:'14"'}]};
 
 // ══ GLOBAL STATE ══
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycby1y38ik3uhN0q6rnuN9Z0TQ3e5f4Kr39U4fKPLJS0U87yeSnIDQ8-QYLCgmgw4vV2PSA/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbz4HjCkpmhpWyXR9S6xtT8YOYmWIqLbSYWjNxH8lhlLu6QCjYQJBJwfsXlsXq6UNZxV5Q/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -702,7 +702,7 @@ function editCartItem(i){
   b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
   b.adicionales=item._adicionales||{};b.mensaje=item._mensaje||'';b.tema=item._tema||'';
   b.alergias=item._alergias||'';b.notas=item._notas||'';b.qty=item.qty||1;
-  b.photos=Array.isArray(item.photos)?[...item.photos]:(item.photo&&item.photo.startsWith('http')?[item.photo]:[]);b.depositoCobrado=item._depositoCobrado||false;b.doblePan=item._doblePan||false;
+  b.photos=Array.isArray(item.photos)?[...item.photos]:(item.photo&&item.photo.startsWith('http')?[item.photo]:[]);b.azucarPhotos=Array.isArray(item.azucarPhotos)?[...item.azucarPhotos]:[];b.depositoCobrado=item._depositoCobrado||false;b.doblePan=item._doblePan||false;
   cart.splice(i,1);renderCart();renderBuilder();
   document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';
 }
@@ -751,7 +751,7 @@ function bReset(){
      cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
      postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
      miniProduct:'',miniVariant:'',panDesc:'',
-     mensaje:'',tema:'',alergias:'',notas:'',impLink:'',fondantDesc:'',photos:[],
+     mensaje:'',tema:'',alergias:'',notas:'',fondantDesc:'',photos:[],azucarPhotos:[],
      qty:1,nota:'',photo:null};
 }
 function openBuilder(){bReset();renderBuilder();document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
@@ -1073,9 +1073,10 @@ function renderBuilder(){
         <input type="text" id="b-alergias" value="${bEsc(b.alergias)}" placeholder="Sin gluten, sin lactosa..." oninput="b.alergias=this.value">
       </div>
 `:''}
-            <div class="form-group"><label class="field-label">🖨️ Link de impresiones (Drive)</label>
-        <input type="url" id="b-implink" value="${b.impLink||''}" placeholder="https://drive.google.com/..." oninput="b.impLink=this.value" style="font-size:0.75rem">
-        <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Pega el link de Drive con las imágenes de impresión de azúcar</div>
+            <div id="b-azucar-wrap" style="display:${(b.adicionales&&b.adicionales['imp-azucar']>0)?'block':'none'};margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border)">
+        <label class="field-label">🖨️ Impresiones de Azúcar (imagen a imprimir)</label>
+        <div class="photos-grid" id="b-azucar-grid"></div>
+        <input type="file" id="b-azucar-input" accept="image/*" style="display:none" onchange="bHandleAzucar(event)">
       </div>
       <div class="form-group" style="margin-bottom:0"><label class="field-label">Notas adicionales</label>
         <textarea id="b-notas" placeholder="Cualquier detalle especial..." oninput="b.notas=this.value">${bEsc(b.notas)}</textarea>
@@ -1118,6 +1119,7 @@ function renderBuilder(){
     <div style="margin-top:1rem">
       <button class="btn-primary green" onclick="bAddToCart()">✅ Agregar al pedido</button>\n    </div>\n  `;
   renderBPhotos();
+  renderBAzucar();
   var wrap=document.getElementById('fondant-desc-wrap');
   var inp=document.getElementById('fondant-desc-input');
   if(wrap){
@@ -1281,6 +1283,57 @@ function bRemovePhoto(i){
   b.photos.splice(i,1);
   renderBPhotos();
 }
+function renderBAzucar(){
+  var grid=document.getElementById('b-azucar-grid');
+  if(!grid)return;
+  if(!Array.isArray(b.azucarPhotos))b.azucarPhotos=[];
+  var html='';
+  b.azucarPhotos.forEach(function(url,i){
+    html+='<div class="photo-thumb-wrap">';
+    html+='<img src="'+url+'" onclick="openImgModal(this.src,\'Impresión Azúcar '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Impresión">';
+    html+='<button class="photo-thumb-del" onclick="bRemoveAzucar('+i+')">&#x2715;</button>';
+    html+='</div>';
+  });
+  html+='<button class="photo-add-btn" onclick="document.getElementById(\'b-azucar-input\').click()">';
+  html+='<span style="font-size:1.4rem">🖨️</span>';
+  html+='<span>'+(b.azucarPhotos.length?'+ Agregar':'Agregar imagen')+'</span></button>';
+  grid.innerHTML=html;
+}
+async function bHandleAzucar(e){
+  var file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  toast('⏳','Subiendo impresión...');
+  var _controller4=new AbortController();
+  var _timeout4=setTimeout(function(){_controller4.abort();},20000);
+  try{
+    var _fecha4=document.getElementById('c-date')?document.getElementById('c-date').value:'';
+    var _folder4='jacobo/'+(_fecha4?_fecha4.slice(0,7):'sin-fecha')+'/azucar';
+    var _sigR4=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(_folder4),{signal:_controller4.signal});
+    var _sig4=await _sigR4.json();
+    var fd=new FormData();
+    fd.append('file',file);fd.append('api_key',_sig4.api_key);
+    fd.append('timestamp',String(_sig4.timestamp));fd.append('signature',_sig4.signature);
+    fd.append('folder',_folder4);
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+_sig4.cloud+'/image/upload',{method:'POST',body:fd,signal:_controller4.signal});
+    var data=await res.json();
+    clearTimeout(_timeout4);
+    if(data.secure_url){
+      if(!Array.isArray(b.azucarPhotos))b.azucarPhotos=[];
+      b.azucarPhotos.push(data.secure_url);
+      renderBAzucar();
+      toast('✓','Impresión subida ✅');
+    } else {toast('❌','No se pudo subir la imagen. El pedido se puede guardar sin ella.');}
+  }catch(err){
+    clearTimeout(_timeout4);
+    if(err.name==='AbortError'){toast('❌','Se tardó demasiado subiendo la imagen. Verifica tu conexión e intenta de nuevo.');}
+    else{toast('❌','Sin conexión para subir la imagen. Puedes guardar el pedido y agregarla después.');}
+  }
+}
+function bRemoveAzucar(i){
+  if(!Array.isArray(b.azucarPhotos))return;
+  b.azucarPhotos.splice(i,1);
+  renderBAzucar();
+}
 
 function bAddToCart(){
   let name='',details='';
@@ -1346,7 +1399,6 @@ function bAddToCart(){
   if(b.mensaje)details+=`💬 ${b.mensaje}\n`;
   if(b.tema)details+=`🎨 ${b.tema}\n`;
   if(b.alergias)details+=`⚠️ ${b.alergias}\n`;
-  if(b.impLink&&b.impLink.trim())details+=`🖨️ ImpLink: ${b.impLink.trim()}\n`;
   if(b.fondantDesc&&b.fondantDesc.trim())details+=`🎭 Fondant: ${b.fondantDesc.trim()}\n`;
   if(b.notas)details+=`📝 ${b.notas}\n`;
   if(b.nota)details+=`Nota: ${b.nota}`;
@@ -1359,7 +1411,7 @@ function bAddToCart(){
     }).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[]});
+  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]});
   renderCart();closeBuilder();
   toast('✓',`"${name}" agregado`);
 }
@@ -1404,7 +1456,8 @@ async function sendOrder(){
   const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   var allPhotos=cart.flatMap(function(i){return Array.isArray(i.photos)?i.photos:(i.photo&&i.photo.startsWith('http')?[i.photo]:[]);});var firstPhoto=allPhotos[0]||'';
-  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto};
+  var allAzucar=cart.flatMap(function(i){return Array.isArray(i.azucarPhotos)?i.azucarPhotos:[];});
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto,imagenAzucar:allAzucar.join('|')};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
@@ -1482,7 +1535,7 @@ async function loadOrders(){
   if(s.includes('AM')||s.includes('PM')||s.includes(':'))return s.split('T')[0].includes('-')?'':s;
   if(s.startsWith('1899')||s.startsWith('1900'))return'';
   return s;
-})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',historial:r['Historial']||''})).reverse();
+})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],restante:r['Restante'],colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',impresionUrls:r['Imagen Azúcar']||'',historial:r['Historial']||''})).reverse();
     renderCalendar();document.getElementById('prod-time').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});updateBadge();
   }catch(e){document.getElementById('orders-grid').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error de conexión</div></div>`;}
 }
@@ -1827,7 +1880,7 @@ function renderOrdersList(visOrders){
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
         ${(function(){var tipoRow=o.tipoEntrega==='domicilio'?'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">\u{1F6F5} Domicilio desde '+(o.sucursal||'\u2014')+'</span></div>':'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">'+entIcon+'</span></div>'+(o.sucursal?'<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">'+o.sucursal+'</span></div>':'');var dirRow=o.direccion?'<div class="oc-row"><span class="oc-key">'+(o.tipoEntrega==="domicilio"?"Direcci\u00f3n de env\u00edo":"Direcci\u00f3n")+'</span><span class="oc-val">'+o.direccion+'</span></div>':'';return tipoRow+dirRow;})()}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
-        ${(function(){var impRow='';var lines=(o.productos||'').split(' || ');lines.forEach(function(l){  var m=l.match(/🖨️ ImpLink: (.+?)(?:\\n|$|\s*\|\|)/);  if(m&&m[1])impRow='<div class="oc-imp-link"><span>🖨️</span><a href="'+m[1].trim()+'" target="_blank" class="oc-imp-link-btn">Ver imágenes de impresión</a></div>';});return impRow;})()}${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${o.impresionUrls?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Imágenes de impresión</div><div class="oc-imp-grid">'+o.impresionUrls.split('|').filter(Boolean).map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión\')">'+'<a href="'+u+'" download="impresion-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
+        ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${o.impresionUrls?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Impresión de Azúcar</div><div class="oc-imp-grid">'+o.impresionUrls.split('|').filter(Boolean).map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión de Azúcar\')">'+'<a href="'+u+'" download="impresion-azucar-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
         ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
