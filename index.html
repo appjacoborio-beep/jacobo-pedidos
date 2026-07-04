@@ -20,6 +20,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .setup-input{flex:1;font-family:'DM Sans',sans-serif;font-size:0.75rem;border:1.5px solid #FCD34D;border-radius:7px;padding:5px 8px;background:white;color:#78350F;outline:none;}
 .setup-btn{background:#1B2A6B;color:white;border:none;border-radius:7px;padding:6px 11px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
 .setup-ok{background:#D1FAE5;border-color:#6EE7B7;}.setup-ok p{color:#065F46;}
+.conn-dot{position:fixed;top:8px;right:8px;width:13px;height:13px;border-radius:50%;background:#10B981;border:2px solid rgba(255,255,255,0.7);box-shadow:0 1px 5px rgba(0,0,0,0.3);z-index:999;cursor:pointer;transition:transform 0.15s;}
+.conn-dot:active{transform:scale(0.85);}
+.conn-dot.off{background:#DC2626;}
 
 /* APP BAR */
 .app-bar{background:var(--navy);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
@@ -280,10 +283,7 @@ textarea{resize:vertical;min-height:60px;}
 </head>
 <body>
 
-<div class="setup-banner setup-ok" id="setup-banner">
-  <p>✅ Conectado con Google Sheets — Pastelería Jacobo</p>
-  <button class="setup-btn" onclick="resetUrl()" style="background:var(--red)">Cambiar URL</button>
-</div>
+<div class="conn-dot" id="conn-dot" onclick="handleConnDot()" title="Estado de conexión"></div>
 
 <header class="app-bar">
   <div class="brand">
@@ -631,16 +631,28 @@ const NEXT={'Pendiente':'En proceso','En proceso':'Listo','Listo':'Entregado'};
 const NEXT_LBL={'Pendiente':'🔥 Iniciar','En proceso':'✅ Listo','Listo':'📦 Entregar'};
 
 // ══ SETUP ══
-function initSetupBanner(){/* URL pre-loaded, banner already set */}
+function updateConnDot(){
+  const d=document.getElementById('conn-dot');
+  if(!d)return;
+  if(SCRIPT_URL){d.classList.remove('off');d.title='Conectado con Google Sheets (toca para más opciones)';}
+  else{d.classList.add('off');d.title='Sin conexión configurada (toca para conectar)';}
+}
+function initSetupBanner(){updateConnDot();}
+function handleConnDot(){
+  if(SCRIPT_URL){
+    if(confirm('✅ Conectado con Google Sheets.\n\n¿Deseas cambiar la URL de conexión?'))resetUrl();
+  } else {
+    toast('❌','Sin conexión configurada');
+    resetUrl();
+  }
+}
 function saveScriptUrl(){const v=document.getElementById('script-url-input').value.trim();if(!v.includes('script.google.com')){toast('⚠️','URL inválida');return;}SCRIPT_URL=v;localStorage.setItem('jacobo_script_url',v);initSetupBanner();toast('✓','Sincronización activada ✅');}
 function resetUrl(){
   const nueva=prompt('Pega aquí la nueva URL de Google Apps Script:');
   if(!nueva||!nueva.includes('script.google.com')){toast('⚠️','URL inválida, no se cambió');return;}
   SCRIPT_URL=nueva;
   localStorage.setItem('jacobo_script_url',nueva);
-  const b=document.getElementById('setup-banner');
-  b.className='setup-banner setup-ok';
-  b.innerHTML='<p>✅ Conectado con Google Sheets</p><button class="setup-btn" onclick="resetUrl()" style="background:var(--red)">Cambiar URL</button>';
+  updateConnDot();
   toast('✓','URL actualizada ✅');
 }
 
