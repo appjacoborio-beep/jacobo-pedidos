@@ -50,6 +50,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;}
 .form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:0.7rem;}
 .form-group:last-child{margin-bottom:0;}
+.field-invalid{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(192,57,43,0.18)!important;animation:invalidPulse 0.4s ease;}
+.group-invalid{border:2px solid var(--red)!important;border-radius:10px;box-shadow:0 0 0 3px rgba(192,57,43,0.14);animation:invalidPulse 0.4s ease;}
+@keyframes invalidPulse{0%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}100%{transform:translateX(0)}}
 .field-label{font-size:0.64rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
 input[type=text],input[type=tel],input[type=date],input[type=number],select,textarea{font-family:'DM Sans',sans-serif;background:var(--navy-faint);border:1.5px solid var(--border);border-radius:7px;padding:7px 9px;font-size:0.87rem;color:var(--text);outline:none;transition:border-color 0.18s;width:100%;-webkit-appearance:none;appearance:none;}
 input:focus,select:focus,textarea:focus{border-color:var(--navy);background:white;}
@@ -1422,35 +1425,51 @@ document.getElementById('f-total').addEventListener('input',calcRest);
 
 // ══ SEND ORDER ══
 
+function clearInvalidMarks(){
+  document.querySelectorAll('.field-invalid,.group-invalid').forEach(function(el){el.classList.remove('field-invalid','group-invalid');});
+}
+function markInvalid(el,isGroup){
+  if(!el)return;
+  clearInvalidMarks();
+  el.classList.add(isGroup?'group-invalid':'field-invalid');
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  var cls=isGroup?'group-invalid':'field-invalid';
+  var clear=function(){el.classList.remove(cls);el.removeEventListener('input',clear);el.removeEventListener('click',clear);};
+  el.addEventListener('input',clear);
+  el.addEventListener('click',clear);
+  setTimeout(clear,6000);
+}
 async function sendOrder(){
   // ── Validaciones obligatorias ──
   const folioVal=document.getElementById('folio-display').value.trim();
-  if(!folioVal){toast('⚠️','Escribe el número de folio');return;}
+  if(!folioVal){toast('⚠️','Escribe el número de folio');markInvalid(document.getElementById('folio-display'));return;}
 
   const name=document.getElementById('c-name').value.trim();
-  if(!name){toast('⚠️','Ingresa el nombre del cliente');return;}
+  if(!name){toast('⚠️','Ingresa el nombre del cliente');markInvalid(document.getElementById('c-name'));return;}
 
   const phone=document.getElementById('c-phone').value.trim();
-  if(!phone){toast('⚠️','Ingresa el teléfono del cliente');return;}
+  if(!phone){toast('⚠️','Ingresa el teléfono del cliente');markInvalid(document.getElementById('c-phone'));return;}
 
   const fecha=document.getElementById('c-date').value;
-  if(!fecha){toast('⚠️','Selecciona la fecha de entrega');return;}
+  if(!fecha){toast('⚠️','Selecciona la fecha de entrega');markInvalid(document.getElementById('c-date'));return;}
 
-  if(!selectedEntrega){toast('⚠️','Selecciona el tipo de entrega');return;}
+  if(!selectedEntrega){toast('⚠️','Selecciona el tipo de entrega');markInvalid(document.querySelector('.entrega-grid'),true);return;}
 
-  if(!selectedSuc){toast('⚠️','Selecciona la sucursal');return;}
+  if(!selectedSuc){toast('⚠️','Selecciona la sucursal');markInvalid(document.getElementById('group-suc'),true);return;}
 
   if(selectedEntrega==='domicilio'){
     const dir=document.getElementById('c-address').value.trim();
-    if(!dir){toast('⚠️','Ingresa la dirección de entrega');return;}
+    if(!dir){toast('⚠️','Ingresa la dirección de entrega');markInvalid(document.getElementById('c-address'));return;}
   }
 
   const total=parseFloat(document.getElementById('f-total').value)||0;
-  if(!total||total<=0){toast('⚠️','Ingresa el precio total del pedido');return;}
+  if(!total||total<=0){toast('⚠️','Ingresa el precio total del pedido');markInvalid(document.getElementById('f-total'));return;}
 
-  if(!cart.length){toast('⚠️','Agrega al menos un producto');return;}
+  if(!cart.length){toast('⚠️','Agrega al menos un producto');markInvalid(document.getElementById('cart-list'),true);return;}
 
   if(!SCRIPT_URL){toast('⚠️','Sin conexión a Google Sheets');return;}
+
+  clearInvalidMarks();
 
   const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
   const folio=parseInt(folioVal);
@@ -1485,6 +1504,7 @@ async function sendOrder(){
 }
 
 function clearForm(){
+  clearInvalidMarks();
   ['c-name','c-phone','c-staff','c-address','f-total','f-anticipo','f-restante'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
   document.getElementById('c-hour').value='12';document.getElementById('c-min').value='00';document.getElementById('c-ampm').value='PM';
