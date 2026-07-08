@@ -72,6 +72,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .color-entry-name{font-size:0.72rem;font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;}
 .color-entry-row input{flex:1;font-size:0.78rem;padding:6px 8px;border:1px solid var(--border);border-radius:6px;min-width:0;}
 .color-entry-del{flex-shrink:0;width:26px;height:26px;border:none;background:#FEE2E2;color:var(--red);border-radius:6px;font-size:0.75rem;cursor:pointer;}
+.oc-color-swatch{display:inline-block;width:16px;height:16px;border-radius:4px;border:1px solid rgba(0,0,0,0.15);vertical-align:middle;margin-right:5px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.1);}
 .field-invalid{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(192,57,43,0.18)!important;animation:invalidPulse 0.4s ease;}
 .group-invalid{border:2px solid var(--red)!important;border-radius:10px;box-shadow:0 0 0 3px rgba(192,57,43,0.14);animation:invalidPulse 0.4s ease;}
 @keyframes invalidPulse{0%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}100%{transform:translateX(0)}}
@@ -500,6 +501,17 @@ textarea{resize:vertical;min-height:60px;}
   </div>
 </div>
 
+<!-- COLOR VIEW MODAL (vista grande al tocar un cuadrito de color) -->
+<div class="modal-overlay" id="color-view-modal" onclick="closeColorView(event)">
+  <div class="modal-box" style="max-width:320px">
+    <div class="modal-header"><span class="modal-title">🎨 Color</span><button class="modal-close" onclick="document.getElementById('color-view-modal').classList.remove('open')">✕</button></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:1.5rem 1rem">
+      <div id="color-view-swatch" style="width:160px;height:160px;border-radius:16px;border:2px solid var(--border);box-shadow:0 2px 10px rgba(0,0,0,0.15)"></div>
+      <div id="color-view-label" style="font-size:1rem;font-weight:700;color:var(--navy);text-align:center"></div>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
@@ -680,6 +692,20 @@ function openColorPicker(){
   document.getElementById('color-modal').classList.add('open');
 }
 function closeColorPicker(){document.getElementById('color-modal').classList.remove('open');}
+function colorHexFromValue(val){
+  var m=String(val||'').match(/([A-D])-(\d+)\b/);
+  if(!m)return null;
+  var letra=m[1],fila=parseInt(m[2]);
+  var entry=COLOR_CHART.find(function(c){return c.fila===fila;});
+  return entry?entry.shades[letra]:null;
+}
+function jsEsc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function openColorView(hex,label){
+  document.getElementById('color-view-swatch').style.background=hex;
+  document.getElementById('color-view-label').textContent=label;
+  document.getElementById('color-view-modal').classList.add('open');
+}
+function closeColorView(e){if(!e||e.target===document.getElementById('color-view-modal'))document.getElementById('color-view-modal').classList.remove('open');}
 function pickColor(code,name,hex){
   if(!Array.isArray(b.colores))b.colores=[];
   b.colores.push({label:name+' '+code,hex:hex,uso:''});
@@ -1971,7 +1997,12 @@ function renderProductLines(prodLines){
     html+='<div class="oc-product-detail">';
 
     function row(label, val){
-      html+='<div class="oc-spec-row"><span class="oc-spec-label">'+label+':</span><span class="oc-spec-val">'+val+'</span></div>';
+      var swatch='';
+      if(String(label).toLowerCase()==='color'){
+        var hex=colorHexFromValue(val);
+        if(hex)swatch='<span class="oc-color-swatch" style="background:'+hex+'" onclick="openColorView(\''+hex+'\',\''+jsEsc(val)+'\')"></span>';
+      }
+      html+='<div class="oc-spec-row"><span class="oc-spec-label">'+label+':</span>'+swatch+'<span class="oc-spec-val">'+val+'</span></div>';
     }
 
     if(sabor) row('Sabor', sabor);
