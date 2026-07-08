@@ -53,6 +53,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;}
 .form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:0.7rem;}
 .form-group:last-child{margin-bottom:0;}
+.eprod-card{border:1px solid var(--border);border-radius:10px;padding:0.6rem;margin-bottom:0.6rem;background:var(--navy-faint);}
+.eprod-header{font-weight:700;font-size:0.8rem;color:var(--navy);margin-bottom:0.5rem;}
+.eprod-row{display:flex;gap:6px;align-items:center;margin-bottom:5px;}
+.eprod-row:last-child{margin-bottom:0;}
+.eprod-label{font-size:0.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;width:88px;flex-shrink:0;}
+.eprod-row input{flex:1;font-size:0.8rem;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;}
+.color-row{margin-bottom:0.8rem;}
+.color-row-name{font-size:0.75rem;font-weight:700;color:var(--navy);margin-bottom:5px;}
+.color-shades{display:flex;gap:8px;}
+.color-swatch{width:44px;height:44px;border-radius:8px;border:2px solid var(--border);cursor:pointer;position:relative;flex-shrink:0;transition:transform 0.1s;}
+.color-swatch:active{transform:scale(0.92);}
+.color-swatch-code{position:absolute;bottom:2px;right:3px;font-size:0.6rem;font-weight:700;color:rgba(0,0,0,0.55);text-shadow:0 1px 1px rgba(255,255,255,0.5);}
+.color-pick-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:0.8rem;text-align:left;}
+.color-pick-swatch{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);flex-shrink:0;}
+.color-pick-clear{margin-left:auto;color:var(--red);font-size:0.7rem;font-weight:600;padding:2px 6px;}
 .field-invalid{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(192,57,43,0.18)!important;animation:invalidPulse 0.4s ease;}
 .group-invalid{border:2px solid var(--red)!important;border-radius:10px;box-shadow:0 0 0 3px rgba(192,57,43,0.14);animation:invalidPulse 0.4s ease;}
 @keyframes invalidPulse{0%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}100%{transform:translateX(0)}}
@@ -473,6 +488,14 @@ textarea{resize:vertical;min-height:60px;}
   </div>
 </div>
 
+<!-- COLOR MODAL -->
+<div class="modal-overlay" id="color-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">🎨 Elegir color</span><button class="modal-close" onclick="closeColorPicker()">✕</button></div>
+    <div class="modal-body" id="color-modal-body"></div>
+  </div>
+</div>
+
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
@@ -623,7 +646,104 @@ let calSelectedDate=''; // YYYY-MM-DD
 let selectedSuc='',selectedEntrega='';
 let cart=[];
 let adicQty={};ADICIONALES.forEach(a=>{adicQty[a.id]=0;});
-let editingFolio=null;let eEditPhotos=[];
+// ── TABLA DE COLORES (Pastelería Jacobo) ──
+// Código de referencia = Letra de matiz (A=claro...D=oscuro) + número de fila, ej. "A-16"
+const COLOR_CHART = [
+  {fila:1,  name:'Rojo',      shades:{A:'#F7BABA',B:'#F07575',C:'#E83030',D:'#B81414'}},
+  {fila:2,  name:'Naranja',   shades:{A:'#F9D9B8',B:'#F4B271',C:'#EE8C2B',D:'#BD660F'}},
+  {fila:4,  name:'Amarillo',  shades:{A:'#FBFBB6',B:'#F7F76E',C:'#F4F425',D:'#C2C20A'}},
+  {fila:5,  name:'Lima',      shades:{A:'#E9F9B8',B:'#D3F471',C:'#BDEE2B',D:'#91BD0F'}},
+  {fila:6,  name:'Verde',     shades:{A:'#BAF7BA',B:'#75F075',C:'#30E830',D:'#14B814'}},
+  {fila:8,  name:'Turquesa',  shades:{A:'#BAF7E3',B:'#75F0C7',C:'#30E8AB',D:'#14B881'}},
+  {fila:10, name:'Celeste',   shades:{A:'#BAE8F7',B:'#75D1F0',C:'#30BAE8',D:'#148FB8'}},
+  {fila:11, name:'Azul',      shades:{A:'#BAD9F7',B:'#75B2F0',C:'#308CE8',D:'#1466B8'}},
+  {fila:12, name:'Índigo',    shades:{A:'#BCC6F5',B:'#798CEC',C:'#3653E2',D:'#1933B3'}},
+  {fila:13, name:'Violeta',   shades:{A:'#CABCF5',B:'#9679EC',C:'#6136E2',D:'#4019B3'}},
+  {fila:14, name:'Morado',    shades:{A:'#D9BCF5',B:'#B279EC',C:'#8C36E2',D:'#6619B3'}},
+  {fila:16, name:'Rosa',      shades:{A:'#F7BAE3',B:'#F075C7',C:'#E830AB',D:'#B81481'}},
+  {fila:18, name:'Café',      shades:{A:'#F4D4BE',B:'#E8AA7D',C:'#DD7F3C',D:'#AD5A1F'}},
+  {fila:19, name:'Gris',      shades:{A:'#D9D9D9',B:'#B2B2B2',C:'#8C8C8C',D:'#666666'}}
+];
+let colorPickerTarget=null; // 'decoracion' | 'texto'
+function openColorPicker(target){
+  colorPickerTarget=target;
+  var body=document.getElementById('color-modal-body');
+  body.innerHTML=COLOR_CHART.map(function(c){
+    var swatches=['A','B','C','D'].map(function(letra){
+      var hex=c.shades[letra];var code=letra+'-'+c.fila;
+      return '<div class="color-swatch" style="background:'+hex+'" onclick="pickColor(\''+code+'\',\''+c.name+'\',\''+hex+'\')"><span class="color-swatch-code">'+code+'</span></div>';
+    }).join('');
+    return '<div class="color-row"><div class="color-row-name">'+c.name+'</div><div class="color-shades">'+swatches+'</div></div>';
+  }).join('');
+  document.getElementById('color-modal').classList.add('open');
+}
+function closeColorPicker(){document.getElementById('color-modal').classList.remove('open');}
+function pickColor(code,name,hex){
+  var label=name+' '+code;
+  if(colorPickerTarget==='decoracion'){b.colorDecoracion=label;b.colorDecoracionHex=hex;}
+  else if(colorPickerTarget==='texto'){b.colorTexto=label;b.colorTextoHex=hex;}
+  closeColorPicker();
+  renderColorButtons();
+}
+function clearColor(target,ev){
+  if(ev)ev.stopPropagation();
+  if(target==='decoracion'){b.colorDecoracion='';b.colorDecoracionHex='';}
+  else{b.colorTexto='';b.colorTextoHex='';}
+  renderColorButtons();
+}
+function renderColorButtons(){
+  var d=document.getElementById('b-color-decoracion-btn');
+  if(d)d.innerHTML=b.colorDecoracion
+    ?'<span class="color-pick-swatch" style="background:'+b.colorDecoracionHex+'"></span><span>'+bEsc(b.colorDecoracion)+'</span><span class="color-pick-clear" onclick="clearColor(\'decoracion\',event)">Quitar</span>'
+    :'<span class="color-pick-swatch" style="background:#eee"></span><span>Elegir color de decoración</span>';
+  var t=document.getElementById('b-color-texto-btn');
+  if(t)t.innerHTML=b.colorTexto
+    ?'<span class="color-pick-swatch" style="background:'+b.colorTextoHex+'"></span><span>'+bEsc(b.colorTexto)+'</span><span class="color-pick-clear" onclick="clearColor(\'texto\',event)">Quitar</span>'
+    :'<span class="color-pick-swatch" style="background:#eee"></span><span>Elegir color de texto</span>';
+}
+let editingFolio=null;let eEditPhotos=[];let eEditAzucar=[];let eProdBlocks=[];
+// Separa el texto plano de "Productos" en bloques por producto, y cada bloque en líneas Label: valor editables por separado.
+// El punto clave: se reconstruye exactamente igual si no se toca nada (mismo formato que usa el resto de la app).
+function eParseProductsString(str){
+  if(!str||!str.trim())return[];
+  return str.split(' || ').map(function(block){
+    var m=block.match(/^(\[\d+\]\s*.*?×\d+)(?:\s+—\s+([\s\S]*))?$/);
+    var header=m?m[1]:block;
+    var rest=m&&m[2]?m[2]:'';
+    var lines=rest?rest.split(' | '):[];
+    var fields=lines.map(function(line){
+      var lm=line.match(/^([^:]{1,40}):\s*([\s\S]*)$/);
+      if(lm)return{label:lm[1],value:lm[2]};
+      return{label:null,value:line};
+    });
+    return{header:header,fields:fields};
+  });
+}
+function eRenderProductFields(){
+  var wrap=document.getElementById('e-prods-wrap');
+  if(!wrap)return;
+  if(!eProdBlocks.length){wrap.innerHTML='<div style="font-size:0.75rem;color:var(--muted)">Sin productos</div>';return;}
+  wrap.innerHTML=eProdBlocks.map(function(block,bi){
+    var rows=block.fields.map(function(f,fi){
+      var label=f.label?eAttr(f.label):'Detalle';
+      return '<div class="eprod-row"><span class="eprod-label">'+eHtml(label)+'</span><input type="text" data-b="'+bi+'" data-f="'+fi+'" value="'+eAttr(f.value)+'"></div>';
+    }).join('');
+    return '<div class="eprod-card"><div class="eprod-header">'+eHtml(block.header)+'</div>'+(rows||'<div style="font-size:0.72rem;color:var(--muted)">Sin detalles adicionales</div>')+'</div>';
+  }).join('');
+}
+function eBuildProductsString(){
+  var wrap=document.getElementById('e-prods-wrap');
+  if(!wrap)return '';
+  var inputs=wrap.querySelectorAll('input[data-b]');
+  inputs.forEach(function(inp){
+    var bi=parseInt(inp.dataset.b),fi=parseInt(inp.dataset.f);
+    if(eProdBlocks[bi]&&eProdBlocks[bi].fields[fi])eProdBlocks[bi].fields[fi].value=inp.value;
+  });
+  return eProdBlocks.map(function(block){
+    var lines=block.fields.map(function(f){return f.label?(f.label+': '+f.value):f.value;});
+    return block.header+(lines.length?' — '+lines.join(' | '):'');
+  }).join(' || ');
+}
 let b={};  // builder state
 
 const STATUS_CLS={'Pendiente':'s-pending','En proceso':'s-making','Listo':'s-ready','Entregado':'s-delivered'};
@@ -716,6 +836,8 @@ function editCartItem(i){
   b.postFmt=item._postFmt||'';b.postFmtLabel=item._postFmtLabel||'';b.cupcakeSabor=item._cupcakeSabor||'';
   b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
   b.adicionales=item._adicionales||{};b.mensaje=item._mensaje||'';b.tema=item._tema||'';
+  b.colorDecoracion=item._colorDecoracion||'';b.colorDecoracionHex=item._colorDecoracionHex||'';
+  b.colorTexto=item._colorTexto||'';b.colorTextoHex=item._colorTextoHex||'';
   b.alergias=item._alergias||'';b.notas=item._notas||'';b.qty=item.qty||1;
   b.photos=Array.isArray(item.photos)?[...item.photos]:(item.photo&&item.photo.startsWith('http')?[item.photo]:[]);b.azucarPhotos=Array.isArray(item.azucarPhotos)?[...item.azucarPhotos]:[];b.depositoCobrado=item._depositoCobrado||false;b.doblePan=item._doblePan||false;
   cart.splice(i,1);renderCart();renderBuilder();
@@ -766,7 +888,7 @@ function bReset(){
      cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
      postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
      miniProduct:'',miniVariant:'',panDesc:'',
-     mensaje:'',tema:'',alergias:'',notas:'',fondantDesc:'',photos:[],azucarPhotos:[],
+     mensaje:'',tema:'',colorDecoracion:'',colorDecoracionHex:'',colorTexto:'',colorTextoHex:'',alergias:'',notas:'',fondantDesc:'',photos:[],azucarPhotos:[],
      qty:1,nota:'',photo:null};
 }
 function openBuilder(){bReset();renderBuilder();document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
@@ -1084,6 +1206,12 @@ function renderBuilder(){
       <div class="form-group"><label class="field-label">Tema / Decoración</label>
         <input type="text" id="b-tema" value="${bEsc(b.tema)}" placeholder="Flores rosas, Hello Kitty..." oninput="b.tema=this.value">
       </div>
+      <div class="form-group"><label class="field-label">🎨 Color de decoración</label>
+        <button type="button" class="color-pick-btn" id="b-color-decoracion-btn" onclick="openColorPicker('decoracion')"></button>
+      </div>
+      <div class="form-group"><label class="field-label">🎨 Color de texto</label>
+        <button type="button" class="color-pick-btn" id="b-color-texto-btn" onclick="openColorPicker('texto')"></button>
+      </div>
       <div class="form-group"><label class="field-label">Alergias o restricciones</label>
         <input type="text" id="b-alergias" value="${bEsc(b.alergias)}" placeholder="Sin gluten, sin lactosa..." oninput="b.alergias=this.value">
       </div>
@@ -1135,6 +1263,7 @@ function renderBuilder(){
       <button class="btn-primary green" onclick="bAddToCart()">✅ Agregar al pedido</button>\n    </div>\n  `;
   renderBPhotos();
   renderBAzucar();
+  renderColorButtons();
   var wrap=document.getElementById('fondant-desc-wrap');
   var inp=document.getElementById('fondant-desc-input');
   if(wrap){
@@ -1413,6 +1542,8 @@ function bAddToCart(){
   // Common details
   if(b.mensaje)details+=`💬 ${b.mensaje}\n`;
   if(b.tema)details+=`🎨 ${b.tema}\n`;
+  if(b.colorDecoracion)details+=`Color decoración: ${b.colorDecoracion}\n`;
+  if(b.colorTexto)details+=`Color texto: ${b.colorTexto}\n`;
   if(b.alergias)details+=`⚠️ ${b.alergias}\n`;
   if(b.fondantDesc&&b.fondantDesc.trim())details+=`🎭 Fondant: ${b.fondantDesc.trim()}\n`;
   if(b.notas)details+=`📝 ${b.notas}\n`;
@@ -1426,7 +1557,7 @@ function bAddToCart(){
     }).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]});
+  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_colorDecoracion:b.colorDecoracion,_colorDecoracionHex:b.colorDecoracionHex,_colorTexto:b.colorTexto,_colorTextoHex:b.colorTextoHex,_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]});
   renderCart();closeBuilder();
   toast('✓',`"${name}" agregado`);
 }
@@ -1973,18 +2104,22 @@ function eAttr(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot
 function eHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function openEditModal(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
-  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
+  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});eEditAzucar=(o.impresionUrls||'').split('|').filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
   document.getElementById('edit-modal-body').innerHTML=
     '<div class="form-group"><label class="field-label">📷 Fotos del pedido</label>'+
       '<div class="photos-grid" id="e-photos-grid"></div>'+
       '<input type="file" id="e-photo-input" accept="image/*" style="display:none" onchange="eHandlePhoto(event)">'+
+    '</div>'+
+    '<div class="form-group"><label class="field-label">🖨️ Impresiones de Azúcar</label>'+
+      '<div class="photos-grid" id="e-azucar-grid"></div>'+
+      '<input type="file" id="e-azucar-input" accept="image/*" style="display:none" onchange="eHandleAzucar(event)">'+
     '</div>'+
     '<div class="form-row"><div class="form-group"><label class="field-label">Cliente</label><input type="text" id="e-cliente" value="'+eAttr(o.cliente)+'"></div><div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="e-tel" value="'+eAttr(o.telefono)+'"></div></div>'+
     '<div class="form-row"><div class="form-group"><label class="field-label">Fecha entrega</label><input type="date" id="e-fecha" value="'+eAttr(o.fechaEntrega)+'"></div><div class="form-group"><label class="field-label">Hora</label><input type="text" id="e-hora" value="'+eAttr(o.hora)+'" placeholder="3:00 PM"></div></div>'+
     '<div class="form-group"><label class="field-label">Tipo de entrega</label><select id="e-tipo"><option value="sucursal"'+(o.tipoEntrega==='sucursal'?' selected':'')+'>Recoger en sucursal</option><option value="domicilio"'+(o.tipoEntrega==='domicilio'?' selected':'')+'>Domicilio</option></select></div>'+
     '<div class="form-group"><label class="field-label">Sucursal</label><select id="e-suc"><option'+(o.sucursal==='Otay'?' selected':'')+'>Otay</option><option'+(o.sucursal==='Zona Río'?' selected':'')+'>Zona Río</option><option'+(o.sucursal==='Monarca'?' selected':'')+'>Monarca</option></select></div>'+
     '<div class="form-group"><label class="field-label">Dirección</label><input type="text" id="e-dir" value="'+eAttr(o.direccion)+'"></div>'+
-    '<div class="form-group"><label class="field-label">Productos</label><textarea id="e-prods" style="min-height:80px">'+eHtml(o.productos)+'</textarea></div>'+
+    '<div class="form-group"><label class="field-label">Productos</label><div id="e-prods-wrap"></div></div>'+
     '<div class="form-group"><label class="field-label">Adicionales</label><input type="text" id="e-adic" value="'+eAttr(o.adicionales)+'"></div>'+
     '<div class="form-group"><label class="field-label">Notas generales</label><textarea id="e-notas">'+eHtml(o.notas)+'</textarea></div>'+
     '<div class="totals-grid" style="margin-bottom:0.7rem">'+
@@ -1994,7 +2129,10 @@ function openEditModal(folio){
     '</div>'+
     '<div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>';
   document.getElementById('edit-modal').classList.add('open');
+  eProdBlocks=eParseProductsString(o.productos);
+  eRenderProductFields();
   eRenderPhotos();
+  eRenderAzucar();
 }
 function eRenderPhotos(){
   var grid=document.getElementById('e-photos-grid');
@@ -2010,6 +2148,49 @@ function eRenderPhotos(){
   grid.innerHTML=html;
 }
 function eRemovePhoto(i){eEditPhotos.splice(i,1);eRenderPhotos();}
+function eRenderAzucar(){
+  var grid=document.getElementById('e-azucar-grid');
+  if(!grid)return;
+  var html='';
+  eEditAzucar.forEach(function(u,i){
+    html+='<div class="photo-thumb-wrap">';
+    html+='<img src="'+u+'" onclick="openImgModal(this.src,\'Impresión Azúcar '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Impresión">';
+    html+='<button class="photo-thumb-del" onclick="eRemoveAzucar('+i+')">&#x2715;</button>';
+    html+='</div>';
+  });
+  html+='<button class="photo-add-btn" onclick="document.getElementById(\'e-azucar-input\').click()"><span style="font-size:1.4rem">🖨️</span><span>+ Agregar</span></button>';
+  grid.innerHTML=html;
+}
+function eRemoveAzucar(i){eEditAzucar.splice(i,1);eRenderAzucar();}
+async function eHandleAzucar(e){
+  var file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  toast('⏳','Subiendo impresión...');
+  var _controller5=new AbortController();
+  var _timeout5=setTimeout(function(){_controller5.abort();},20000);
+  try{
+    var fecha=document.getElementById('e-fecha')?document.getElementById('e-fecha').value:'';
+    var folder='jacobo/'+(fecha?fecha.slice(0,7):'sin-fecha')+'/azucar';
+    var sigRes=await fetch(SCRIPT_URL+'?cloudsign=1&folder='+encodeURIComponent(folder),{signal:_controller5.signal});
+    var sig=await sigRes.json();
+    var fd=new FormData();
+    fd.append('file',file);fd.append('api_key',sig.api_key);
+    fd.append('timestamp',String(sig.timestamp));fd.append('signature',sig.signature);
+    fd.append('folder',folder);
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+sig.cloud+'/image/upload',{method:'POST',body:fd,signal:_controller5.signal});
+    var data=await res.json();
+    clearTimeout(_timeout5);
+    if(data.secure_url){
+      eEditAzucar.push(data.secure_url);
+      eRenderAzucar();
+      toast('✓','Impresión agregada ✅');
+    } else {toast('❌','No se pudo subir la imagen. Intenta de nuevo o guarda sin ella.');}
+  }catch(err){
+    clearTimeout(_timeout5);
+    if(err.name==='AbortError'){toast('❌','Se tardó demasiado subiendo la imagen. Verifica tu conexión e intenta de nuevo.');}
+    else{toast('❌','Sin conexión para subir la imagen. Puedes guardar el pedido sin ella.');}
+  }
+}
 async function eHandlePhoto(e){
   var file=e.target.files[0];if(!file)return;
   e.target.value='';
@@ -2050,13 +2231,14 @@ async function saveEdit(){
     tipoEntrega:document.getElementById('e-tipo').value,
     sucursal:document.getElementById('e-suc').value,
     direccion:document.getElementById('e-dir').value,
-    productos:document.getElementById('e-prods').value,
+    productos:eBuildProductsString(),
     adicionales:document.getElementById('e-adic').value,
     notas:document.getElementById('e-notas').value,
     total:parseFloat(document.getElementById('e-total').value)||0,
     anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
     restante:parseFloat(document.getElementById('e-restante').value)||0,
-    imagen:eEditPhotos.join('|')
+    imagen:eEditPhotos.join('|'),
+    imagenAzucar:eEditAzucar.join('|')
   };
   try{
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
