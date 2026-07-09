@@ -256,6 +256,10 @@ textarea{resize:vertical;min-height:60px;}
 .oc-products{background:#EEF1FB;border-radius:6px;padding:7px 9px;margin-top:6px;}
 .oc-products-title{font-weight:700;color:var(--navy);margin-bottom:4px;font-size:0.67rem;text-transform:uppercase;letter-spacing:0.05em;}
 .oc-product-item{border-bottom:1px dashed var(--border);padding:4px 0;font-size:0.73rem;color:var(--text);}
+.oc-prod-photos{display:flex;gap:6px;margin:4px 0 6px;flex-wrap:wrap;}
+.oc-prod-photo{width:56px;height:56px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border);}
+.oc-prod-azucar{margin:4px 0 6px;}
+.oc-prod-azucar-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:#1E40AF;font-weight:700;margin-bottom:3px;}
 .oc-product-item:last-child{border-bottom:none;}
 .oc-product-name{font-weight:600;color:var(--navy);}
 .search-bar-wrap{position:relative;margin-bottom:0.75rem;}
@@ -1650,8 +1654,8 @@ async function sendOrder(){
   const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
   const folio=parseInt(folioVal);
   const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
-  var allPhotos=cart.flatMap(function(i){return Array.isArray(i.photos)?i.photos:(i.photo&&i.photo.startsWith('http')?[i.photo]:[]);});var firstPhoto=allPhotos[0]||'';
-  var allAzucar=cart.flatMap(function(i){return Array.isArray(i.azucarPhotos)?i.azucarPhotos:[];});
+  var allPhotos=cart.flatMap(function(i,idx){var ph=Array.isArray(i.photos)?i.photos:(i.photo&&i.photo.startsWith('http')?[i.photo]:[]);return ph.map(function(u){return idx+'::'+u;});});var firstPhoto=(allPhotos[0]||'').split('::').pop()||'';
+  var allAzucar=cart.flatMap(function(i,idx){return Array.isArray(i.azucarPhotos)?i.azucarPhotos.map(function(u){return idx+'::'+u;}):[];});
   const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto,imagenAzucar:allAzucar.join('|')};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
@@ -1924,8 +1928,10 @@ function renderOrders(){
 }
 
 
-function renderProductLines(prodLines){
+function renderProductLines(prodLines,photosByIdx,azucarByIdx){
   if(!prodLines.length)return'';
+  photosByIdx=photosByIdx||{};
+  azucarByIdx=azucarByIdx||{};
   var html='<div class="oc-products"><div class="oc-products-title">Productos</div>';
 
   // Mapa de emojis a etiquetas
@@ -1998,6 +2004,18 @@ function renderProductLines(prodLines){
     html+=producto;
     if(hasFondant)html+=' <span class="oc-fondant-badge">🎭 FONDANT</span>';
     html+='</div>';
+    var prodPhotos=photosByIdx[String(idx)]||[];
+    if(prodPhotos.length){
+      html+='<div class="oc-prod-photos">'+prodPhotos.map(function(u,pi){
+        return '<img src="'+u+'" class="oc-prod-photo" onclick="openImgModal(\''+u+'\',\'Foto producto '+(idx+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';
+      }).join('')+'</div>';
+    }
+    var prodAzucar=azucarByIdx[String(idx)]||[];
+    if(prodAzucar.length){
+      html+='<div class="oc-prod-azucar"><div class="oc-prod-azucar-label">🖨️ Impresión de Azúcar</div><div class="oc-prod-photos">'+prodAzucar.map(function(u,pi){
+        return '<img src="'+u+'" class="oc-prod-photo" onclick="openImgModal(\''+u+'\',\'Impresión Azúcar producto '+(idx+1)+'\')" onerror="this.style.display=\'none\'" alt="Impresión">';
+      }).join('')+'</div></div>';
+    }
     html+='<div class="oc-product-detail">';
 
     function row(label, val){
@@ -2070,20 +2088,33 @@ function renderOrdersList(visOrders){
     const showTag=sucView==='all'&&o.sucursal;
     const entIcon=o.tipoEntrega==='domicilio'?'🛵 Domicilio':'🏪 Sucursal';
     const prodLines=(o.productos||'').split(' || ').filter(Boolean);
-    var imgUrls=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});var imgUrl=imgUrls[0]||'';
+    var rawImgs=(o.imagen||'').split('|').filter(Boolean);
+    var photosByIdx={};var legacyPhotos=[];
+    rawImgs.forEach(function(entry){
+      var m=entry.match(/^(\d+)::(https?:\/\/.+)$/);
+      if(m){var idx=m[1];if(!photosByIdx[idx])photosByIdx[idx]=[];photosByIdx[idx].push(m[2]);}
+      else if(entry.startsWith('http')){legacyPhotos.push(entry);}
+    });
+    var rawAzucar=(o.impresionUrls||'').split('|').filter(Boolean);
+    var azucarByIdx={};var legacyAzucar=[];
+    rawAzucar.forEach(function(entry){
+      var m=entry.match(/^(\d+)::(https?:\/\/.+)$/);
+      if(m){var idx=m[1];if(!azucarByIdx[idx])azucarByIdx[idx]=[];azucarByIdx[idx].push(m[2]);}
+      else if(entry.startsWith('http')){legacyAzucar.push(entry);}
+    });
     const isExpanded=expandedFolios.has(String(o.folio));
     const isDelivered=o.status==='Entregado';
     return`<div class="order-card${isToday?' urgente':''}${isDelivered?' delivered':''}">
-      ${imgUrls.length?'<div class="oc-imgs">'+imgUrls.map(function(u,i){return '<img class="oc-img-thumb" src="'+u+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';}).join('')+'</div>':''}
+      ${legacyPhotos.length?'<div class="oc-imgs">'+legacyPhotos.map(function(u,i){return '<img class="oc-img-thumb" src="'+u+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';}).join('')+'</div>':''}
       <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div></div>
       <div class="oc-body">
         ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";if(prods.toLowerCase().includes("fondant")||adic.toLowerCase().includes("fondant")){var m=prods.match(/🎭 Fondant: ([^\n|]+)/);return '<div class="oc-fondant-badge">🎭 FONDANT!'+(m?' · '+m[1].trim():'')+"</div>";}return '';})()}
-        ${renderProductLines(prodLines)}
+        ${renderProductLines(prodLines,photosByIdx,azucarByIdx)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
         ${(function(){var tipoRow=o.tipoEntrega==='domicilio'?'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">\u{1F6F5} Domicilio desde '+(o.sucursal||'\u2014')+'</span></div>':'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">'+entIcon+'</span></div>'+(o.sucursal?'<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">'+o.sucursal+'</span></div>':'');var dirRow=o.direccion?'<div class="oc-row"><span class="oc-key">'+(o.tipoEntrega==="domicilio"?"Direcci\u00f3n de env\u00edo":"Direcci\u00f3n")+'</span><span class="oc-val">'+o.direccion+'</span></div>':'';return tipoRow+dirRow;})()}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
         ${isDelivered?(function(){var info=getEntregadoInfo(o.historial);return info?'<div class="oc-row"><span class="oc-key">Entregó</span><span class="oc-val">'+info.quien+' — '+info.fecha+'</span></div>':'';})():''}
-        ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${o.impresionUrls?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Impresión de Azúcar</div><div class="oc-imp-grid">'+o.impresionUrls.split('|').filter(Boolean).map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión de Azúcar\')">'+'<a href="'+u+'" download="impresion-azucar-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
+        ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${legacyAzucar.length?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Impresión de Azúcar</div><div class="oc-imp-grid">'+legacyAzucar.map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión de Azúcar\')">'+'<a href="'+u+'" download="impresion-azucar-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
         ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
@@ -2174,7 +2205,7 @@ function eAttr(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot
 function eHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function openEditModal(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
-  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(function(u){return u.startsWith('http');});eEditAzucar=(o.impresionUrls||'').split('|').filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
+  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});eEditAzucar=(o.impresionUrls||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
   document.getElementById('edit-modal-body').innerHTML=
     '<div class="form-group"><label class="field-label">📷 Fotos del pedido</label>'+
       '<div class="photos-grid" id="e-photos-grid"></div>'+
