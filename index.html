@@ -2286,14 +2286,24 @@ async function saveEdit(){
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),15000);
-    await fetch(url,{signal:controller.signal});
+    const res=await fetch(url,{signal:controller.signal});
     clearTimeout(timeout);
-    closeEditModal();
-    toast('✓','Pedido actualizado ✅');
-    await loadOrders();
+    const result=await res.json();
+    if(result&&result.ok){
+      closeEditModal();
+      toast('✓','Pedido actualizado ✅');
+      await loadOrders();
+    } else {
+      if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Guardar';}
+      toast('❌','Error al guardar: '+((result&&result.error)||'intenta de nuevo'));
+    }
   }catch(e){
     if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Guardar';}
-    toast('❌','Error al guardar. Intenta de nuevo.');
+    if(e.name==='AbortError'){
+      toast('❌','Se tardó demasiado. Verifica tu conexión e intenta de nuevo.');
+    } else {
+      toast('❌','Error al guardar. Intenta de nuevo.');
+    }
   }
 }
 function closeEdit(){closeEditModal();}
