@@ -578,7 +578,7 @@ const PRECIOS_RELLENO = {
   'p50': {fresa:200, platano:200, cheesecake:600},
   'p70': {fresa:200, platano:200, cheesecake:700},
   'p100':{fresa:200, platano:200, cheesecake:800},
-  'barra':{fresa:100, platano:100, cheesecake:null}
+  'barra':{fresa:80, platano:60, cheesecake:280}
 };
 
 const SABORES_COMBO = [
@@ -678,7 +678,9 @@ const COLOR_CHART = [
   {fila:14, name:'Morado',    shades:{A:'#D9BCF5',B:'#B279EC',C:'#8C36E2',D:'#6619B3'}},
   {fila:16, name:'Rosa',      shades:{A:'#F7BAE3',B:'#F075C7',C:'#E830AB',D:'#B81481'}},
   {fila:18, name:'Café',      shades:{A:'#F4D4BE',B:'#E8AA7D',C:'#DD7F3C',D:'#AD5A1F'}},
-  {fila:19, name:'Gris',      shades:{A:'#D9D9D9',B:'#B2B2B2',C:'#8C8C8C',D:'#666666'}}
+  {fila:19, name:'Gris',      shades:{A:'#D9D9D9',B:'#B2B2B2',C:'#8C8C8C',D:'#666666'}},
+  {fila:20, name:'Blanco',    shades:{A:'#FFFFFF',B:'#FAFAF7',C:'#F2F2ED',D:'#E5E5DE'}},
+  {fila:21, name:'Negro',     shades:{A:'#595959',B:'#3D3D3D',C:'#262626',D:'#000000'}}
 ];
 function openColorPicker(){
   var body=document.getElementById('color-modal-body');
@@ -947,7 +949,7 @@ function renderBuilder(){
   const isPisos=b.fmtGrupo==='pisos';
   const isJacobino=b.fmtGrupo==='jacobino';
   const isBarra=b.fmtGrupo==='barra';
-  const showRellenos=b.fmtTamano&&!isBarra&&!isPisos;
+  const showRellenos=b.fmtTamano&&!isPisos;
   const showJacobinoRellenos=isJacobino;
   const pisosCfg=b.pisosCombo?PISOS_CONFIG[b.pisosCombo]:null;
 
@@ -2157,9 +2159,9 @@ function openEditModal(folio){
     '<div class="form-group"><label class="field-label">Adicionales</label><input type="text" id="e-adic" value="'+eAttr(o.adicionales)+'"></div>'+
     '<div class="form-group"><label class="field-label">Notas generales</label><textarea id="e-notas">'+eHtml(o.notas)+'</textarea></div>'+
     '<div class="totals-grid" style="margin-bottom:0.7rem">'+
-      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Total $</label><input type="number" id="e-total" value="'+eAttr(o.total||0)+'" step="0.01"></div>'+
-      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Anticipo $</label><input type="number" id="e-anticipo" value="'+eAttr(o.anticipo||0)+'" step="0.01"></div>'+
-      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="e-restante" value="'+eAttr(o.restante||0)+'" step="0.01"></div>'+
+      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Total $</label><input type="number" id="e-total" value="'+eAttr(o.total||0)+'" step="0.01" oninput="eCalcRest()"></div>'+
+      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Anticipo $</label><input type="number" id="e-anticipo" value="'+eAttr(o.anticipo||0)+'" step="0.01" oninput="eCalcRest()"></div>'+
+      '<div class="form-group" style="margin-bottom:0"><label class="field-label">Restante $</label><input type="number" id="e-restante" value="'+eAttr(o.restante||0)+'" step="0.01" readonly style="background:#EEF1FB;font-weight:700;color:var(--navy)"></div>'+
     '</div>'+
     '<div class="modal-actions"><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">💾 Guardar</button><button class="btn-ghost" onclick="closeEditModal()">Cancelar</button></div>';
   document.getElementById('edit-modal').classList.add('open');
@@ -2180,6 +2182,12 @@ function eRenderPhotos(){
   });
   html+='<button class="photo-add-btn" onclick="document.getElementById(\'e-photo-input\').click()"><span style="font-size:1.4rem">📷</span><span>+ Agregar</span></button>';
   grid.innerHTML=html;
+}
+function eCalcRest(){
+  var t=parseFloat(document.getElementById('e-total').value)||0;
+  var a=parseFloat(document.getElementById('e-anticipo').value)||0;
+  var r=document.getElementById('e-restante');
+  if(r)r.value=(t-a).toFixed(2);
 }
 function eRemovePhoto(i){eEditPhotos.splice(i,1);eRenderPhotos();}
 function eRenderAzucar(){
