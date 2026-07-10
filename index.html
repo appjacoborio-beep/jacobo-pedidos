@@ -742,7 +742,7 @@ function renderColorsList(){
     '</div>';
   }).join('');
 }
-let editingFolio=null;let eEditPhotos=[];let eEditAzucar=[];let eProdBlocks=[];
+let editingFolio=null;let eEditPhotos=[];let eEditAzucar=[];let eProdBlocks=[];let ePhotosTouched=false;let eAzucarTouched=false;
 // Separa el texto plano de "Productos" en bloques por producto, y cada bloque en líneas Label: valor editables por separado.
 // El punto clave: se reconstruye exactamente igual si no se toca nada (mismo formato que usa el resto de la app).
 function eParseProductsString(str){
@@ -2205,7 +2205,7 @@ function eAttr(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot
 function eHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function openEditModal(folio){
   const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
-  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});eEditAzucar=(o.impresionUrls||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
+  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});eEditAzucar=(o.impresionUrls||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});ePhotosTouched=false;eAzucarTouched=false;document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
   document.getElementById('edit-modal-body').innerHTML=
     '<div class="form-group"><label class="field-label">📷 Fotos del pedido</label>'+
       '<div class="photos-grid" id="e-photos-grid"></div>'+
@@ -2254,7 +2254,7 @@ function eCalcRest(){
   var r=document.getElementById('e-restante');
   if(r)r.value=(t-a).toFixed(2);
 }
-function eRemovePhoto(i){eEditPhotos.splice(i,1);eRenderPhotos();}
+function eRemovePhoto(i){eEditPhotos.splice(i,1);ePhotosTouched=true;eRenderPhotos();}
 function eRenderAzucar(){
   var grid=document.getElementById('e-azucar-grid');
   if(!grid)return;
@@ -2268,7 +2268,7 @@ function eRenderAzucar(){
   html+='<button class="photo-add-btn" onclick="document.getElementById(\'e-azucar-input\').click()"><span style="font-size:1.4rem">🖨️</span><span>+ Agregar</span></button>';
   grid.innerHTML=html;
 }
-function eRemoveAzucar(i){eEditAzucar.splice(i,1);eRenderAzucar();}
+function eRemoveAzucar(i){eEditAzucar.splice(i,1);eAzucarTouched=true;eRenderAzucar();}
 async function eHandleAzucar(e){
   var file=e.target.files[0];if(!file)return;
   e.target.value='';
@@ -2289,6 +2289,7 @@ async function eHandleAzucar(e){
     clearTimeout(_timeout5);
     if(data.secure_url){
       eEditAzucar.push(data.secure_url);
+      eAzucarTouched=true;
       eRenderAzucar();
       toast('✓','Impresión agregada ✅');
     } else {toast('❌','No se pudo subir la imagen. Intenta de nuevo o guarda sin ella.');}
@@ -2318,6 +2319,7 @@ async function eHandlePhoto(e){
     clearTimeout(_timeout3);
     if(data.secure_url){
       eEditPhotos.push(data.secure_url);
+      ePhotosTouched=true;
       eRenderPhotos();
       toast('✓','Foto agregada ✅');
     } else {toast('❌','No se pudo subir la foto. Intenta de nuevo o guarda sin imagen.');}
@@ -2343,10 +2345,10 @@ async function saveEdit(){
     notas:document.getElementById('e-notas').value,
     total:parseFloat(document.getElementById('e-total').value)||0,
     anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
-    restante:parseFloat(document.getElementById('e-restante').value)||0,
-    imagen:eEditPhotos.join('|'),
-    imagenAzucar:eEditAzucar.join('|')
+    restante:parseFloat(document.getElementById('e-restante').value)||0
   };
+  if(ePhotosTouched)payload.imagen=eEditPhotos.join('|');
+  if(eAzucarTouched)payload.imagenAzucar=eEditAzucar.join('|');
   try{
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
     const controller=new AbortController();
@@ -2405,7 +2407,16 @@ function toggleExpand(folio){
   renderOrders();
 }
 function updateBadge(){const todayStr=new Date().toISOString().slice(0,10);const vis=prodSuc&&prodSuc!=='Todas'?orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase()):orders;const n=vis.filter(o=>o.fechaEntrega===todayStr&&(o.status==='Pendiente'||o.status==='En proceso')).length;document.getElementById('pending-badge').textContent=n||'';}
-function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();}
+let autoRefreshTimer=null;
+function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.nav-tab')[v==='order'?0:1].classList.add('active');if(v==='production'&&prodSuc)loadOrders();if(v==='order')syncFolioCounter();
+  clearInterval(autoRefreshTimer);
+  if(v==='production'){
+    autoRefreshTimer=setInterval(function(){
+      var editOpen=document.getElementById('edit-modal')&&document.getElementById('edit-modal').classList.contains('open');
+      if(document.visibilityState==='visible'&&prodSuc&&!editOpen)loadOrders();
+    },90000); // refresco automático cada 90s para evitar pantallas desactualizadas
+  }
+}
 function toast(icon,msg){const ti=document.getElementById('toast-icon');const tm=document.getElementById('toast-msg');const t=document.getElementById('toast');if(!ti||!tm||!t)return;ti.textContent=icon;tm.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 initSetupBanner();
