@@ -1706,7 +1706,7 @@ async function loadOrders(){
   document.getElementById('orders-grid').innerHTML='<div class="spinner-wrap"><div class="spin"></div> Cargando...</div>';
   try{
     const res=await fetch(SCRIPT_URL+'?t='+Date.now());const raw=await res.json();
-    orders=raw.filter(r=>r['Cliente']&&r['Cliente']!=='Cliente').map(r=>({folio:r['Folio'],cliente:r['Cliente'],telefono:r['Teléfono'],tipoEntrega:r['Tipo Entrega']||'',sucursal:(r['Sucursal']||'').trim(),direccion:r['Dirección']||'',fechaEntrega:(()=>{
+    orders=raw.filter(r=>r['Cliente']&&r['Cliente']!=='Cliente').map(r=>({folio:r['Folio'],fechaPedido:r['Fecha Pedido']||'',cliente:r['Cliente'],telefono:r['Teléfono'],tipoEntrega:r['Tipo Entrega']||'',sucursal:(r['Sucursal']||'').trim(),direccion:r['Dirección']||'',fechaEntrega:(()=>{
   const v=r['Fecha Entrega'];
   if(!v)return'';
   const sv=String(v).replace(/^'/,'').trim();
@@ -2111,6 +2111,7 @@ function renderOrdersList(visOrders){
         ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";if(prods.toLowerCase().includes("fondant")||adic.toLowerCase().includes("fondant")){var m=prods.match(/🎭 Fondant: ([^\n|]+)/);return '<div class="oc-fondant-badge">🎭 FONDANT!'+(m?' · '+m[1].trim():'')+"</div>";}return '';})()}
         ${renderProductLines(prodLines,photosByIdx,azucarByIdx)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
+        ${o.fechaPedido?`<div class="oc-row"><span class="oc-key">Elaboración</span><span class="oc-val">${o.fechaPedido}</span></div>`:''}
         ${(function(){var tipoRow=o.tipoEntrega==='domicilio'?'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">\u{1F6F5} Domicilio desde '+(o.sucursal||'\u2014')+'</span></div>':'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">'+entIcon+'</span></div>'+(o.sucursal?'<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">'+o.sucursal+'</span></div>':'');var dirRow=o.direccion?'<div class="oc-row"><span class="oc-key">'+(o.tipoEntrega==="domicilio"?"Direcci\u00f3n de env\u00edo":"Direcci\u00f3n")+'</span><span class="oc-val">'+o.direccion+'</span></div>':'';return tipoRow+dirRow;})()}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
         ${isDelivered?(function(){var info=getEntregadoInfo(o.historial);return info?'<div class="oc-row"><span class="oc-key">Entregó</span><span class="oc-val">'+info.quien+' — '+info.fecha+'</span></div>':'';})():''}
