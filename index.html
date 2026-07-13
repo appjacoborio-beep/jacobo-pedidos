@@ -1619,7 +1619,17 @@ function markInvalid(el,isGroup){
   el.addEventListener('click',clear);
   setTimeout(clear,6000);
 }
+let sendingOrder=false;
 async function sendOrder(){
+  if(sendingOrder)return; // blindaje extra contra doble-toque, antes de cualquier otra cosa
+  sendingOrder=true;
+  try{
+    await sendOrderInner();
+  } finally {
+    sendingOrder=false;
+  }
+}
+async function sendOrderInner(){
   // ── Validaciones obligatorias ──
   const folioVal=document.getElementById('folio-display').value.trim();
   if(!folioVal){toast('⚠️','Escribe el número de folio');markInvalid(document.getElementById('folio-display'));return;}
