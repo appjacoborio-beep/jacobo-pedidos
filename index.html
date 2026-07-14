@@ -633,6 +633,7 @@ const ADICIONALES = [
   {id:'listones',      name:'🎀 Listones',               price:'a cotizar'},
   {id:'fondant-fig',   name:'🎭 Pieza en Fondant',       price:'a cotizar'},
   {id:'fondant-cub',   name:'🎭 Cubierta en Fondant',    price:'a cotizar'},
+  {id:'flores',        name:'🌸 Flores',                 price:'a cotizar'},
   {id:'imp-arroz',     name:'Impresión Papel de Arroz', price:'$200/hoja'},
   {id:'macarrones',    name:'Macarrones',               price:'$30/pza', step:12, unit:'docena'},
   {id:'merengues',     name:'Merengues',                price:'$20/pza'},
@@ -878,6 +879,7 @@ function editCartItem(i){
   b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
   b.adicionales=item._adicionales||{};b.mensaje=item._mensaje||'';b.tema=item._tema||'';
   b.colores=Array.isArray(item._colores)?item._colores.map(function(c){return{...c};}):[];
+  b.fondantDesc=item._fondantDesc||'';b.floresDesc=item._floresDesc||'';
   b.alergias=item._alergias||'';b.notas=item._notas||'';b.qty=item.qty||1;
   b.photos=Array.isArray(item.photos)?[...item.photos]:(item.photo&&item.photo.startsWith('http')?[item.photo]:[]);b.azucarPhotos=Array.isArray(item.azucarPhotos)?[...item.azucarPhotos]:[];b.depositoCobrado=item._depositoCobrado||false;b.doblePan=item._doblePan||false;
   cart.splice(i,1);renderCart();renderBuilder();
@@ -928,7 +930,7 @@ function bReset(){
      cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
      postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
      miniProduct:'',miniVariant:'',panDesc:'',
-     mensaje:'',tema:'',colores:[],alergias:'',notas:'',fondantDesc:'',photos:[],azucarPhotos:[],
+     mensaje:'',tema:'',colores:[],alergias:'',notas:'',fondantDesc:'',floresDesc:'',photos:[],azucarPhotos:[],
      qty:1,nota:'',photo:null};
 }
 function openBuilder(){bReset();renderBuilder();document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
@@ -1284,6 +1286,14 @@ function renderBuilder(){
         </div>`;
       }).join('')}
       </div>
+      <div id="fondant-desc-wrap" style="display:none;margin-top:8px">
+        <label class="field-label">🎭 ¿Qué lleva la pieza/cubierta de fondant?</label>
+        <input type="text" id="fondant-desc-input" placeholder="Ej. figura de Mickey Mouse, cubierta lisa color rosa..." oninput="b.fondantDesc=this.value" style="font-size:0.8rem">
+      </div>
+      <div id="flores-desc-wrap" style="display:none;margin-top:8px">
+        <label class="field-label">🌸 ¿Qué tipo de flor?</label>
+        <input type="text" id="flores-desc-input" placeholder="Ej. rosas naturales, girasoles de azúcar..." oninput="b.floresDesc=this.value" style="font-size:0.8rem">
+      </div>
     </div>
 
     <!-- CANTIDAD -->
@@ -1307,7 +1317,14 @@ function renderBuilder(){
   if(wrap){
     var hasFondant=(b.adicionales&&(b.adicionales['fondant-cub']>0||b.adicionales['fondant-fig']>0));
     wrap.style.display=hasFondant?'block':'none';
-    if(inp&&b.fondantDesc)inp.value=b.fondantDesc;
+    if(inp)inp.value=b.fondantDesc||'';
+  }
+  var floresWrap=document.getElementById('flores-desc-wrap');
+  var floresInp=document.getElementById('flores-desc-input');
+  if(floresWrap){
+    var hasFlores=(b.adicionales&&b.adicionales['flores']>0);
+    floresWrap.style.display=hasFlores?'block':'none';
+    if(floresInp)floresInp.value=b.floresDesc||'';
   }
 }
 function bChAdic(id, delta){
@@ -1583,6 +1600,7 @@ function bAddToCart(){
   if(Array.isArray(b.colores))b.colores.forEach(function(c){details+=`Color: ${c.label}${c.uso?' — '+c.uso:''}\n`;});
   if(b.alergias)details+=`⚠️ ${b.alergias}\n`;
   if(b.fondantDesc&&b.fondantDesc.trim())details+=`🎭 Fondant: ${b.fondantDesc.trim()}\n`;
+  if(b.floresDesc&&b.floresDesc.trim())details+=`🌸 Flores: ${b.floresDesc.trim()}\n`;
   if(b.notas)details+=`📝 ${b.notas}\n`;
   if(b.nota)details+=`Nota: ${b.nota}`;
   const aKeys=Object.keys(b.adicionales||{});
@@ -1594,7 +1612,7 @@ function bAddToCart(){
     }).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]});
+  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]});
   renderCart();closeBuilder();
   toast('✓',`"${name}" agregado`);
 }
@@ -2118,7 +2136,11 @@ function renderOrdersList(visOrders){
       ${legacyPhotos.length?'<div class="oc-imgs">'+legacyPhotos.map(function(u,i){return '<img class="oc-img-thumb" src="'+u+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';}).join('')+'</div>':''}
       <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div></div>
       <div class="oc-body">
-        ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";if(prods.toLowerCase().includes("fondant")||adic.toLowerCase().includes("fondant")){var m=prods.match(/🎭 Fondant: ([^\n|]+)/);return '<div class="oc-fondant-badge">🎭 FONDANT!'+(m?' · '+m[1].trim():'')+"</div>";}return '';})()}
+        ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";var text=(prods+" "+adic).toLowerCase();var badges='';
+          if(text.includes("fondant")){var m=prods.match(/🎭 Fondant: ([^\n|]+)/);badges+='<div class="oc-fondant-badge">🎭 FONDANT!'+(m?' · '+m[1].trim():'')+'</div>';}
+          if(text.includes("impresión azúcar")||text.includes("impresion azucar")){badges+='<div class="oc-fondant-badge" style="background:#DBEAFE;color:#1E40AF;border-color:#93C5FD">🖨️ IMPRESIÓN AZÚCAR!</div>';}
+          if(text.includes("flores")){var mf=prods.match(/🌸 Flores: ([^\n|]+)/);badges+='<div class="oc-fondant-badge" style="background:#FCE7F3;color:#9D174D;border-color:#F9A8D4">🌸 FLORES!'+(mf?' · '+mf[1].trim():'')+'</div>';}
+          return badges;})()}
         ${renderProductLines(prodLines,photosByIdx,azucarByIdx)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
         ${o.fechaPedido?`<div class="oc-row"><span class="oc-key">Elaboración</span><span class="oc-val">${o.fechaPedido}</span></div>`:''}
