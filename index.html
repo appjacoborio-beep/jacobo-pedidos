@@ -646,7 +646,7 @@ const ADICIONALES = [
 const COMBOS_PISOS_LEGACY={'1-0':[{label:'Piso único',hint:null}],'2-A':[{label:'Piso Superior',hint:'6"'},{label:'Piso Inferior',hint:'10"'}],'2-B':[{label:'Piso Superior',hint:'8"'},{label:'Piso Inferior',hint:'12"'}],'3-0':[{label:'Piso Superior',hint:'6"'},{label:'Piso Medio',hint:'10"'},{label:'Piso Inferior',hint:'14"'}]};
 
 // ══ GLOBAL STATE ══
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbzIh8xY7xd6qoMWz7AwvfBjMrayPuH685E_2kO4VWhixT0w3azTgdLBMdL1KKKgmzBPYA/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbxHkjaeZj0FwPupmRc6xr37rWYi0T4qL0VzTxMB2hq3Y4pvaTtS2fSbwTRUSae40SmlLw/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -742,7 +742,7 @@ function renderColorsList(){
     '</div>';
   }).join('');
 }
-let editingFolio=null;let eEditPhotos=[];let eEditAzucar=[];let eProdBlocks=[];let ePhotosTouched=false;let eAzucarTouched=false;
+let editingFolio=null;let editingFechaPedido='';let eEditPhotos=[];let eEditAzucar=[];let eProdBlocks=[];let ePhotosTouched=false;let eAzucarTouched=false;
 // Separa el texto plano de "Productos" en bloques por producto, y cada bloque en líneas Label: valor editables por separado.
 // El punto clave: se reconstruye exactamente igual si no se toca nada (mismo formato que usa el resto de la app).
 function eParseProductsString(str){
@@ -2130,10 +2130,10 @@ function renderOrdersList(visOrders){
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
       <div class="oc-footer">
-        ${isDelivered?'<button class="oc-btn" disabled style="opacity:0.6">✅ Entregado</button>':'<button class="oc-btn" onclick="markEntregado(\''+o.folio+'\')" style="color:#065F46;font-weight:700">✅ Entregado</button>'}
-        <button class="oc-btn" onclick="openEditModal('${o.folio}')">✏️ Editar</button>
-        <button class="oc-btn" onclick="printNota('${o.folio}')" style="color:#1B2A6B">🖨️ Imprimir</button>
-        <button class="oc-btn danger" onclick="delOrder('${o.folio}')">🗑</button>
+        ${isDelivered?'<button class="oc-btn" disabled style="opacity:0.6">✅ Entregado</button>':'<button class="oc-btn" onclick="markEntregado(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')" style="color:#065F46;font-weight:700">✅ Entregado</button>'}
+        <button class="oc-btn" onclick="openEditModal('${o.folio}','${jsEsc(o.fechaPedido||'')}')">✏️ Editar</button>
+        <button class="oc-btn" onclick="printNota('${o.folio}','${jsEsc(o.fechaPedido||'')}')" style="color:#1B2A6B">🖨️ Imprimir</button>
+        <button class="oc-btn danger" onclick="delOrder('${o.folio}','${jsEsc(o.fechaPedido||'')}')">🗑</button>
       </div>
     </div>`;
   }).join('');
@@ -2150,8 +2150,8 @@ function getEntregadoInfo(historial){
   }
   return null;
 }
-async function markEntregado(folio){
-  const o=orders.find(x=>String(x.folio)===String(folio));
+async function markEntregado(folio,fechaPedido){
+  const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));
   if(!o)return;
   if(o.status==='Entregado'){toast('✓','Ya estaba marcado como entregado');return;}
   const quien=prompt('¿Quién entrega este pedido?','');
@@ -2164,7 +2164,7 @@ async function markEntregado(folio){
   updateBadge();
   toast('✓',`Folio #${String(o.folio).padStart(4,'0')} → Entregado ✅`);
   try{
-    const payload={_update:true,folio:o.folio,estado:'Entregado',quien:quien||'Sin nombre',fechaCambio};
+    const payload={_update:true,folio:o.folio,fechaPedido:o.fechaPedido,estado:'Entregado',quien:quien||'Sin nombre',fechaCambio};
     fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload))).catch(function(){toast('⚠️','Marcado localmente. Verifica conexión.');});
   }catch(e){toast('⚠️','Error al marcar como entregado.');}
 }
@@ -2179,15 +2179,16 @@ async function advStatus(folio){
   updateBadge();
   toast('✓',`Folio #${String(o.folio).padStart(4,'0')} → ${ns}`);
   try{
-    const payload={_update:true,folio:o.folio,estado:ns,quien:quien||'Sin nombre',fechaCambio:new Date().toLocaleString('es-MX')};
+    const payload={_update:true,folio:o.folio,fechaPedido:o.fechaPedido,estado:ns,quien:quien||'Sin nombre',fechaCambio:new Date().toLocaleString('es-MX')};
     fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload))).catch(function(){toast('⚠️','Estado actualizado localmente. Verifica conexión.');});
   }catch(e){toast('⚠️','Error al actualizar estado.');}
 }
-function delOrder(folio){
-  const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
+function delOrder(folio,fechaPedido){
+  const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));if(!o)return;
   const ex=document.getElementById('del-confirm-bar');if(ex)ex.remove();
   const bar=document.createElement('div');bar.id='del-confirm-bar';
   bar.setAttribute('data-folio',folio);
+  bar.setAttribute('data-fecha-pedido',o.fechaPedido||'');
   bar.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1B2A6B;color:white;padding:12px 16px;border-radius:10px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:90vw';
   bar.innerHTML='<span style="font-size:0.82rem">¿Eliminar folio #'+String(o.folio).padStart(4,'0')+'?</span>'
     +'<button onclick="execDelete()" style="background:#C0392B;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8rem">Sí, eliminar</button>'
@@ -2198,25 +2199,26 @@ function delOrder(folio){
 async function execDelete(){
   const bar=document.getElementById('del-confirm-bar');
   const folio=bar?bar.getAttribute('data-folio'):null;
+  const fechaPedido=bar?bar.getAttribute('data-fecha-pedido'):'';
   if(bar)bar.remove();if(!folio)return;
-  const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
+  const o=orders.find(x=>String(x.folio)===String(folio)&&String(x.fechaPedido||'')===String(fechaPedido||''));if(!o)return;
   toast('⏳','Eliminando...');
   try{
-    const res=await fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify({_delete:true,folio:o.folio})));
+    const res=await fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify({_delete:true,folio:o.folio,fechaPedido:o.fechaPedido})));
     const result=await res.json();
     if(result.ok){
-      orders=orders.filter(x=>String(x.folio)!==String(folio));
+      orders=orders.filter(x=>!(String(x.folio)===String(folio)&&String(x.fechaPedido||'')===String(fechaPedido||'')));
       renderOrders();renderCalendar();updateBadge();
       toast('✓','Pedido eliminado');
-    } else {toast('❌','Error al eliminar');}
+    } else {toast('❌','Error al eliminar: '+((result&&result.error)||''));}
   }catch(e){toast('❌','Error de conexión');}
 }
 
 function eAttr(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
 function eHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function openEditModal(folio){
-  const o=orders.find(x=>String(x.folio)===String(folio));if(!o)return;
-  editingFolio=o.folio;eEditPhotos=(o.imagen||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});eEditAzucar=(o.impresionUrls||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});ePhotosTouched=false;eAzucarTouched=false;document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
+function openEditModal(folio,fechaPedido){
+  const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));if(!o)return;
+  editingFolio=o.folio;editingFechaPedido=o.fechaPedido||'';eEditPhotos=(o.imagen||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});eEditAzucar=(o.impresionUrls||'').split('|').filter(Boolean).map(function(u){var m=u.match(/^\d+::(https?:\/\/.+)$/);return m?m[1]:u;}).filter(function(u){return u.startsWith('http');});ePhotosTouched=false;eAzucarTouched=false;document.getElementById('edit-modal-title').textContent='Editar Folio #'+String(o.folio).padStart(4,'0');
   document.getElementById('edit-modal-body').innerHTML=
     '<div class="form-group"><label class="field-label">📷 Fotos del pedido</label>'+
       '<div class="photos-grid" id="e-photos-grid"></div>'+
@@ -2344,7 +2346,7 @@ async function saveEdit(){
   const saveBtn=document.getElementById('edit-save-btn');
   if(saveBtn){saveBtn.disabled=true;saveBtn.innerHTML='<div class="spin"></div> Guardando...';}
   try{
-    const payload={_edit:true,folio:editingFolio,
+    const payload={_edit:true,folio:editingFolio,fechaPedido:editingFechaPedido,
       cliente:document.getElementById('e-cliente').value,
       telefono:document.getElementById('e-tel').value,
       fechaEntrega:document.getElementById('e-fecha').value,
@@ -2432,8 +2434,8 @@ function toast(icon,msg){const ti=document.getElementById('toast-icon');const tm
 
 initSetupBanner();
 
-function printNota(folio){
-  const o=orders.find(x=>String(x.folio)===String(folio));
+function printNota(folio,fechaPedido){
+  const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));
   if(!o)return;
 
   const LOGO='';
