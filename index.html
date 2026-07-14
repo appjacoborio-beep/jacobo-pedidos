@@ -2343,24 +2343,24 @@ async function eHandlePhoto(e){
 async function saveEdit(){
   const saveBtn=document.getElementById('edit-save-btn');
   if(saveBtn){saveBtn.disabled=true;saveBtn.innerHTML='<div class="spin"></div> Guardando...';}
-  const payload={_edit:true,folio:editingFolio,
-    cliente:document.getElementById('e-cliente').value,
-    telefono:document.getElementById('e-tel').value,
-    fechaEntrega:document.getElementById('e-fecha').value,
-    hora:document.getElementById('e-hora').value,
-    tipoEntrega:document.getElementById('e-tipo').value,
-    sucursal:document.getElementById('e-suc').value,
-    direccion:document.getElementById('e-dir').value,
-    productos:eBuildProductsString(),
-    adicionales:document.getElementById('e-adic').value,
-    notas:document.getElementById('e-notas').value,
-    total:parseFloat(document.getElementById('e-total').value)||0,
-    anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
-    restante:parseFloat(document.getElementById('e-restante').value)||0
-  };
-  if(ePhotosTouched)payload.imagen=eEditPhotos.join('|');
-  if(eAzucarTouched)payload.imagenAzucar=eEditAzucar.join('|');
   try{
+    const payload={_edit:true,folio:editingFolio,
+      cliente:document.getElementById('e-cliente').value,
+      telefono:document.getElementById('e-tel').value,
+      fechaEntrega:document.getElementById('e-fecha').value,
+      hora:document.getElementById('e-hora').value,
+      tipoEntrega:document.getElementById('e-tipo').value,
+      sucursal:document.getElementById('e-suc').value,
+      direccion:document.getElementById('e-dir').value,
+      productos:eBuildProductsString(),
+      adicionales:document.getElementById('e-adic').value,
+      notas:document.getElementById('e-notas').value,
+      total:parseFloat(document.getElementById('e-total').value)||0,
+      anticipo:parseFloat(document.getElementById('e-anticipo').value)||0,
+      restante:parseFloat(document.getElementById('e-restante').value)||0
+    };
+    if(ePhotosTouched)payload.imagen=eEditPhotos.join('|');
+    if(eAzucarTouched)payload.imagenAzucar=eEditAzucar.join('|');
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),15000);
@@ -2380,7 +2380,7 @@ async function saveEdit(){
     if(e.name==='AbortError'){
       toast('❌','Se tardó demasiado. Verifica tu conexión e intenta de nuevo.');
     } else {
-      toast('❌','Error al guardar. Intenta de nuevo.');
+      toast('❌','Error al guardar: '+(e.message||'algo salió mal')+'. Intenta de nuevo.');
     }
   }
 }
