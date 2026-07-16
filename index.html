@@ -347,9 +347,9 @@ textarea{resize:vertical;min-height:60px;}
         <div class="form-group">
           <label class="field-label">Hora de entrega</label>
           <div class="time-row">
-            <select id="c-hour"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option selected>12</option></select>
-            <select id="c-min"><option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select>
-            <select id="c-ampm"><option>AM</option><option selected>PM</option></select>
+            <select id="c-hour"><option value="">--</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select>
+            <select id="c-min"><option value="">--</option><option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select>
+            <select id="c-ampm"><option value="">--</option><option>AM</option><option>PM</option></select>
           </div>
         </div>
       </div>
@@ -819,7 +819,6 @@ function resetUrl(){
 }
 
 // ══ INIT ══
-document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
 document.getElementById('folio-display').value='';
 renderAdicionales();
 syncFolioCounter();
@@ -1661,6 +1660,12 @@ async function sendOrderInner(){
   const fecha=document.getElementById('c-date').value;
   if(!fecha){toast('⚠️','Selecciona la fecha de entrega');markInvalid(document.getElementById('c-date'));return;}
 
+  const hourVal=document.getElementById('c-hour').value,minVal=document.getElementById('c-min').value,ampmVal=document.getElementById('c-ampm').value;
+  if(!hourVal||!minVal||!ampmVal){toast('⚠️','Selecciona la hora de entrega');markInvalid(document.getElementById('c-hour'));return;}
+
+  const staff=document.getElementById('c-staff').value.trim();
+  if(!staff){toast('⚠️','Ingresa quién tomó el pedido');markInvalid(document.getElementById('c-staff'));return;}
+
   if(!selectedEntrega){toast('⚠️','Selecciona el tipo de entrega');markInvalid(document.querySelector('.entrega-grid'),true);return;}
 
   if(!selectedSuc){toast('⚠️','Selecciona la sucursal');markInvalid(document.getElementById('group-suc'),true);return;}
@@ -1714,8 +1719,8 @@ async function sendOrderInner(){
 function clearForm(){
   clearInvalidMarks();
   ['c-name','c-phone','c-staff','c-address','f-total','f-anticipo','f-restante'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('c-hour').value='12';document.getElementById('c-min').value='00';document.getElementById('c-ampm').value='PM';
+  document.getElementById('c-date').value='';
+  document.getElementById('c-hour').value='';document.getElementById('c-min').value='';document.getElementById('c-ampm').value='';
   document.querySelectorAll('.suc-btn,.entrega-btn').forEach(el=>el.classList.remove('selected'));
   document.getElementById('group-suc').style.display='';document.getElementById('group-dir').style.display='none';
   cart=[];renderCart();
