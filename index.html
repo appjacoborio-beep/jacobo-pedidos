@@ -1870,12 +1870,13 @@ function renderCalendar(){
   const visOrders = prodSuc==='Todas' ? orders : orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
   visOrders.forEach(o=>{
     if(!o.fechaEntrega) return;
-    if(!ordersByDay[o.fechaEntrega]) ordersByDay[o.fechaEntrega] = {total:0,pend:0,proc:0,listo:0,fondant:0,azucar:0,flores:0};
+    if(!ordersByDay[o.fechaEntrega]) ordersByDay[o.fechaEntrega] = {total:0,pend:0,proc:0,listo:0,fondant:0,azucar:0,flores:0,domicilio:0};
     ordersByDay[o.fechaEntrega].total++;
     var textoDia=((o.productos||'')+' '+(o.adicionales||'')).toLowerCase();
     if(textoDia.includes('fondant'))ordersByDay[o.fechaEntrega].fondant++;
     if(textoDia.includes('impresión azúcar')||textoDia.includes('impresion azucar'))ordersByDay[o.fechaEntrega].azucar++;
     if(textoDia.includes('flores'))ordersByDay[o.fechaEntrega].flores++;
+    if(o.tipoEntrega==='domicilio')ordersByDay[o.fechaEntrega].domicilio++;
     if(o.status==='Pendiente') ordersByDay[o.fechaEntrega].pend++;
     if(o.status==='En proceso') ordersByDay[o.fechaEntrega].proc++;
     if(o.status==='Listo') ordersByDay[o.fechaEntrega].listo++;
@@ -1897,7 +1898,7 @@ function renderCalendar(){
     const isSelected = dateStr===calSelectedDate;
     const bgColor = isSelected?'var(--navy)':isToday?'var(--faint)':isPast?'#F8F9FA':'var(--card)';
     const numColor = isSelected?'#fff':isToday?'var(--navy)':isPast?'#AAAAAA':'var(--text)';
-    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'}">
+    html += `<div onclick="calSelectDay('${dateStr}')" style="background:${bgColor};min-height:52px;padding:5px;cursor:pointer;transition:all 0.15s;border:${isSelected?'2px solid var(--navy)':'none'};position:relative">
       <div style="font-size:0.78rem;font-weight:${isToday?'700':'500'};color:${numColor};margin-bottom:3px">${d}</div>
       ${dayOrders?`
         <div style="display:flex;flex-wrap:wrap;gap:2px">
@@ -1908,6 +1909,7 @@ function renderCalendar(){
           ${dayOrders.flores>0?`<span style="background:#FCE7F3;color:#9D174D;font-size:0.65rem;padding:1px 3px;border-radius:4px">🌸</span>`:''}
           ${dayOrders.listo>0?`<span style="background:#D1FAE5;color:#065F46;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.listo}L</span>`:''}
         </div>`:''}
+      ${dayOrders&&dayOrders.domicilio>0?`<div style="position:absolute;bottom:3px;right:3px;display:flex;align-items:center;gap:2px;background:#FFE4E6;color:#BE123C;font-size:0.62rem;font-weight:700;padding:1px 4px;border-radius:4px">🛵${dayOrders.domicilio}</div>`:''}
     </div>`;
   }
   document.getElementById('cal-grid').innerHTML = html;
