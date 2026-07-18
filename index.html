@@ -372,7 +372,7 @@ textarea{resize:vertical;min-height:60px;}
         <label class="field-label">Dirección de entrega</label>
         <textarea id="c-address" placeholder="Calle, número, colonia, referencias..." style="min-height:52px"></textarea>
       </div>
-      <div class="form-group" style="margin-bottom:0"><label class="field-label">Tomó el pedido</label><input type="text" id="c-staff" placeholder="Nombre del colaborador"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="field-label">Colaborador</label><input type="text" id="c-staff" placeholder="Nombre del colaborador"></div>
     </div>
   </div>
 
@@ -587,9 +587,17 @@ const PRECIOS_RELLENO = {
   'barra':{fresa:80, platano:60, cheesecake:280}
 };
 
+// ── Íconos ilustrados a la medida (no existen como emoji) ──
+const ICON_PISOS2='<svg viewBox="0 0 24 24"><rect x="5" y="12" width="14" height="7" rx="1.5" fill="#F7BAE3"/><rect x="8.5" y="6" width="7" height="6" rx="1.5" fill="#F075C7"/><circle cx="12" cy="5" r="1.1" fill="#E830AB"/></svg>';
+const ICON_PISOS3='<svg viewBox="0 0 24 24"><rect x="3.5" y="15" width="17" height="5" rx="1.2" fill="#F7BAE3"/><rect x="6.5" y="9.5" width="11" height="5.5" rx="1.2" fill="#F075C7"/><rect x="9.5" y="4" width="5" height="5.5" rx="1.2" fill="#E830AB"/></svg>';
+const ICON_TRILOGIA='<svg viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="15" rx="2" fill="#F4F425"/><rect x="4" y="9.5" width="16" height="5" fill="#E83030"/><rect x="4" y="14.5" width="16" height="5" fill="#8B5E34"/></svg>';
+const ICON_COMBINADO='<svg viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="15" rx="2" fill="#F4F425"/><rect x="4" y="12" width="16" height="7.5" fill="#E83030"/></svg>';
+const ICON_BIRTHDAY='<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="9" rx="2" fill="#FFF8E7" stroke="#E8D8B0" stroke-width="0.6"/><circle cx="8" cy="13.5" r="1" fill="#E83030"/><circle cx="12" cy="16" r="1" fill="#308CE8"/><circle cx="16" cy="13.5" r="1" fill="#30E830"/><circle cx="10" cy="17.5" r="1" fill="#F4B271"/><circle cx="15" cy="16.5" r="1" fill="#9679EC"/><rect x="11" y="4" width="2" height="6" fill="#F4B271"/><path d="M12 4 Q13 2 12 0.8 Q11 2 12 4" fill="#EE8C2B"/></svg>';
+const ICON_OREJA='<svg viewBox="0 0 24 24"><path d="M12 20 C12 20 4 14 4 9 C4 6 6.5 4 9 4 C10.5 4 12 5 12 7 C12 5 13.5 4 15 4 C17.5 4 20 6 20 9 C20 14 12 20 12 20 Z" fill="#E8AA7D" stroke="#AD5A1F" stroke-width="0.8"/><path d="M8 8 C8.5 9.5 8.5 10.5 8 11.5" fill="none" stroke="#AD5A1F" stroke-width="0.5"/><path d="M16 8 C15.5 9.5 15.5 10.5 16 11.5" fill="none" stroke="#AD5A1F" stroke-width="0.5"/></svg>';
+function iconSpan(svg,size){return '<span style="display:inline-block;width:'+size+'px;height:'+size+'px;vertical-align:middle;line-height:0">'+svg+'</span>';}
 const SABORES_COMBO = [
   {id:'Vainilla',icon:'🍦'},{id:'Chocolate',icon:'🍫'},{id:'Red Velvet',icon:'❤️'},
-  {id:'Fresa',icon:'🍓'},{id:'Limón',icon:'🍋'},{id:'Moca',icon:'☕'},{id:'Birthday Cake',icon:'🎊'}
+  {id:'Fresa',icon:'🍓'},{id:'Limón',icon:'🍋'},{id:'Moca',icon:'☕'},{id:'Birthday Cake',icon:iconSpan(ICON_BIRTHDAY,18)}
 ];
 const SABORES_CUPCAKE = ['Vainilla','Chocolate','Moca','Red Velvet','Blueberry','Limón'];
 
@@ -611,7 +619,7 @@ const POSTRES = [
 const MINI_POSTRES = [
   {id:'Mini Dona Hojaldre',     icon:'🍩', step:12},
   {id:'Dona Mini',              icon:'🍩', sub:'$7 c/u',  step:12},
-  {id:'Mini Tarta de Frutas',   icon:'🫐', sub:'$20 c/u', step:12},
+  {id:'Mini Tarta de Frutas',   icon:'🥧', sub:'$20 c/u', step:12},
   {id:'Mini Tarta Queso',       icon:'🧀', sub:'$35 c/u · bajo pedido', step:12},
   {id:'Mini Barra Hojaldre',    icon:'🥖', step:12},
   {id:'Mini Rollo Pastel',      icon:'🌀', step:12, variants:['Chocolate','Vainilla']},
@@ -967,10 +975,10 @@ function renderBuilder(){
       <div class="cat-chips">
         <div class="cat-chip ${b.cat==='pastel'?'active':''}" onclick="bSetCat('pastel')">🎂 Pasteles / Jacobinos</div>
         <div class="cat-chip ${b.cat==='pisos'?'active':''}" onclick="bSetCat('pisos')">🏛️ Pasteles de Pisos</div>
-        <div class="cat-chip ${b.cat==='crepas'?'active':''}" onclick="bSetCat('crepas')">🥞 Pasteles de Crepas</div>
+        <div class="cat-chip ${b.cat==='crepas'?'active':''}" onclick="bSetCat('crepas')">🫓 Pasteles de Crepas</div>
         <div class="cat-chip ${b.cat==='postre'?'active':''}" onclick="bSetCat('postre')">🍮 Postres</div>
-        <div class="cat-chip ${b.cat==='mini'?'active':''}" onclick="bSetCat('mini')">🍬 Mini postres</div>
-        <div class="cat-chip ${b.cat==='pan'?'active':''}" onclick="bSetCat('pan')">🍞 Pan Variado</div>
+        <div class="cat-chip ${b.cat==='mini'?'active':''}" onclick="bSetCat('mini')">🥧 Mini postres</div>
+        <div class="cat-chip ${b.cat==='pan'?'active':''}" onclick="bSetCat('pan')" style="display:inline-flex;align-items:center;gap:3px">${iconSpan(ICON_OREJA,14)} Pan Variado</div>
       </div>
     </div>
 
@@ -981,7 +989,7 @@ function renderBuilder(){
       <div class="sabor-grid" style="margin-bottom:0.3rem">
         ${['Vainilla','Chocolate','Fresa','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
           <div class="sabor-card ${b.sabor===s?'selected':''}" onclick="bSelectSabor('${s}',false)">
-            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Fresa:'🍓','Birthday Cake':'🎊',Trilogía:'✨',Combinado:'🎨',Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋'}[s]||'🎂'}</span>
+            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Fresa:'🍓','Birthday Cake':iconSpan(ICON_BIRTHDAY,21),Trilogía:iconSpan(ICON_TRILOGIA,21),Combinado:iconSpan(ICON_COMBINADO,21),Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋'}[s]||'🎂'}</span>
             <div class="sabor-name">${s}</div>
           </div>`).join('')}
         <div class="sabor-card especial ${b.sabor==='3 Leches'?'selected':''}" onclick="bSelectSabor('3 Leches',true)"><span class="sabor-icon">🥛</span><div class="sabor-name">3 Leches</div></div>
@@ -1187,6 +1195,7 @@ function renderBuilder(){
         <div class="formato-grid">
           ${Object.entries(PISOS_CONFIG).map(([key,cfg])=>`
             <div class="fmt-btn ${b.pisosCombo===key?'selected':''}" onclick="bSelFmt('pisos','${key}')">
+              <div>${iconSpan(key.startsWith('3')?ICON_PISOS3:ICON_PISOS2,26)}</div>
               <div class="ft">${cfg.label}</div>
               <div class="fp">Depósito $${cfg.deposito}</div>
             </div>`).join('')}
@@ -1538,6 +1547,11 @@ function bAddToCart(){
   if(b.cat==='pisos'){
     if(!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
     const cfg=PISOS_CONFIG[b.pisosCombo];
+    for(let i=0;i<cfg.pisos.length;i++){
+      const pd=b.pisosData[i]||{};
+      if(!pd.sabor){toast('⚠️','Elige el sabor del '+cfg.pisos[i]);return;}
+      if(!pd.crema){toast('⚠️','Elige la crema base del '+cfg.pisos[i]);return;}
+    }
     name=`Pastel de Pisos ${b.sabor} · ${cfg.label}`;
     if(b.doblePan)details+=`🍞 PASTEL ALTO / DOBLE PAN\n`;
     if(b.comboSabores.length)details+=`Sabores: ${b.comboSabores.join(' + ')}\n`;
@@ -1553,6 +1567,15 @@ function bAddToCart(){
     if(b.sabor==='Trilogía'&&b.comboSabores.length<2){toast('⚠️','Trilogía requiere 2 o 3 sabores');return;}
     if(b.sabor!=='Napolitano'&&!b.fmtGrupo){toast('⚠️','Elige el formato');return;}
     if(b.fmtGrupo==='pisos'&&!b.pisosCombo){toast('⚠️','Elige la combinación de pisos');return;}
+    if(b.fmtGrupo==='pisos'&&b.pisosCombo){
+      const cfgCheck=PISOS_CONFIG[b.pisosCombo];
+      for(let i=0;i<cfgCheck.pisos.length;i++){
+        const pd=b.pisosData[i]||{};
+        if(!pd.sabor){toast('⚠️','Elige el sabor del '+cfgCheck.pisos[i]);return;}
+        if(!pd.crema){toast('⚠️','Elige la crema base del '+cfgCheck.pisos[i]);return;}
+      }
+    }
+    if((b.fmtGrupo==='redondo'||b.fmtGrupo==='cuadrado'||b.fmtGrupo==='corazon'||b.fmtGrupo==='barra'||b.fmtGrupo==='jacobino')&&!b.cremaBase){toast('⚠️','Elige la crema base');return;}
     // Name
     if(b.fmtGrupo==='barra')name='Barra Napolitana';
     else if(b.fmtGrupo==='jacobino')name=`Jacobino ${b.sabor} (Individual)`;
@@ -1582,10 +1605,12 @@ function bAddToCart(){
     if(b.crepaMermelada)details+=`🍒 Mermelada de frutos rojos ${b.crepaFmt==='cr12'?'+$150':'+$100'}\n`;
   } else if(b.cat==='postre'){
     if(!b.postProduct){toast('⚠️','Elige el producto');return;}
+    if(b.postProduct==='Cupcakes'&&!b.cupcakeSabor){toast('⚠️','Elige el sabor de los cupcakes');return;}
     name=b.postProduct+(b.postFmtLabel?` · ${b.postFmtLabel}`:'');
     if(b.cupcakeSabor)details=`Sabor: ${b.cupcakeSabor}\n`;
   } else if(b.cat==='mini'){
     if(!b.miniProduct){toast('⚠️','Elige el producto');return;}
+    if((b.miniProduct==='Mini Rollo Pastel'||b.miniProduct==='Mousse')&&!b.miniVariant){toast('⚠️','Elige el sabor');return;}
     name=b.miniProduct;
     if(b.miniVariant)details=`Sabor: ${b.miniVariant}\n`;
   } else if(b.cat==='pan'){
