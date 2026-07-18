@@ -639,8 +639,8 @@ const ADICIONALES = [
   {id:'imp-azucar',    name:'🖨️ Impresión Azúcar',      price:'$200/hoja'},
   {id:'perlas',        name:'✨ Perlas',                 price:'a cotizar'},
   {id:'listones',      name:'🎀 Listones',               price:'a cotizar'},
-  {id:'fondant-fig',   name:'🎭 Pieza en Fondant',       price:'a cotizar'},
-  {id:'fondant-cub',   name:'🎭 Cubierta en Fondant',    price:'a cotizar'},
+  {id:'fondant-fig',   name:'🧸 Pieza en Fondant',       price:'a cotizar'},
+  {id:'fondant-cub',   name:'🧸 Cubierta en Fondant',    price:'a cotizar'},
   {id:'flores',        name:'🌸 Flores',                 price:'a cotizar'},
   {id:'imp-arroz',     name:'Impresión Papel de Arroz', price:'$200/hoja'},
   {id:'macarrones',    name:'Macarrones',               price:'$30/pza', step:12, unit:'docena'},
@@ -1295,7 +1295,7 @@ function renderBuilder(){
       }).join('')}
       </div>
       <div id="fondant-desc-wrap" style="display:none;margin-top:8px">
-        <label class="field-label">🎭 ¿Qué lleva la pieza/cubierta de fondant?</label>
+        <label class="field-label">🧸 ¿Qué lleva la pieza/cubierta de fondant?</label>
         <input type="text" id="fondant-desc-input" placeholder="Ej. figura de Mickey Mouse, cubierta lisa color rosa..." oninput="b.fondantDesc=this.value" style="font-size:0.8rem">
       </div>
       <div id="flores-desc-wrap" style="display:none;margin-top:8px">
@@ -1623,7 +1623,7 @@ function bAddToCart(){
   if(b.tema)details+=`🎨 ${b.tema}\n`;
   if(Array.isArray(b.colores))b.colores.forEach(function(c){details+=`Color: ${c.label}${c.uso?' — '+c.uso:''}\n`;});
   if(b.alergias)details+=`⚠️ ${b.alergias}\n`;
-  if(b.fondantDesc&&b.fondantDesc.trim())details+=`🎭 Fondant: ${b.fondantDesc.trim()}\n`;
+  if(b.fondantDesc&&b.fondantDesc.trim())details+=`🧸 Fondant: ${b.fondantDesc.trim()}\n`;
   if(b.floresDesc&&b.floresDesc.trim())details+=`🌸 Flores: ${b.floresDesc.trim()}\n`;
   if(b.notas)details+=`📝 ${b.notas}\n`;
   if(b.nota)details+=`Nota: ${b.nota}`;
@@ -1929,7 +1929,7 @@ function renderCalendar(){
         <div style="display:flex;flex-wrap:wrap;gap:2px">
           ${dayOrders.pend>0?`<span style="background:#FEF3C7;color:#92400E;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.pend}P</span>`:''}
           ${dayOrders.proc>0?`<span style="background:#DBEAFE;color:#1E40AF;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.proc}E</span>`:''}
-                    ${dayOrders.fondant>0?`<span style="background:#F3E8FF;color:#7C3AED;font-size:0.65rem;padding:1px 3px;border-radius:4px">🎭</span>`:''}
+                    ${dayOrders.fondant>0?`<span style="background:#F3E8FF;color:#7C3AED;font-size:0.65rem;padding:1px 3px;border-radius:4px">🧸</span>`:''}
           ${dayOrders.azucar>0?`<span style="background:#DBEAFE;color:#1E40AF;font-size:0.65rem;padding:1px 3px;border-radius:4px">🖨️</span>`:''}
           ${dayOrders.flores>0?`<span style="background:#FCE7F3;color:#9D174D;font-size:0.65rem;padding:1px 3px;border-radius:4px">🌸</span>`:''}
           ${dayOrders.listo>0?`<span style="background:#D1FAE5;color:#065F46;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:4px">${dayOrders.listo}L</span>`:''}
@@ -2068,7 +2068,7 @@ function renderProductLines(prodLines,photosByIdx,azucarByIdx){
     html+='<div class="oc-product-name">';
     if(prodLines.length>1)html+='<span style="color:var(--navy);font-weight:700">['+( idx+1)+'] </span>';
     html+=producto;
-    if(hasFondant)html+=' <span class="oc-fondant-badge">🎭 FONDANT</span>';
+    if(hasFondant)html+=' <span class="oc-fondant-badge">🧸 FONDANT</span>';
     html+='</div>';
     var prodPhotos=photosByIdx[String(idx)]||[];
     if(prodPhotos.length){
@@ -2175,7 +2175,7 @@ function renderOrdersList(visOrders){
       <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div></div>
       <div class="oc-body">
         ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";var text=(prods+" "+adic).toLowerCase();var badges='';
-          if(text.includes("fondant")){var m=prods.match(/🎭 Fondant: ([^\n|]+)/);badges+='<div class="oc-fondant-badge">🎭 FONDANT!'+(m?' · '+m[1].trim():'')+'</div>';}
+          if(text.includes("fondant")){var m=prods.match(/(?:🎭|🧸) Fondant: ([^\n|]+)/);badges+='<div class="oc-fondant-badge">🧸 FONDANT!'+(m?' · '+m[1].trim():'')+'</div>';}
           if(text.includes("impresión azúcar")||text.includes("impresion azucar")){badges+='<div class="oc-fondant-badge" style="background:#DBEAFE;color:#1E40AF;border-color:#93C5FD">🖨️ IMPRESIÓN AZÚCAR!</div>';}
           if(text.includes("flores")){var mf=prods.match(/🌸 Flores: ([^\n|]+)/);badges+='<div class="oc-fondant-badge" style="background:#FCE7F3;color:#9D174D;border-color:#F9A8D4">🌸 FLORES!'+(mf?' · '+mf[1].trim():'')+'</div>';}
           return badges;})()}
