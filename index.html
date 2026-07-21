@@ -113,7 +113,7 @@ textarea{resize:vertical;min-height:60px;}
 .add-product-btn:hover{border-color:var(--navy);background:var(--navy-faint);}
 
 /* PRODUCT BUILDER MODAL */
-.builder-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.builder-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:600;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .builder-overlay.open{opacity:1;pointer-events:all;}
 .builder-sheet{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;transform:translateY(40px);transition:transform 0.25s cubic-bezier(0.34,1.2,0.64,1);}
 .builder-overlay.open .builder-sheet{transform:translateY(0);}
@@ -291,6 +291,8 @@ textarea{resize:vertical;min-height:60px;}
 .empty-icon{font-size:3rem;margin-bottom:0.7rem;}
 .empty-title{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;color:var(--navy);letter-spacing:0.04em;margin-bottom:3px;}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+#edit-modal{z-index:400;}
+#img-modal,#color-modal,#color-view-modal{z-index:650;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
 .modal-box{background:var(--card);border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
 .modal-header{background:var(--navy);padding:0.8rem 0.95rem;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;}
@@ -417,7 +419,7 @@ textarea{resize:vertical;min-height:60px;}
 <!-- ══ PRODUCT BUILDER (bottom sheet) ══ -->
 <div class="builder-overlay" id="builder-overlay" onclick="closeBuilderOutside(event)">
 <div class="builder-sheet" id="builder-sheet">
-  <div class="builder-header">
+  <div class="builder-header" id="builder-header">
     <span class="builder-title" id="builder-title">Agregar Producto</span>
     <button class="builder-close" onclick="closeBuilder()">✕</button>
   </div>
@@ -751,7 +753,7 @@ function renderColorsList(){
     '</div>';
   }).join('');
 }
-let editingFolio=null;let editingFechaPedido='';let eEditPhotos=[];let eEditAzucar=[];let eProdBlocks=[];let ePhotosTouched=false;let eAzucarTouched=false;
+let editingFolio=null;let editingFechaPedido='';let eEditPhotos=[];let eEditAzucar=[];let eProdBlocks=[];let ePhotosTouched=false;let eAzucarTouched=false;let replacingProductIndex=null;
 // Separa el texto plano de "Productos" en bloques por producto, y cada bloque en líneas Label: valor editables por separado.
 // El punto clave: se reconstruye exactamente igual si no se toca nada (mismo formato que usa el resto de la app).
 function eParseProductsString(str){
@@ -778,7 +780,7 @@ function eRenderProductFields(){
       var label=f.label?eAttr(f.label):'Detalle';
       return '<div class="eprod-row"><span class="eprod-label">'+eHtml(label)+'</span><input type="text" data-b="'+bi+'" data-f="'+fi+'" value="'+eAttr(f.value)+'"></div>';
     }).join('');
-    return '<div class="eprod-card"><div class="eprod-header">'+eHtml(block.header)+'</div>'+(rows||'<div style="font-size:0.72rem;color:var(--muted)">Sin detalles adicionales</div>')+'</div>';
+    return '<div class="eprod-card"><div class="eprod-header" style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span>'+eHtml(block.header)+'</span><button type="button" onclick="openReplaceBuilder('+bi+')" style="font-size:0.65rem;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 7px;white-space:nowrap">🔁 Reemplazar</button></div>'+(rows||'<div style="font-size:0.72rem;color:var(--muted)">Sin detalles adicionales</div>')+'</div>';
   }).join('');
 }
 function eBuildProductsString(){
@@ -940,8 +942,17 @@ function bReset(){
      mensaje:'',tema:'',colores:[],alergias:'',notas:'',fondantDesc:'',floresDesc:'',photos:[],azucarPhotos:[],
      qty:1,nota:'',photo:null};
 }
-function openBuilder(){bReset();renderBuilder();document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
-function closeBuilder(){document.getElementById('builder-overlay').classList.remove('open');document.body.style.overflow='';}
+function openReplaceBuilder(idx){
+  bReset();
+  replacingProductIndex=idx;
+  renderBuilder();
+  document.getElementById('builder-title').textContent='🔁 Reemplazar producto '+(idx+1);
+  document.getElementById('builder-header').style.background='#B45309';
+  document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';
+  toast('🔁','Arma el producto que va a reemplazar al actual');
+}
+function openBuilder(){bReset();renderBuilder();document.getElementById('builder-title').textContent='Agregar Producto';document.getElementById('builder-header').style.background='';document.getElementById('builder-overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeBuilder(){document.getElementById('builder-overlay').classList.remove('open');document.body.style.overflow='';replacingProductIndex=null;}
 function closeBuilderOutside(e){if(e.target===document.getElementById('builder-overlay'))closeBuilder();}
 
 // ── helpers ──
@@ -1316,7 +1327,7 @@ function renderBuilder(){
     </div>
 
     <div style="margin-top:1rem">
-      <button class="btn-primary green" onclick="bAddToCart()">✅ Agregar al pedido</button>\n    </div>\n  `;
+      <button class="btn-primary green" onclick="bAddToCart()">${replacingProductIndex!==null?'🔁 Confirmar reemplazo':'✅ Agregar al pedido'}</button>\n    </div>\n  `;
   renderBPhotos();
   renderBAzucar();
   renderColorsList();
@@ -1636,7 +1647,24 @@ function bAddToCart(){
     }).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  cart.push({name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]});
+  const item={name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]};
+
+  if(replacingProductIndex!==null){
+    const idx=replacingProductIndex;
+    const header=`[${idx+1}] ${item.name} ×${item.qty}`;
+    const lines=item.details?item.details.split('\n').filter(Boolean):[];
+    const fields=lines.map(function(line){
+      var lm=line.match(/^([^:]{1,40}):\s*([\s\S]*)$/);
+      return lm?{label:lm[1],value:lm[2]}:{label:null,value:line};
+    });
+    eProdBlocks[idx]={header,fields};
+    eRenderProductFields();
+    closeBuilder();
+    toast('✓','Producto reemplazado — no olvides tocar Guardar');
+    return;
+  }
+
+  cart.push(item);
   renderCart();closeBuilder();
   toast('✓',`"${name}" agregado`);
 }
