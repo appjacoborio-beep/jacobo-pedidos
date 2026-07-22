@@ -633,9 +633,16 @@ const CREPAS_FMTS = [
   {id:'cr6',  label:'6 in',  sub:'$480'},
   {id:'cr8',  label:'8 in',  sub:'$700'},
   {id:'cr10', label:'10 in', sub:'$1,100'},
-  {id:'cr12', label:'12 in', sub:'$1,500'}
+  {id:'cr12', label:'12 in', sub:'$1,500'},
+  {id:'crplancha', label:'Plancha (100-120 pers.)', sub:'$4,600'}
 ];
 const CREPAS_RELLENOS = ['Fresa','Oreo','Cajeta','Nutella'];
+const CREPAS_PLANCHA_RELLENOS = ['Mermelada de Fresa','Frambuesa','Mango','Cereza','Arroz con leche'];
+const CREPAS_PLANCHA_EXTRAS = [
+  {id:'fresa_natural', label:'Fresa natural', price:350},
+  {id:'cajeta',         label:'Cajeta',        price:350},
+  {id:'frutos_rojos',   label:'Frutos Rojos',  price:450}
+];
 
 const ADICIONALES = [
   {id:'imp-azucar',    name:'🖨️ Impresión Azúcar',      price:'$200/hoja'},
@@ -644,6 +651,7 @@ const ADICIONALES = [
   {id:'fondant-fig',   name:'🧸 Pieza en Fondant',       price:'a cotizar'},
   {id:'fondant-cub',   name:'🧸 Cubierta en Fondant',    price:'a cotizar'},
   {id:'flores',        name:'🌸 Flores',                 price:'a cotizar'},
+  {id:'mariposas',     name:'🦋 Mariposas de Cartón',    price:'$120'},
   {id:'imp-arroz',     name:'Impresión Papel de Arroz', price:'$200/hoja'},
   {id:'macarrones',    name:'Macarrones',               price:'$30/pza', step:12, unit:'docena'},
   {id:'merengues',     name:'Merengues',                price:'$20/pza'},
@@ -932,7 +940,7 @@ function addPhotoToItem(i){
 
 // ══ BUILDER ══
 function bReset(){
-  b={cat:'pastel',sabor:'',saborEspecial:false,depositoCobrado:false,doblePan:false,crepaFmt:'',crepaRelleno:'',crepaMermelada:false,adicionales:{},
+  b={cat:'pastel',sabor:'',saborEspecial:false,depositoCobrado:false,doblePan:false,crepaFmt:'',crepaRelleno:'',crepaMermelada:false,crepaPlanchaRelleno:'',crepaExtras:{},adicionales:{},
      fmtGrupo:'',fmtTamano:'',fmtLabel:'',
      pisosCombo:'',pisosData:[],
      comboSabores:[],
@@ -1146,14 +1154,28 @@ function renderBuilder(){
       <div class="formato-box" style="margin-bottom:0.5rem">
         <div class="formato-grid">
           ${CREPAS_FMTS.map(f=>`
-            <div class="fmt-btn ${b.crepaFmt===f.id?'selected':''}" onclick="b.crepaFmt='${f.id}';b.crepaMermelada=false;renderBuilder()">
+            <div class="fmt-btn ${b.crepaFmt===f.id?'selected':''}" onclick="b.crepaFmt='${f.id}';b.crepaMermelada=false;b.crepaRelleno='';b.crepaPlanchaRelleno='';b.crepaExtras={};renderBuilder()">
               <div class="ft">${f.label}</div>
               <div class="fp" style="font-weight:700;color:${b.crepaFmt===f.id?'white':'var(--red)'}">${f.sub}</div>
             </div>`).join('')}
         </div>
       </div>
 
-      ${b.crepaFmt?`
+      ${b.crepaFmt==='crplancha'?`
+      <div style="background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:8px;padding:8px 12px;margin-bottom:0.6rem;font-size:0.75rem;color:#1E40AF">
+        🧀 <b>Base: Crema de Queso</b> (fija en la plancha)
+      </div>
+      <div class="step-header"><div class="step-num">2</div><div class="step-title">Relleno incluido — elige uno</div></div>
+      <div class="chips" style="margin-bottom:0.6rem">
+        ${CREPAS_PLANCHA_RELLENOS.map(r=>`
+          <div class="chip ${b.crepaPlanchaRelleno===r?'sel selected':''}" onclick="b.crepaPlanchaRelleno=b.crepaPlanchaRelleno==='${r}'?'':'${r}';renderBuilder()">${r}</div>`).join('')}
+      </div>
+      <div class="step-header"><div class="step-num">3</div><div class="step-title">Extras con costo (opcional, se pueden combinar)</div></div>
+      <div class="chips" style="margin-bottom:0.6rem">
+        ${CREPAS_PLANCHA_EXTRAS.map(x=>`
+          <div class="chip ${b.crepaExtras[x.id]?'sel selected':''}" onclick="b.crepaExtras['${x.id}']=!b.crepaExtras['${x.id}'];renderBuilder()">${x.label} +$${x.price}</div>`).join('')}
+      </div>
+      `:b.crepaFmt?`
       <div class="step-header"><div class="step-num">2</div><div class="step-title">Relleno complementario (incluido)</div></div>
       <div class="chips" style="margin-bottom:0.6rem">
         ${CREPAS_RELLENOS.map(r=>`
@@ -1612,8 +1634,16 @@ function bAddToCart(){
     if(!b.crepaFmt){toast('⚠️','Elige el tamaño');return;}
     const fmt=CREPAS_FMTS.find(f=>f.id===b.crepaFmt);
     name=`Pastel de Crepas · ${fmt.label} (${fmt.sub})`;
-    if(b.crepaRelleno)details+=`Relleno: ${b.crepaRelleno}\n`;
-    if(b.crepaMermelada)details+=`🍒 Mermelada de frutos rojos ${b.crepaFmt==='cr12'?'+$150':'+$100'}\n`;
+    if(b.crepaFmt==='crplancha'){
+      if(!b.crepaPlanchaRelleno){toast('⚠️','Elige el relleno incluido');return;}
+      details+=`Base: Crema de Queso\n`;
+      details+=`Relleno incluido: ${b.crepaPlanchaRelleno}\n`;
+      const chosenExtras=CREPAS_PLANCHA_EXTRAS.filter(x=>b.crepaExtras[x.id]);
+      if(chosenExtras.length)details+=`Extra: ${chosenExtras.map(x=>x.label+' +$'+x.price).join(', ')}\n`;
+    } else {
+      if(b.crepaRelleno)details+=`Relleno: ${b.crepaRelleno}\n`;
+      if(b.crepaMermelada)details+=`🍒 Mermelada de frutos rojos ${b.crepaFmt==='cr12'?'+$150':'+$100'}\n`;
+    }
   } else if(b.cat==='postre'){
     if(!b.postProduct){toast('⚠️','Elige el producto');return;}
     if(b.postProduct==='Cupcakes'&&!b.cupcakeSabor){toast('⚠️','Elige el sabor de los cupcakes');return;}
