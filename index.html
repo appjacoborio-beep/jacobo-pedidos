@@ -239,6 +239,8 @@ textarea{resize:vertical;min-height:60px;}
 .order-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;animation:popIn 0.22s ease-out;}
 .order-card.delivered{background:#F3F4F6;border-color:#D1D5DB;opacity:0.75;filter:grayscale(0.4);}
 .order-card.delivered .oc-header{background:#9CA3AF!important;}
+.order-card.realizado{border-color:#6B9080;border-width:2px;}
+.order-card.realizado .oc-header{background:#6B9080!important;}
 .order-card.urgente{border-color:#F59E0B;}
 @keyframes popIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 .oc-header{background:var(--navy);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;}
@@ -2228,7 +2230,8 @@ function renderOrdersList(visOrders){
     });
     const isExpanded=expandedFolios.has(String(o.folio));
     const isDelivered=o.status==='Entregado';
-    return`<div class="order-card${isToday?' urgente':''}${isDelivered?' delivered':''}">
+    const isRealizado=o.status==='Listo';
+    return`<div class="order-card${isToday?' urgente':''}${isDelivered?' delivered':''}${isRealizado?' realizado':''}">
       ${legacyPhotos.length?'<div class="oc-imgs">'+legacyPhotos.map(function(u,i){return '<img class="oc-img-thumb" src="'+u+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';}).join('')+'</div>':''}
       <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div></div>
       <div class="oc-body">
@@ -2242,13 +2245,15 @@ function renderOrdersList(visOrders){
         ${o.fechaPedido?`<div class="oc-row"><span class="oc-key">Elaboración</span><span class="oc-val">${o.fechaPedido}</span></div>`:''}
         ${(function(){var tipoRow=o.tipoEntrega==='domicilio'?'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">\u{1F6F5} Domicilio desde '+(o.sucursal||'\u2014')+'</span></div>':'<div class="oc-row"><span class="oc-key">Tipo</span><span class="oc-val">'+entIcon+'</span></div>'+(o.sucursal?'<div class="oc-row"><span class="oc-key">Sucursal</span><span class="oc-val">'+o.sucursal+'</span></div>':'');var dirRow=o.direccion?'<div class="oc-row"><span class="oc-key">'+(o.tipoEntrega==="domicilio"?"Direcci\u00f3n de env\u00edo":"Direcci\u00f3n")+'</span><span class="oc-val">'+o.direccion+'</span></div>':'';return tipoRow+dirRow;})()}
         ${o.colaborador?`<div class="oc-row"><span class="oc-key">Elaboró</span><span class="oc-val">${o.colaborador}</span></div>`:''}
-        ${isDelivered?(function(){var info=getEntregadoInfo(o.historial);return info?'<div class="oc-row"><span class="oc-key">Entregó</span><span class="oc-val">'+info.quien+' — '+info.fecha+'</span></div>':'';})():''}
+        ${isRealizado?(function(){var info=getStatusInfo(o.historial,'Listo');return info?'<div class="oc-row"><span class="oc-key">Realizó</span><span class="oc-val">'+info.quien+' — '+info.fecha+'</span></div>':'';})():''}
+        ${isDelivered?(function(){var info=getStatusInfo(o.historial,'Entregado');return info?'<div class="oc-row"><span class="oc-key">Entregó</span><span class="oc-val">'+info.quien+' — '+info.fecha+'</span></div>':'';})():''}
         ${o.notas?`<div class="oc-notes">📝 ${o.notas}</div>`:''}${legacyAzucar.length?'<div class="oc-imp-wrap"><div class="oc-imp-title">🖨️ Impresión de Azúcar</div><div class="oc-imp-grid">'+legacyAzucar.map(function(u,i){return '<div class="oc-imp-item">'+'<img src="'+u+'" class="oc-imp-img" onclick="openImgModal(\''+u+'\',\'Impresión de Azúcar\')">'+'<a href="'+u+'" download="impresion-azucar-'+(i+1)+'.jpg" target="_blank" class="oc-imp-dl" title="Descargar">⬇️</a>'+'</div>';}).join('')+'</div></div>':''}
         ${o.adicionales?'<div class="oc-adicionales-wrap"><div class="oc-adicionales-title">Adicionales</div>'+o.adicionales.split(',').map(function(a){return a.trim();}).filter(Boolean).map(function(a){return '<div class="oc-adic-item">&bull; '+a+'</div>';}).join('')+'</div>':''}
         ${o.total?`<div class="oc-totals"><div class="oc-total-item"><div class="oc-total-label">Total</div><div class="oc-total-val">$${parseFloat(o.total||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Anticipo</div><div class="oc-total-val">$${parseFloat(o.anticipo||0).toFixed(2)}</div></div><div class="oc-total-item"><div class="oc-total-label">Restante</div><div class="oc-total-val" style="color:var(--red)">$${parseFloat(o.restante||0).toFixed(2)}</div></div></div>`:''}
       </div>
       <div class="oc-footer">
         ${isDelivered?'<button class="oc-btn" disabled style="opacity:0.6">✅ Entregado</button>':'<button class="oc-btn" onclick="markEntregado(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')" style="color:#065F46;font-weight:700">✅ Entregado</button>'}
+        ${(isRealizado||isDelivered)?'<button class="oc-btn" disabled style="opacity:0.6">🟢 Realizado</button>':'<button class="oc-btn" onclick="markRealizado(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')" style="color:#16A34A;font-weight:700">🟢 Realizado</button>'}
         <button class="oc-btn" onclick="openEditModal('${o.folio}','${jsEsc(o.fechaPedido||'')}')">✏️ Editar</button>
         <button class="oc-btn" onclick="printNota('${o.folio}','${jsEsc(o.fechaPedido||'')}')" style="color:#1B2A6B">🖨️ Imprimir</button>
         <button class="oc-btn danger" onclick="delOrder('${o.folio}','${jsEsc(o.fechaPedido||'')}')">🗑</button>
@@ -2257,16 +2262,34 @@ function renderOrdersList(visOrders){
   }).join('');
 }
 
-function getEntregadoInfo(historial){
+function getStatusInfo(historial,estado){
   if(!historial)return null;
   var entries=String(historial).split(' | ');
   for(var i=entries.length-1;i>=0;i--){
     var parts=entries[i].split(' — ');
-    if(parts.length>=3&&parts[1].trim()==='Entregado'){
+    if(parts.length>=3&&parts[1].trim()===estado){
       return{fecha:parts[0].trim(),quien:parts.slice(2).join(' — ').trim()||'Sin nombre'};
     }
   }
   return null;
+}
+async function markRealizado(folio,fechaPedido){
+  const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));
+  if(!o)return;
+  if(o.status==='Listo'||o.status==='Entregado'){toast('✓','Ya estaba marcado como realizado');return;}
+  const quien=prompt('¿Quién realizó este pedido?','');
+  if(quien===null)return;
+  const fechaCambio=new Date().toLocaleString('es-MX');
+  o.status='Listo';
+  const entry=`${fechaCambio} — Listo — ${quien||'Sin nombre'}`;
+  o.historial=o.historial?o.historial+' | '+entry:entry;
+  renderCalendar();
+  updateBadge();
+  toast('✓',`Folio #${String(o.folio).padStart(4,'0')} → Realizado 🟢`);
+  try{
+    const payload={_update:true,folio:o.folio,fechaPedido:o.fechaPedido,estado:'Listo',quien:quien||'Sin nombre',fechaCambio};
+    fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload))).catch(function(){toast('⚠️','Marcado localmente. Verifica conexión.');});
+  }catch(e){toast('⚠️','Error al marcar como realizado.');}
 }
 async function markEntregado(folio,fechaPedido){
   const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));
