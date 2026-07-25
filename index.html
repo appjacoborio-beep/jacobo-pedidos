@@ -241,6 +241,8 @@ textarea{resize:vertical;min-height:60px;}
 .order-card.delivered .oc-header{background:#9CA3AF!important;}
 .order-card.realizado{border-color:#6B9080;border-width:2px;}
 .order-card.realizado .oc-header{background:#6B9080!important;}
+@keyframes flashFind{0%,100%{box-shadow:0 0 0 0 rgba(27,42,107,0);}20%,60%{box-shadow:0 0 0 5px rgba(27,42,107,0.55);}40%,80%{box-shadow:0 0 0 2px rgba(27,42,107,0.2);}}
+.order-card.flash-find{animation:flashFind 0.9s ease-in-out 3;border-radius:12px;}
 .order-card.urgente{border-color:#F59E0B;}
 @keyframes popIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 .oc-header{background:var(--navy);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;}
@@ -1867,7 +1869,7 @@ function searchOrders(query){
   var container=document.getElementById('search-results-container');
   clearBtn.style.display=q?'block':'none';
   if(!q){container.style.display='none';container.innerHTML='';return;}
-  var vis=prodSuc&&prodSuc!=='Todas'?orders.filter(function(o){return(o.sucursal||'').trim().toLowerCase()===(prodSuc||'').trim().toLowerCase();}):orders;
+  var vis=orders;
   var results=vis.filter(function(o){
     var folioStr=String(o.folio||'');
     var folioPad=folioStr.padStart(4,'0');
@@ -1924,15 +1926,14 @@ function jumpToOrder(fechaEntrega,folio,suc){
     var grid=document.getElementById('orders-grid');
     if(grid)grid.scrollIntoView({behavior:'smooth',block:'start'});
     setTimeout(function(){
-      var cards=document.querySelectorAll('.oc-card');
+      var cards=document.querySelectorAll('.order-card');
       var folioPad=String(folio).padStart(4,'0');
       cards.forEach(function(card){
         var folioEl=card.querySelector('.oc-folio');
         if(folioEl&&folioEl.textContent.toUpperCase().includes(folioPad)){
-          card.style.outline='3px solid var(--navy)';
-          card.style.borderRadius='12px';
           card.scrollIntoView({behavior:'smooth',block:'center'});
-          setTimeout(function(){card.style.outline='';card.style.borderRadius='';},2500);
+          card.classList.add('flash-find');
+          setTimeout(function(){card.classList.remove('flash-find');},3000);
         }
       });
     },500);
