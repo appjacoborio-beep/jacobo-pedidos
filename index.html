@@ -1961,7 +1961,7 @@ function renderCalendar(){
     var textoDia=((o.productos||'')+' '+(o.adicionales||'')).toLowerCase();
     if(textoDia.includes('fondant'))ordersByDay[o.fechaEntrega].fondant++;
     if(textoDia.includes('impresión azúcar')||textoDia.includes('impresion azucar'))ordersByDay[o.fechaEntrega].azucar++;
-    if(textoDia.includes('flores'))ordersByDay[o.fechaEntrega].flores++;
+    if(textoDia.includes('🌸 flores'))ordersByDay[o.fechaEntrega].flores++;
     if(o.tipoEntrega==='domicilio')ordersByDay[o.fechaEntrega].domicilio++;
     if(o.status==='Pendiente') ordersByDay[o.fechaEntrega].pend++;
     if(o.status==='En proceso') ordersByDay[o.fechaEntrega].proc++;
@@ -2239,7 +2239,7 @@ function renderOrdersList(visOrders){
         ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";var text=(prods+" "+adic).toLowerCase();var badges='';
           if(text.includes("fondant")){var m=prods.match(/(?:🎭|🧸) Fondant: ([^\n|]+)/);badges+='<div class="oc-fondant-badge">🧸 FONDANT!'+(m?' · '+m[1].trim():'')+'</div>';}
           if(text.includes("impresión azúcar")||text.includes("impresion azucar")){badges+='<div class="oc-fondant-badge" style="background:#DBEAFE;color:#1E40AF;border-color:#93C5FD">🖨️ IMPRESIÓN AZÚCAR!</div>';}
-          if(text.includes("flores")){var mf=prods.match(/🌸 Flores: ([^\n|]+)/);badges+='<div class="oc-fondant-badge" style="background:#FCE7F3;color:#9D174D;border-color:#F9A8D4">🌸 FLORES!'+(mf?' · '+mf[1].trim():'')+'</div>';}
+          if(text.includes("🌸 flores")){var mf=prods.match(/🌸 Flores: ([^\n|]+)/);badges+='<div class="oc-fondant-badge" style="background:#FCE7F3;color:#9D174D;border-color:#F9A8D4">🌸 FLORES!'+(mf?' · '+mf[1].trim():'')+'</div>';}
           return badges;})()}
         ${renderProductLines(prodLines,photosByIdx,azucarByIdx)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
