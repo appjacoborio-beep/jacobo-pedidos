@@ -1848,6 +1848,7 @@ async function sendOrderInner(){
     const result=await res.json();
     if(result.ok){
       clearForm();updateBadge();
+      if(appMode==='floravita')setAppMode('jacobo');
       btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
       toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
     } else {
@@ -1967,6 +1968,17 @@ function clearSearch(){
   searchOrders('');
 }
 
+function bitacoraProductoLine(o){
+  var prods=o.productos||'';
+  if(prods.indexOf('🌸 FLORAVITA')===0){
+    var desc=prods.replace(/^🌸 FLORAVITA\s*—?\s*/,'');
+    return '<div style="font-size:0.72rem;margin-bottom:6px"><span style="background:#EAF7EE;color:#166534;font-weight:700;padding:1px 6px;border-radius:5px;margin-right:5px">🌸 Floravita</span><span style="color:var(--muted)">'+eHtml(desc)+'</span></div>';
+  }
+  var first=prods.split(' || ')[0]||'';
+  var name=first.split(' — ')[0].replace(/^\[\d+\]\s*/,'').replace(/\s*×\d+\s*$/,'').trim();
+  var extra=prods.split(' || ').length>1?' (+'+(prods.split(' || ').length-1)+' más)':'';
+  return name?'<div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">🎂 '+eHtml(name)+extra+'</div>':'';
+}
 function openBitacora(dateStr){
   const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
   const domicilios = visOrders.filter(o=>o.fechaEntrega===dateStr&&o.tipoEntrega==='domicilio').sort((a,b)=>horaToMin(a.hora)-horaToMin(b.hora));
@@ -1985,6 +1997,7 @@ function openBitacora(dateStr){
       '</div>'+
       '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:2px">📍 '+eHtml(o.direccion||'Sin dirección')+'</div>'+
       '<div style="font-size:0.85rem;font-weight:700;margin-bottom:6px">'+eHtml(o.cliente||'')+'</div>'+
+      bitacoraProductoLine(o)+
       (isDelivered
         ?'<div style="font-size:0.68rem;color:#065F46;background:#F0FFF4;border:1px solid #A7F3D0;border-radius:6px;padding:5px 8px">✅ Entregado — '+(info?info.quien+' — '+info.fecha:'')+'</div>'
         :'<button class="oc-btn" style="width:100%;color:#B45309;font-weight:700;border-color:#FDE68A;background:#FFFBEB" onclick="markEntregadoFromBitacora(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')">⏳ Pendiente — tocar al entregar</button>')+
