@@ -491,6 +491,7 @@ textarea{resize:vertical;min-height:60px;}
       <div id="cal-day-header" style="display:none;margin-bottom:0.7rem">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--navy);letter-spacing:0.04em" id="cal-day-title"></div>
         <div style="font-size:0.72rem;color:var(--muted)" id="cal-day-sub"></div>
+        <div id="cal-day-domicilio-btn"></div>
       </div>
       <div class="ogrid" id="orders-grid"><div class="sw"><div class="spin"></div> Cargando...</div></div>
     </div>
@@ -510,6 +511,14 @@ textarea{resize:vertical;min-height:60px;}
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">🎨 Elegir color</span><button class="modal-close" onclick="closeColorPicker()">✕</button></div>
     <div class="modal-body" id="color-modal-body"></div>
+  </div>
+</div>
+
+<!-- BITÁCORA DE DOMICILIOS -->
+<div class="modal-overlay" id="bitacora-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title" id="bitacora-title">🛵 Domicilios</span><button class="modal-close" onclick="document.getElementById('bitacora-modal').classList.remove('open')">✕</button></div>
+    <div class="modal-body" id="bitacora-body"></div>
   </div>
 </div>
 
@@ -1906,6 +1915,51 @@ function clearSearch(){
   searchOrders('');
 }
 
+function openBitacora(dateStr){
+  const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+  const domicilios = visOrders.filter(o=>o.fechaEntrega===dateStr&&o.tipoEntrega==='domicilio').sort((a,b)=>horaToMin(a.hora)-horaToMin(b.hora));
+  const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const parts=dateStr.split('-');
+  const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
+  document.getElementById('bitacora-title').textContent='🛵 Domicilios · '+dateLabel;
+  bitacoraDate=dateStr;
+  document.getElementById('bitacora-body').innerHTML=domicilios.length?domicilios.map(function(o){
+    const isDelivered=o.status==='Entregado';
+    const info=isDelivered?getStatusInfo(o.historial,'Entregado'):null;
+    return '<div style="padding:10px 0;border-bottom:1px solid var(--border)">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+        '<span style="font-size:0.68rem;font-weight:700;color:var(--navy);background:var(--navy-faint);padding:2px 6px;border-radius:5px">Folio '+String(o.folio).padStart(4,'0')+'</span>'+
+        '<span style="font-size:0.78rem;font-weight:700;color:#BE123C">'+(o.hora||'Sin hora')+'</span>'+
+      '</div>'+
+      '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:2px">📍 '+eHtml(o.direccion||'Sin dirección')+'</div>'+
+      '<div style="font-size:0.85rem;font-weight:700;margin-bottom:6px">'+eHtml(o.cliente||'')+'</div>'+
+      (isDelivered
+        ?'<div style="font-size:0.68rem;color:#065F46;background:#F0FFF4;border:1px solid #A7F3D0;border-radius:6px;padding:5px 8px">✅ Entregado — '+(info?info.quien+' — '+info.fecha:'')+'</div>'
+        :'<button class="oc-btn" style="width:100%;color:#B45309;font-weight:700;border-color:#FDE68A;background:#FFFBEB" onclick="markEntregadoFromBitacora(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')">⏳ Pendiente — tocar al entregar</button>')+
+    '</div>';
+  }).join(''):'<div style="text-align:center;color:var(--muted);padding:1.5rem;font-size:0.8rem">Sin domicilios este día</div>';
+  document.getElementById('bitacora-modal').classList.add('open');
+}
+let bitacoraDate=null;
+async function markEntregadoFromBitacora(folio,fechaPedido){
+  await markEntregado(folio,fechaPedido);
+  if(bitacoraDate)openBitacora(bitacoraDate);
+}
+function goToOrderFromBitacora(folio,fechaPedido){
+  document.getElementById('bitacora-modal').classList.remove('open');
+  setTimeout(function(){
+    var cards=document.querySelectorAll('.order-card');
+    var folioPad=String(folio).padStart(4,'0');
+    cards.forEach(function(card){
+      var folioEl=card.querySelector('.oc-folio');
+      if(folioEl&&folioEl.textContent.toUpperCase().includes(folioPad)){
+        card.scrollIntoView({behavior:'smooth',block:'center'});
+        card.classList.add('flash-find');
+        setTimeout(function(){card.classList.remove('flash-find');},3000);
+      }
+    });
+  },300);
+}
 function jumpToOrder(fechaEntrega,folio,suc){
   clearSearch();
   if(!fechaEntrega)return;
@@ -2024,9 +2078,10 @@ function calSelectDay(dateStr){
   renderCalendar();
 }
 
+function horaToMin(h){if(!h)return 9999;var s=String(h).trim();var m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}
 function calShowDay(dateStr){
   const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
-  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>{function toMin(h){if(!h)return 9999;var s=String(h).trim();var m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}return toMin(a.hora)-toMin(b.hora);});
+  const dayOrders = visOrders.filter(o=>o.fechaEntrega===dateStr).sort((a,b)=>horaToMin(a.hora)-horaToMin(b.hora));
   const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   const parts=dateStr.split('-');
   const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
@@ -2037,6 +2092,14 @@ function calShowDay(dateStr){
   document.getElementById('cal-day-sub').textContent=dayOrders.length+' pedidos · '+pend+' pendientes';
   document.getElementById('st-hoy').textContent=pend;
   document.getElementById('st-hoy-label').textContent='Pendientes ese día';
+
+  const domicilios=dayOrders.filter(o=>o.tipoEntrega==='domicilio');
+  const btnWrap=document.getElementById('cal-day-domicilio-btn');
+  if(domicilios.length){
+    btnWrap.innerHTML='<button class="oc-btn" onclick="openBitacora(\''+dateStr+'\')" style="margin-top:6px;color:#BE123C;font-weight:700;border-color:#FDA4AF">🛵 Ver bitácora de domicilios ('+domicilios.length+')</button>';
+  } else {
+    btnWrap.innerHTML='';
+  }
 
   if(!dayOrders.length){
     document.getElementById('orders-grid').innerHTML='<div class="empty"><div class="empty-i">🎂</div><div class="empty-t">Sin pedidos</div><p>No hay pedidos para este día</p></div>';
