@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#1B2A6B;--red:#C0392B;--navy-faint:#EEF1FB;--bg:#F0F2F8;--border:#C8CEDE;--text:#1A1A2E;--muted:#6B729A;--card:#fff;--radius:10px;--shadow:0 2px 12px rgba(27,42,107,0.09);}
+body.floravita-mode{--navy:#15803D;--navy-faint:#EAF7EE;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
@@ -333,9 +334,13 @@ textarea{resize:vertical;min-height:60px;}
 <div class="order-page">
 
   <div class="folio-strip">
-    <div class="folio-brand">
-      <div class="folio-logo">🎂</div>
-      <div><div class="folio-title">Pedidos Especiales</div><div class="folio-subtitle">Pastelería y Panadería Jacobo</div></div>
+    <div class="folio-brand" onclick="toggleModeMenu(event)" style="cursor:pointer;position:relative">
+      <div class="folio-logo" id="folio-logo-icon">🎂</div>
+      <div><div class="folio-title" id="folio-title-text">Pedidos Especiales</div><div class="folio-subtitle" id="folio-subtitle-text">Pastelería y Panadería Jacobo</div></div>
+      <div id="mode-menu" style="display:none;position:absolute;top:100%;left:0;margin-top:6px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow);z-index:50;min-width:170px;overflow:hidden">
+        <div onclick="event.stopPropagation();setAppMode('jacobo')" style="padding:10px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;color:var(--text)">🎂 Jacobo</div>
+        <div onclick="event.stopPropagation();setAppMode('floravita')" style="padding:10px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;color:var(--text);border-top:1px solid var(--border)">🌸 Floravita</div>
+      </div>
     </div>
     <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"></div>
   </div>
@@ -383,7 +388,7 @@ textarea{resize:vertical;min-height:60px;}
   </div>
 
   <!-- CARRITO DE PRODUCTOS -->
-  <div class="form-sheet">
+  <div class="form-sheet" id="cart-section">
     <div class="section-bar">
       🛒 Productos del Pedido
       <span id="cart-count" style="font-size:0.65rem;opacity:0.8"></span>
@@ -393,6 +398,16 @@ textarea{resize:vertical;min-height:60px;}
         <div class="cart-empty"><div class="ce-icon">🎂</div>Agrega los productos del pedido</div>
       </div>
       <button class="add-product-btn" onclick="openBuilder()">＋ Agregar producto</button>
+    </div>
+  </div>
+
+  <div class="form-sheet" id="floravita-section" style="display:none">
+    <div class="section-bar">🌸 Pedido de Floravita</div>
+    <div class="form-inner">
+      <div class="form-group">
+        <label class="field-label">Describe el pedido</label>
+        <textarea id="floravita-desc" placeholder="Qué se entrega, para quién, notas para el repartidor..." style="min-height:130px;width:100%"></textarea>
+      </div>
     </div>
   </div>
 
@@ -678,6 +693,36 @@ const ADICIONALES = [
 const COMBOS_PISOS_LEGACY={'1-0':[{label:'Piso único',hint:null}],'2-A':[{label:'Piso Superior',hint:'6"'},{label:'Piso Inferior',hint:'10"'}],'2-B':[{label:'Piso Superior',hint:'8"'},{label:'Piso Inferior',hint:'12"'}],'3-0':[{label:'Piso Superior',hint:'6"'},{label:'Piso Medio',hint:'10"'},{label:'Piso Inferior',hint:'14"'}]};
 
 // ══ GLOBAL STATE ══
+let appMode='jacobo';
+function toggleModeMenu(e){
+  if(e)e.stopPropagation();
+  var menu=document.getElementById('mode-menu');
+  menu.style.display=menu.style.display==='block'?'none':'block';
+}
+document.addEventListener('click',function(e){
+  var menu=document.getElementById('mode-menu');
+  if(menu&&menu.style.display==='block'&&!e.target.closest('.folio-brand'))menu.style.display='none';
+});
+function setAppMode(mode){
+  appMode=mode;
+  var menu=document.getElementById('mode-menu');if(menu)menu.style.display='none';
+  document.body.classList.toggle('floravita-mode',mode==='floravita');
+  var cartSection=document.getElementById('cart-section');
+  var floravitaSection=document.getElementById('floravita-section');
+  if(mode==='floravita'){
+    document.getElementById('folio-logo-icon').textContent='🌸';
+    document.getElementById('folio-title-text').textContent='Floravita';
+    document.getElementById('folio-subtitle-text').textContent='Entregas vía Jacobo';
+    if(cartSection)cartSection.style.display='none';
+    if(floravitaSection)floravitaSection.style.display='block';
+  } else {
+    document.getElementById('folio-logo-icon').textContent='🎂';
+    document.getElementById('folio-title-text').textContent='Pedidos Especiales';
+    document.getElementById('folio-subtitle-text').textContent='Pastelería y Panadería Jacobo';
+    if(cartSection)cartSection.style.display='block';
+    if(floravitaSection)floravitaSection.style.display='none';
+  }
+}
 let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbxHkjaeZj0FwPupmRc6xr37rWYi0T4qL0VzTxMB2hq3Y4pvaTtS2fSbwTRUSae40SmlLw/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
@@ -1774,7 +1819,12 @@ async function sendOrderInner(){
   const total=parseFloat(document.getElementById('f-total').value)||0;
   if(!total||total<=0){toast('⚠️','Ingresa el precio total del pedido');markInvalid(document.getElementById('f-total'));return;}
 
-  if(!cart.length){toast('⚠️','Agrega al menos un producto');markInvalid(document.getElementById('cart-list'),true);return;}
+  if(appMode==='floravita'){
+    const fDesc=document.getElementById('floravita-desc').value.trim();
+    if(!fDesc){toast('⚠️','Describe el pedido de Floravita');markInvalid(document.getElementById('floravita-desc'));return;}
+  } else {
+    if(!cart.length){toast('⚠️','Agrega al menos un producto');markInvalid(document.getElementById('cart-list'),true);return;}
+  }
 
   if(!SCRIPT_URL){toast('⚠️','Sin conexión a Google Sheets');return;}
 
@@ -1782,7 +1832,9 @@ async function sendOrderInner(){
 
   const btn=document.getElementById('send-btn');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Enviando...';
   const folio=parseInt(folioVal);
-  const productsSummary=cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
+  const productsSummary=appMode==='floravita'
+    ?`🌸 FLORAVITA — ${document.getElementById('floravita-desc').value.trim()}`
+    :cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   var allPhotos=cart.flatMap(function(i,idx){var ph=Array.isArray(i.photos)?i.photos:(i.photo&&i.photo.startsWith('http')?[i.photo]:[]);return ph.map(function(u){return idx+'::'+u;});});var firstPhoto=(allPhotos[0]||'').split('::').pop()||'';
   var allAzucar=cart.flatMap(function(i,idx){return Array.isArray(i.azucarPhotos)?i.azucarPhotos.map(function(u){return idx+'::'+u;}):[];});
   const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto,imagenAzucar:allAzucar.join('|')};
@@ -1814,7 +1866,7 @@ async function sendOrderInner(){
 
 function clearForm(){
   clearInvalidMarks();
-  ['c-name','c-phone','c-staff','c-address','f-total','f-anticipo','f-restante'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['c-name','c-phone','c-staff','c-address','f-total','f-anticipo','f-restante','floravita-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('c-date').value='';
   document.getElementById('c-hour').value='';document.getElementById('c-min').value='';document.getElementById('c-ampm').value='';
   document.querySelectorAll('.suc-btn,.entrega-btn').forEach(el=>el.classList.remove('selected'));
@@ -2159,6 +2211,12 @@ function renderProductLines(prodLines,photosByIdx,azucarByIdx){
     linea = linea.replace(/\uD83D\uDDB8\uFE0F ImpLink:[^\|]*/g,'').trim();
     if(!linea)return;
 
+    if(linea.indexOf('🌸 FLORAVITA')===0){
+      var fDesc=linea.replace(/^🌸 FLORAVITA\s*—?\s*/,'');
+      html+='<div class="oc-product-item"><div class="oc-product-name">🌸 Floravita</div><div class="oc-product-detail" style="white-space:pre-wrap">'+fDesc+'</div></div>';
+      return;
+    }
+
     var partes = linea.split('|').map(function(p){return p.trim();}).filter(Boolean);
     var enc = partes[0]||'';
 
@@ -2303,6 +2361,7 @@ function renderOrdersList(visOrders){
           if(text.includes("fondant")){var m=prods.match(/(?:🎭|🧸) Fondant: ([^\n|]+)/);badges+='<div class="oc-fondant-badge">🧸 FONDANT!'+(m?' · '+m[1].trim():'')+'</div>';}
           if(text.includes("impresión azúcar")||text.includes("impresion azucar")){badges+='<div class="oc-fondant-badge" style="background:#DBEAFE;color:#1E40AF;border-color:#93C5FD">🖨️ IMPRESIÓN AZÚCAR!</div>';}
           if(text.includes("🌸 flores")){var mf=prods.match(/🌸 Flores: ([^\n|]+)/);badges+='<div class="oc-fondant-badge" style="background:#FCE7F3;color:#9D174D;border-color:#F9A8D4">🌸 FLORES!'+(mf?' · '+mf[1].trim():'')+'</div>';}
+          if(text.includes("🌸 floravita")){badges+='<div class="oc-fondant-badge" style="background:#EAF7EE;color:#166534;border-color:#86EFAC">🌸 FLORAVITA</div>';}
           return badges;})()}
         ${renderProductLines(prodLines,photosByIdx,azucarByIdx)}
         <div class="oc-row"><span class="oc-key">Entrega</span><span class="oc-val">${dateStr}${isToday?' ⚡HOY':''} ${o.hora||''}</span></div>
