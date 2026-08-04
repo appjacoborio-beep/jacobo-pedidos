@@ -507,6 +507,7 @@ textarea{resize:vertical;min-height:60px;}
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--navy);letter-spacing:0.04em" id="cal-day-title"></div>
         <div style="font-size:0.72rem;color:var(--muted)" id="cal-day-sub"></div>
         <div id="cal-day-domicilio-btn"></div>
+        <div id="cal-day-azucardoc-btn"></div>
       </div>
       <div class="ogrid" id="orders-grid"><div class="sw"><div class="spin"></div> Cargando...</div></div>
     </div>
@@ -658,13 +659,13 @@ const MINI_POSTRES = [
   {id:'Mini Jacobino de Crepas',icon:'🥞', sub:'$45 c/u', step:12},
 ];
 const CREPAS_FMTS = [
-  {id:'cr6',  label:'6 in',  sub:'$480'},
-  {id:'cr8',  label:'8 in',  sub:'$700'},
+  {id:'cr6',  label:'6 in',  sub:'$500'},
+  {id:'cr8',  label:'8 in',  sub:'$720'},
   {id:'cr10', label:'10 in', sub:'$1,100'},
   {id:'cr12', label:'12 in', sub:'$1,500'},
   {id:'crplancha', label:'Plancha (100-120 pers.)', sub:'$4,600'}
 ];
-const CREPAS_RELLENOS = ['Fresa','Oreo','Cajeta','Nutella'];
+const CREPAS_RELLENOS = ['Fresa','Oreo','Cajeta','Nutella','M. Fresa','M. Cereza','M. Frambuesa'];
 const CREPAS_PLANCHA_RELLENOS = ['Mermelada de Fresa','Frambuesa','Mango','Cereza','Arroz con leche'];
 const CREPAS_PLANCHA_EXTRAS = [
   {id:'fresa_natural', label:'Fresa natural', price:350},
@@ -723,7 +724,7 @@ function setAppMode(mode){
     if(floravitaSection)floravitaSection.style.display='none';
   }
 }
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbxHkjaeZj0FwPupmRc6xr37rWYi0T4qL0VzTxMB2hq3Y4pvaTtS2fSbwTRUSae40SmlLw/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbxy6MASbFO0AUESqh7HPLBmwn5uluYANmsymaYvDNhR-APo-IF2Tk8Nvz8APFW3cLOh6Q/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -1979,6 +1980,29 @@ function bitacoraProductoLine(o){
   var extra=prods.split(' || ').length>1?' (+'+(prods.split(' || ').length-1)+' más)':'';
   return name?'<div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">🎂 '+eHtml(name)+extra+'</div>':'';
 }
+async function descargarDocAzucar(dateStr){
+  const btn=document.getElementById('azucar-doc-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin"></div> Generando documento...';}
+  toast('⏳','Juntando las impresiones de azúcar del día...');
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),45000);
+    const res=await fetch(SCRIPT_URL+'?generarAzucarDoc='+encodeURIComponent(dateStr),{signal:controller.signal});
+    clearTimeout(timeout);
+    const result=await res.json();
+    if(result&&result.ok){
+      toast('✓','Documento listo con '+result.cantidad+' imagen(es) ✅');
+      window.open(result.url,'_blank');
+    } else {
+      toast('❌','Error: '+((result&&result.error)||'no se pudo generar el documento'));
+    }
+  }catch(e){
+    if(e.name==='AbortError'){toast('❌','Se tardó demasiado generando el documento. Verifica tu conexión e intenta de nuevo.');}
+    else{toast('❌','Error de conexión al generar el documento.');}
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
+  }
+}
 function openBitacora(dateStr){
   const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
   const domicilios = visOrders.filter(o=>o.fechaEntrega===dateStr&&o.tipoEntrega==='domicilio').sort((a,b)=>horaToMin(a.hora)-horaToMin(b.hora));
@@ -2164,6 +2188,14 @@ function calShowDay(dateStr){
     btnWrap.innerHTML='<button class="oc-btn" onclick="openBitacora(\''+dateStr+'\')" style="margin-top:6px;color:#BE123C;font-weight:700;border-color:#FDA4AF">🛵 Ver bitácora de domicilios ('+domicilios.length+')</button>';
   } else {
     btnWrap.innerHTML='';
+  }
+
+  const conAzucar=dayOrders.filter(o=>(o.impresionUrls||'').trim());
+  const azucarBtnWrap=document.getElementById('cal-day-azucardoc-btn');
+  if(conAzucar.length){
+    azucarBtnWrap.innerHTML='<button class="oc-btn" id="azucar-doc-btn" onclick="descargarDocAzucar(\''+dateStr+'\')" style="margin-top:6px;color:#1E40AF;font-weight:700;border-color:#93C5FD">📄 Descargar Word con impresiones del día</button>';
+  } else {
+    azucarBtnWrap.innerHTML='';
   }
 
   if(!dayOrders.length){
