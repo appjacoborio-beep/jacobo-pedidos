@@ -1410,7 +1410,7 @@ function renderBuilder(){
           <div style="font-size:0.67rem;color:${active?'rgba(255,255,255,0.7)':'var(--muted)'};">${a.price}${a.step?' · por docena':''}</div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
             <button class="qb" onclick="bChAdic('${a.id}',-${step})">−</button>
-            <input type="number" min="0" value="${qty}" style="width:50px;text-align:center;font-size:0.85rem;font-weight:700;border-radius:6px;border:1px solid ${active?'rgba(255,255,255,0.4)':'var(--border)'};background:${active?'rgba(255,255,255,0.15)':'#fff'};color:${active?'#fff':'var(--navy)'};padding:3px 2px" onchange="bSetAdicDirect('${a.id}',this.value)">
+            <input type="number" min="0" value="${qty}" style="width:50px;text-align:center;font-size:0.85rem;font-weight:700;border-radius:6px;border:1px solid ${active?'rgba(255,255,255,0.4)':'var(--border)'};background:${active?'rgba(255,255,255,0.15)':'#fff'};color:${active?'#fff':'var(--navy)'};padding:3px 2px" onchange="bSetAdicDirect('${a.id}',this.value)" onfocus="this.select()">
             <button class="qb" onclick="bChAdic('${a.id}',${step})">+</button>
             ${a.step?`<span style="font-size:0.62rem;color:${active?'rgba(255,255,255,0.7)':'var(--muted)'}">(${(qty/step).toFixed(1)} doc.)</span>`:''}
           </div>
@@ -1437,7 +1437,7 @@ function renderBuilder(){
       <label class="field-label">Cantidad de piezas${getMinQty()>1?' (mínimo '+getMinQty()+')':''}</label>
       <div style="display:flex;align-items:center;gap:10px;margin-top:5px;">
         <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(-1)">−</button>
-        <input type="number" id="b-qty-display" value="${b.qty}" min="${getMinQty()}" style="font-size:1.1rem;font-weight:700;color:var(--navy);width:64px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:4px 2px" oninput="bSetQtyDirect(this.value)" onblur="bSetQtyDirect(this.value);this.value=b.qty">
+        <input type="number" id="b-qty-display" value="${b.qty}" min="${getMinQty()}" style="font-size:1.1rem;font-weight:700;color:var(--navy);width:64px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:4px 2px" oninput="bSetQtyDirect(this.value)" onblur="bClampQtyOnBlur(this)" onfocus="this.select()">
         <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(1)">+</button>
         <input type="text" id="b-nota" value="${bEsc(b.nota)}" placeholder="Nota del producto..." style="flex:1;font-size:0.82rem" oninput="b.nota=this.value">
       </div>
@@ -1564,14 +1564,17 @@ function bChangeCant(d){
   const el=document.getElementById('b-qty-display');
   if(el)el.value=b.qty;
 }
-function bSetQtyDirect(val){
+function bClampQtyOnBlur(el){
   const minQ=getMinQty();
-  let n=parseInt(val);
-  if(isNaN(n))return; // deja escribir mientras teclean, sin corregir a medio camino
-  if(n<minQ)n=minQ;
+  let n=parseInt(el.value);
+  if(isNaN(n)||n<minQ)n=minQ;
   b.qty=n;
-  const el=document.getElementById('b-qty-display');
-  if(el&&parseInt(el.value)!==n)el.value=n;
+  el.value=n;
+}
+function bSetQtyDirect(val){
+  let n=parseInt(val);
+  if(isNaN(n))return; // deja escribir libremente mientras teclean, sin interrumpir
+  b.qty=n; // se valida el mínimo hasta que terminen de escribir (ver onblur)
 }
 function getMinQty(){
   if(b.cat==='pan')return 12;
