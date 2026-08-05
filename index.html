@@ -1990,17 +1990,24 @@ async function descargarDocAzucar(dateStr){
     const timeout=setTimeout(()=>controller.abort(),45000);
     const res=await fetch(SCRIPT_URL+'?generarAzucarDoc='+encodeURIComponent(dateStr),{signal:controller.signal});
     clearTimeout(timeout);
-    const result=await res.json();
+    const rawText=await res.text();
+    let result;
+    try{ result=JSON.parse(rawText); }
+    catch(parseErr){
+      alert('DIAGNÓSTICO — la respuesta del servidor no fue JSON válido:\n\n'+rawText.slice(0,500));
+      if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
+      return;
+    }
     if(result&&result.ok){
       toast('✓','Documento listo con '+result.cantidad+' imagen(es) ✅');
       if(wrap)wrap.innerHTML='<a href="'+result.url+'" target="_blank" rel="noopener" class="oc-btn" style="display:block;text-align:center;margin-top:6px;color:#065F46;font-weight:700;border-color:#A7F3D0;background:#F0FFF4;text-decoration:none">📄 Tócalo para abrir el documento (listo)</a>';
     } else {
-      toast('❌','Error: '+((result&&result.error)||'no se pudo generar el documento'));
+      alert('DIAGNÓSTICO — el servidor respondió con error:\n\n'+((result&&result.error)||JSON.stringify(result)));
       if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
     }
   }catch(e){
-    if(e.name==='AbortError'){toast('❌','Se tardó demasiado generando el documento. Verifica tu conexión e intenta de nuevo.');}
-    else{toast('❌','Error de conexión al generar el documento.');}
+    if(e.name==='AbortError'){alert('DIAGNÓSTICO — se agotó el tiempo de espera (45 segundos) sin respuesta del servidor.');}
+    else{alert('DIAGNÓSTICO — error de conexión: '+e.message);}
     if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
   }
 }
