@@ -807,6 +807,37 @@ function bRemoveColor(i){
 function bUpdateColorUso(i,val){
   if(b.colores[i])b.colores[i].uso=val;
 }
+function bAddOtroAdicional(){
+  if(!Array.isArray(b.otrosAdicionales))b.otrosAdicionales=[];
+  b.otrosAdicionales.push({nombre:'',cantidad:1});
+  renderOtrosAdicionales();
+  var idx=b.otrosAdicionales.length-1;
+  setTimeout(function(){var inp=document.getElementById('b-otro-adic-nombre-'+idx);if(inp)inp.focus();},50);
+}
+function bRemoveOtroAdicional(i){
+  b.otrosAdicionales.splice(i,1);
+  renderOtrosAdicionales();
+}
+function bUpdateOtroAdicionalNombre(i,val){
+  if(b.otrosAdicionales[i])b.otrosAdicionales[i].nombre=val;
+}
+function bUpdateOtroAdicionalCantidad(i,val){
+  var n=parseInt(val)||1;
+  if(n<1)n=1;
+  if(b.otrosAdicionales[i])b.otrosAdicionales[i].cantidad=n;
+}
+function renderOtrosAdicionales(){
+  var wrap=document.getElementById('b-otros-adic-list');
+  if(!wrap)return;
+  if(!Array.isArray(b.otrosAdicionales))b.otrosAdicionales=[];
+  wrap.innerHTML=b.otrosAdicionales.map(function(o,i){
+    return '<div class="color-entry-row">'+
+      '<input type="text" id="b-otro-adic-nombre-'+i+'" placeholder="Ej. cubos de gelatina, brillantina..." value="'+bEsc(o.nombre)+'" oninput="bUpdateOtroAdicionalNombre('+i+',this.value)" style="flex:1">'+
+      '<input type="number" min="1" value="'+o.cantidad+'" oninput="bUpdateOtroAdicionalCantidad('+i+',this.value)" style="width:56px;flex:0 0 56px;text-align:center">'+
+      '<button type="button" class="color-entry-del" onclick="bRemoveOtroAdicional('+i+')">✕</button>'+
+    '</div>';
+  }).join('');
+}
 function renderColorsList(){
   var wrap=document.getElementById('b-colors-list');
   if(!wrap)return;
@@ -953,7 +984,7 @@ function editCartItem(i){
   b.crepaMermelada=item._crepaMermelada||false;b.postProduct=item._postProduct||'';
   b.postFmt=item._postFmt||'';b.postFmtLabel=item._postFmtLabel||'';b.cupcakeSabor=item._cupcakeSabor||'';
   b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
-  b.adicionales=item._adicionales||{};b.mensaje=item._mensaje||'';b.tema=item._tema||'';
+  b.adicionales=item._adicionales||{};b.otrosAdicionales=Array.isArray(item._otrosAdicionales)?item._otrosAdicionales.map(o=>({...o})):[];b.mensaje=item._mensaje||'';b.tema=item._tema||'';
   b.colores=Array.isArray(item._colores)?item._colores.map(function(c){return{...c};}):[];
   b.fondantDesc=item._fondantDesc||'';b.floresDesc=item._floresDesc||'';
   b.alergias=item._alergias||'';b.notas=item._notas||'';b.qty=item.qty||1;
@@ -999,7 +1030,7 @@ function addPhotoToItem(i){
 
 // ══ BUILDER ══
 function bReset(){
-  b={cat:'pastel',sabor:'',saborEspecial:false,depositoCobrado:false,doblePan:false,crepaFmt:'',crepaRelleno:'',crepaMermelada:false,crepaPlanchaRelleno:'',crepaExtras:{},adicionales:{},
+  b={cat:'pastel',sabor:'',saborEspecial:false,depositoCobrado:false,doblePan:false,crepaFmt:'',crepaRelleno:'',crepaMermelada:false,crepaPlanchaRelleno:'',crepaExtras:{},adicionales:{},otrosAdicionales:[],
      fmtGrupo:'',fmtTamano:'',fmtLabel:'',
      pisosCombo:'',pisosData:[],
      comboSabores:[],
@@ -1394,6 +1425,11 @@ function renderBuilder(){
         <label class="field-label">🌸 ¿Qué tipo de flor?</label>
         <input type="text" id="flores-desc-input" placeholder="Ej. rosas naturales, girasoles de azúcar..." oninput="b.floresDesc=this.value" style="font-size:0.8rem">
       </div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border)">
+        <label class="field-label">➕ Otros adicionales (que no estén en la lista)</label>
+        <div id="b-otros-adic-list" style="margin-top:4px"></div>
+        <button type="button" class="color-pick-btn" style="margin-top:4px;justify-content:center;font-weight:600;color:var(--navy)" onclick="bAddOtroAdicional()">+ Agregar otro adicional</button>
+      </div>
     </div>
 
     <!-- CANTIDAD -->
@@ -1412,6 +1448,7 @@ function renderBuilder(){
   renderBPhotos();
   renderBAzucar();
   renderColorsList();
+  renderOtrosAdicionales();
   var wrap=document.getElementById('fondant-desc-wrap');
   var inp=document.getElementById('fondant-desc-input');
   if(wrap){
@@ -1728,15 +1765,18 @@ function bAddToCart(){
   if(b.notas)details+=`📝 ${b.notas}\n`;
   if(b.nota)details+=`Nota: ${b.nota}`;
   const aKeys=Object.keys(b.adicionales||{});
-  if(aKeys.length){
-    const aStr=aKeys.map(id=>{
+  const otrosValidos=(b.otrosAdicionales||[]).filter(o=>o.nombre&&o.nombre.trim());
+  if(aKeys.length||otrosValidos.length){
+    const partesCatalogo=aKeys.map(id=>{
       const a=ADICIONALES.find(x=>x.id===id);
       const q=b.adicionales[id];
       return a?.step?`${a.name} ×${q} (${q/a.step} doc.)`:a?`${a.name} ×${q}`:`${id} ×${q}`;
-    }).join(', ');
+    });
+    const partesOtros=otrosValidos.map(o=>`${o.nombre.trim()} ×${o.cantidad}`);
+    const aStr=partesCatalogo.concat(partesOtros).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  const item={name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]};
+  const item={name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_otrosAdicionales:(b.otrosAdicionales||[]).map(o=>({...o})),_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]};
 
   if(replacingProductIndex!==null){
     const idx=replacingProductIndex;
