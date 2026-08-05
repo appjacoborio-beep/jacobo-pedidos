@@ -1404,15 +1404,15 @@ function renderBuilder(){
       ${ADICIONALES.map(a=>{
         const qty=b.adicionales[a.id]||0;
         const step=a.step||1;
-        const label=a.step?`${qty} pz (${qty/step} doc.)`:String(qty);
         const active=qty>0;
         return`<div style="background:${active?'var(--navy)':'var(--faint)'};border:1.5px solid ${active?'var(--navy)':'var(--border)'};border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:4px">
           <div style="font-size:0.75rem;font-weight:600;color:${active?'#fff':'var(--text)'};line-height:1.2">${a.name}</div>
           <div style="font-size:0.67rem;color:${active?'rgba(255,255,255,0.7)':'var(--muted)'};">${a.price}${a.step?' · por docena':''}</div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
             <button class="qb" onclick="bChAdic('${a.id}',-${step})">−</button>
-            <span class="qn" style="min-width:40px;text-align:center;color:${active?'#fff':'var(--navy)'}">${label}</span>
+            <input type="number" min="0" value="${qty}" style="width:50px;text-align:center;font-size:0.85rem;font-weight:700;border-radius:6px;border:1px solid ${active?'rgba(255,255,255,0.4)':'var(--border)'};background:${active?'rgba(255,255,255,0.15)':'#fff'};color:${active?'#fff':'var(--navy)'};padding:3px 2px" onchange="bSetAdicDirect('${a.id}',this.value)">
             <button class="qb" onclick="bChAdic('${a.id}',${step})">+</button>
+            ${a.step?`<span style="font-size:0.62rem;color:${active?'rgba(255,255,255,0.7)':'var(--muted)'}">(${(qty/step).toFixed(1)} doc.)</span>`:''}
           </div>
         </div>`;
       }).join('')}
@@ -1437,7 +1437,7 @@ function renderBuilder(){
       <label class="field-label">Cantidad de piezas${getMinQty()>1?' (mínimo '+getMinQty()+')':''}</label>
       <div style="display:flex;align-items:center;gap:10px;margin-top:5px;">
         <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(-1)">−</button>
-        <span id="b-qty-display" style="font-size:1.1rem;font-weight:700;color:var(--navy);min-width:24px;text-align:center">${b.qty}</span>
+        <input type="number" id="b-qty-display" value="${b.qty}" min="${getMinQty()}" style="font-size:1.1rem;font-weight:700;color:var(--navy);width:64px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:4px 2px" oninput="bSetQtyDirect(this.value)" onblur="bSetQtyDirect(this.value);this.value=b.qty">
         <button class="qty-btn" style="width:30px;height:30px;font-size:1rem" onclick="bChangeCant(1)">+</button>
         <input type="text" id="b-nota" value="${bEsc(b.nota)}" placeholder="Nota del producto..." style="flex:1;font-size:0.82rem" oninput="b.nota=this.value">
       </div>
@@ -1463,6 +1463,14 @@ function renderBuilder(){
     floresWrap.style.display=hasFlores?'block':'none';
     if(floresInp)floresInp.value=b.floresDesc||'';
   }
+}
+function bSetAdicDirect(id,val){
+  if(!b.adicionales)b.adicionales={};
+  let n=parseInt(val);
+  if(isNaN(n)||n<0)n=0;
+  if(n===0)delete b.adicionales[id];
+  else b.adicionales[id]=n;
+  renderBuilder();
 }
 function bChAdic(id, delta){
   if(!b.adicionales)b.adicionales={};
@@ -1554,9 +1562,19 @@ function bChangeCant(d){
   const minQ=getMinQty();
   b.qty=Math.max(minQ,b.qty+d);
   const el=document.getElementById('b-qty-display');
-  if(el)el.textContent=b.qty;
+  if(el)el.value=b.qty;
+}
+function bSetQtyDirect(val){
+  const minQ=getMinQty();
+  let n=parseInt(val);
+  if(isNaN(n))return; // deja escribir mientras teclean, sin corregir a medio camino
+  if(n<minQ)n=minQ;
+  b.qty=n;
+  const el=document.getElementById('b-qty-display');
+  if(el&&parseInt(el.value)!==n)el.value=n;
 }
 function getMinQty(){
+  if(b.cat==='pan')return 12;
   if(b.cat==='mini'){
     const p=MINI_POSTRES.find(x=>x.id===b.miniProduct);
     return p&&p.step?p.step:1;
