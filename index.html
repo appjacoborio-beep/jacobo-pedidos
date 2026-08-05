@@ -1988,7 +1988,7 @@ async function descargarDocAzucar(dateStr){
   try{
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),45000);
-    const res=await fetch(SCRIPT_URL+'?generarAzucarDoc='+encodeURIComponent(dateStr),{signal:controller.signal});
+    const res=await fetch(SCRIPT_URL+'?generarAzucarDoc='+encodeURIComponent(dateStr)+'&t='+Date.now(),{signal:controller.signal,cache:'no-store'});
     clearTimeout(timeout);
     const rawText=await res.text();
     let result;
@@ -2200,7 +2200,8 @@ function calShowDay(dateStr){
 
   const conAzucar=dayOrders.filter(o=>(o.impresionUrls||'').trim());
   const azucarBtnWrap=document.getElementById('cal-day-azucardoc-btn');
-  if(conAzucar.length){
+  const AZUCAR_DOC_BTN_ACTIVO=false; // en pausa — cámbialo a true cuando se retome esta función
+  if(conAzucar.length&&AZUCAR_DOC_BTN_ACTIVO){
     azucarBtnWrap.innerHTML='<button class="oc-btn" id="azucar-doc-btn" onclick="descargarDocAzucar(\''+dateStr+'\')" style="margin-top:6px;color:#1E40AF;font-weight:700;border-color:#93C5FD">📄 Descargar Word con impresiones del día</button>';
   } else {
     azucarBtnWrap.innerHTML='';
