@@ -506,6 +506,7 @@ textarea{resize:vertical;min-height:60px;}
       <div id="cal-day-header" style="display:none;margin-bottom:0.7rem">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--navy);letter-spacing:0.04em" id="cal-day-title"></div>
         <div style="font-size:0.72rem;color:var(--muted)" id="cal-day-sub"></div>
+        <div id="cal-day-resumen"></div>
         <div id="cal-day-domicilio-btn"></div>
         <div id="cal-day-azucardoc-btn"></div>
       </div>
@@ -2256,6 +2257,43 @@ function calSelectDay(dateStr){
   renderCalendar();
 }
 
+let resumenDesbloqueado=false;
+let ultimoResumenDia=null;
+function renderResumenDia(){
+  const wrap=document.getElementById('cal-day-resumen');
+  if(!wrap||!ultimoResumenDia||!ultimoResumenDia.dayOrdersLength){if(wrap)wrap.innerHTML='';return;}
+  if(!resumenDesbloqueado){
+    wrap.innerHTML='<button class="oc-btn" onclick="desbloquearResumenDia()" style="margin-top:8px;width:100%;color:var(--navy);font-weight:700">🔒 Ver resumen de ventas del día</button>';
+    return;
+  }
+  const r=ultimoResumenDia;
+  const fmt=n=>'$'+n.toLocaleString('es-MX',{minimumFractionDigits:0});
+  wrap.innerHTML=`
+    <div style="margin-top:8px;background:var(--navy-faint);border-radius:8px;padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--border)">
+        <span style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Total del día</span>
+        <span style="font-size:1.05rem;font-weight:700;color:var(--navy)">${fmt(r.totalVenta)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:0.72rem;color:var(--text)">🏪 Pedidos en sucursal</span>
+        <span style="font-size:0.8rem;font-weight:700;color:var(--navy)">${fmt(r.totalNormales)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:0.72rem;color:var(--text)">🛵 Domicilios (${r.domiciliosLength})</span>
+        <span style="font-size:0.8rem;font-weight:700;color:#BE123C">${fmt(r.totalDomicilios)}</span>
+      </div>
+    </div>`;
+}
+function desbloquearResumenDia(){
+  const pin=prompt('Ingresa la contraseña para ver el resumen de ventas:');
+  if(pin===null)return;
+  if(pin==='123456'){
+    resumenDesbloqueado=true;
+    renderResumenDia();
+  } else {
+    toast('❌','Contraseña incorrecta');
+  }
+}
 function horaToMin(h){if(!h)return 9999;var s=String(h).trim();var m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);if(!m)return 9999;var hr=parseInt(m[1]),mn=parseInt(m[2]),pm=m[3].toUpperCase()==='PM';if(pm&&hr!==12)hr+=12;if(!pm&&hr===12)hr=0;return hr*60+mn;}
 function calShowDay(dateStr){
   const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
@@ -2272,6 +2310,12 @@ function calShowDay(dateStr){
   document.getElementById('st-hoy-label').textContent='Pendientes ese día';
 
   const domicilios=dayOrders.filter(o=>o.tipoEntrega==='domicilio');
+  const totalVenta=dayOrders.reduce((sum,o)=>sum+(parseFloat(o.total)||0),0);
+  const totalNormales=dayOrders.filter(o=>o.tipoEntrega!=='domicilio').reduce((sum,o)=>sum+(parseFloat(o.total)||0),0);
+  const totalDomicilios=domicilios.reduce((sum,o)=>sum+(parseFloat(o.total)||0),0);
+  ultimoResumenDia={dayOrdersLength:dayOrders.length,totalVenta,domiciliosLength:domicilios.length,totalNormales,totalDomicilios};
+  renderResumenDia();
+
   const btnWrap=document.getElementById('cal-day-domicilio-btn');
   if(domicilios.length){
     btnWrap.innerHTML='<button class="oc-btn" onclick="openBitacora(\''+dateStr+'\')" style="margin-top:6px;color:#BE123C;font-weight:700;border-color:#FDA4AF">🛵 Ver bitácora de domicilios ('+domicilios.length+')</button>';
