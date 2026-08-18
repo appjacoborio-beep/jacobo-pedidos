@@ -432,6 +432,13 @@ textarea{resize:vertical;min-height:60px;}
           <div class="entrega-btn" id="ma-efectivo" onclick="setMetodoAnticipo('Efectivo')" style="flex:1"><span class="ei">💵</span><div class="en">Efectivo</div></div>
           <div class="entrega-btn" id="ma-tarjeta" onclick="setMetodoAnticipo('Tarjeta')" style="flex:1"><span class="ei">💳</span><div class="en">Tarjeta</div></div>
         </div>
+        <div id="cambio-anticipo-wrap" style="display:none;margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:8px 10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:600;color:#92400E;cursor:pointer">
+            <input type="checkbox" id="cambio-anticipo-check" onchange="toggleCambioAnticipoInput()">
+            ¿Diste cambio de caja general? (opcional)
+          </label>
+          <input type="number" id="cambio-anticipo-monto" placeholder="¿Cuánto cambio diste?" min="0" step="0.01" style="display:none;margin-top:6px;width:100%">
+        </div>
       </div>
     </div>
   </div>
@@ -554,6 +561,13 @@ textarea{resize:vertical;min-height:60px;}
         <div style="display:flex;gap:8px" id="ep-metodo-grid">
           <div class="entrega-btn" id="ep-efectivo" onclick="setMetodoEntrega('Efectivo')" style="flex:1"><span class="ei">💵</span><div class="en">Efectivo</div></div>
           <div class="entrega-btn" id="ep-tarjeta" onclick="setMetodoEntrega('Tarjeta')" style="flex:1"><span class="ei">💳</span><div class="en">Tarjeta</div></div>
+        </div>
+        <div id="cambio-restante-wrap" style="display:none;margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:8px 10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:600;color:#92400E;cursor:pointer">
+            <input type="checkbox" id="cambio-restante-check" onchange="toggleCambioRestanteInput()">
+            ¿Diste cambio de caja general? (opcional)
+          </label>
+          <input type="number" id="cambio-restante-monto" placeholder="¿Cuánto cambio diste?" min="0" step="0.01" style="display:none;margin-top:6px;width:100%">
         </div>
       </div>
       <div class="form-group">
@@ -759,7 +773,7 @@ function setAppMode(mode){
     if(floravitaSection)floravitaSection.style.display='none';
   }
 }
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycby0ls3LvOod-NOn22xeEXYoyIj8373DaNPG-0AqJuxOYJkaYFM1SfR_IOvp-AbkSNQUUw/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbwHmjI83g29wcmjS7tFsu0hslwW3AdlCCLM9hOML6OBcRQJlstQEYg0hyDRHM2n2ze8ug/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -1887,7 +1901,20 @@ function setMetodoAnticipo(m){
   selectedMetodoAnticipo=m;
   document.getElementById('ma-efectivo').classList.toggle('selected',m==='Efectivo');
   document.getElementById('ma-tarjeta').classList.toggle('selected',m==='Tarjeta');
+  const cambioWrap=document.getElementById('cambio-anticipo-wrap');
+  if(cambioWrap)cambioWrap.style.display=m==='Efectivo'?'block':'none';
+  if(m!=='Efectivo'){
+    document.getElementById('cambio-anticipo-check').checked=false;
+    document.getElementById('cambio-anticipo-monto').style.display='none';
+    document.getElementById('cambio-anticipo-monto').value='';
+  }
   clearInvalidMarks();
+}
+function toggleCambioAnticipoInput(){
+  const checked=document.getElementById('cambio-anticipo-check').checked;
+  const inp=document.getElementById('cambio-anticipo-monto');
+  inp.style.display=checked?'block':'none';
+  if(!checked)inp.value='';
 }
 document.getElementById('f-total').addEventListener('input',calcRest);
 
@@ -1970,7 +1997,7 @@ async function sendOrderInner(){
     :cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   var allPhotos=cart.flatMap(function(i,idx){var ph=Array.isArray(i.photos)?i.photos:(i.photo&&i.photo.startsWith('http')?[i.photo]:[]);return ph.map(function(u){return idx+'::'+u;});});var firstPhoto=(allPhotos[0]||'').split('::').pop()||'';
   var allAzucar=cart.flatMap(function(i,idx){return Array.isArray(i.azucarPhotos)?i.azucarPhotos.map(function(u){return idx+'::'+u;}):[];});
-  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,metodoAnticipo:selectedMetodoAnticipo,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto,imagenAzucar:allAzucar.join('|')};
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,metodoAnticipo:selectedMetodoAnticipo,cambioAnticipo:document.getElementById('cambio-anticipo-check').checked?(parseFloat(document.getElementById('cambio-anticipo-monto').value)||0):0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto,imagenAzucar:allAzucar.join('|')};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
@@ -2009,6 +2036,9 @@ function clearForm(){
   ADICIONALES.forEach(a=>{adicQty[a.id]=0;});renderAdicionales();
   selectedSuc='';selectedEntrega='';selectedMetodoAnticipo='';
   document.getElementById('metodo-anticipo-wrap').style.display='none';
+  document.getElementById('cambio-anticipo-check').checked=false;
+  document.getElementById('cambio-anticipo-monto').style.display='none';
+  document.getElementById('cambio-anticipo-monto').value='';
   document.getElementById('folio-display').value='';
 }
 
@@ -2051,7 +2081,7 @@ async function loadOrders(){
   if(s.includes('AM')||s.includes('PM')||s.includes(':'))return s.split('T')[0].includes('-')?'':s;
   if(s.startsWith('1899')||s.startsWith('1900'))return'';
   return s;
-})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],metodoAnticipo:r['Método Anticipo']||'',restante:r['Restante'],metodoRestante:r['Método Restante']||'',montoRestanteRecibido:r['Monto Restante Recibido']||'',fechaRealEntrega:r['Fecha Real Entrega']||'',colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',impresionUrls:r['Imagen Azúcar']||'',historial:r['Historial']||''})).reverse();
+})(),productos:r['Productos']||'',adicionales:r['Adicionales']||'',notas:r['Notas']||'',total:r['Total'],anticipo:r['Anticipo'],metodoAnticipo:r['Método Anticipo']||'',cambioAnticipo:r['Cambio Anticipo']||0,restante:r['Restante'],metodoRestante:r['Método Restante']||'',montoRestanteRecibido:r['Monto Restante Recibido']||'',cambioRestante:r['Cambio Restante']||0,fechaRealEntrega:r['Fecha Real Entrega']||'',colaborador:r['Colaborador'],status:r['Estado']||'Pendiente',imagen:r['Imagen']||'',impresionUrls:r['Imagen Azúcar']||'',historial:r['Historial']||''})).reverse();
     renderCalendar();document.getElementById('prod-time').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});updateBadge();
   }catch(e){document.getElementById('orders-grid').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error de conexión</div></div>`;}
 }
@@ -2312,7 +2342,7 @@ let resumenDesbloqueado=false;
 let ultimoResumenDia=null;
 function renderResumenDia(){
   const wrap=document.getElementById('cal-day-resumen');
-  if(!wrap||!ultimoResumenDia||ultimoResumenDia.totalVenta<=0){if(wrap)wrap.innerHTML='';return;}
+  if(!wrap||!ultimoResumenDia||!ultimoResumenDia.dayOrdersLength){if(wrap)wrap.innerHTML='';return;}
   if(!resumenDesbloqueado){
     wrap.innerHTML='<button class="oc-btn" onclick="desbloquearResumenDia()" style="margin-top:8px;width:100%;color:var(--navy);font-weight:700">🔒 Ver resumen de ventas del día</button>';
     return;
@@ -2322,6 +2352,7 @@ function renderResumenDia(){
   wrap.innerHTML=`
     <div style="margin-top:8px;background:var(--navy-faint);border-radius:8px;padding:10px 12px">
       <div style="font-size:0.62rem;color:var(--muted);margin-bottom:6px">💰 Dinero recibido este día (por fecha real de pago, no de entrega)</div>
+      ${r.totalVenta<=0?'<div style="font-size:0.68rem;color:var(--muted);font-style:italic;padding:4px 0">Ningún pago quedó registrado con fecha exacta de hoy — puede ser normal si los pedidos que ves aquí se crearon o se cobraron otro día.</div>':''}
       <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--border)">
         <span style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Total recibido</span>
         <span style="font-size:1.05rem;font-weight:700;color:var(--navy)">${fmt(r.totalVenta)}</span>
@@ -2344,6 +2375,14 @@ function renderResumenDia(){
           <span style="font-size:0.8rem;font-weight:700;color:#1E40AF">${fmt(r.totalTarjeta)}</span>
         </div>
       </div>
+      ${r.totalCambio>0?`
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:0.7rem;color:#92400E">💸 Cambio dado de caja general hoy</span>
+          <span style="font-size:0.78rem;font-weight:700;color:#92400E">${fmt(r.totalCambio)}</span>
+        </div>
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:2px">Explica por qué la caja general puede verse "corta" ese monto — no es un faltante.</div>
+      </div>`:''}
     </div>`;
 }
 function desbloquearResumenDia(){
@@ -2390,7 +2429,8 @@ function calShowDay(dateStr){
   const totalDomicilios=sumAnticipos(anticiposHoy,o=>o.tipoEntrega==='domicilio')+sumRestantes(restantesHoy,o=>o.tipoEntrega==='domicilio');
   const totalEfectivo=sumAnticipos(anticiposHoy,o=>o.metodoAnticipo==='Efectivo')+sumRestantes(restantesHoy,o=>o.metodoRestante==='Efectivo');
   const totalTarjeta=sumAnticipos(anticiposHoy,o=>o.metodoAnticipo==='Tarjeta')+sumRestantes(restantesHoy,o=>o.metodoRestante==='Tarjeta');
-  ultimoResumenDia={dayOrdersLength:dayOrders.length,totalVenta,domiciliosLength:domicilios.length,totalNormales,totalDomicilios,totalEfectivo,totalTarjeta};
+  const totalCambio=anticiposHoy.reduce((s,o)=>s+(parseFloat(o.cambioAnticipo)||0),0)+restantesHoy.reduce((s,o)=>s+(parseFloat(o.cambioRestante)||0),0);
+  ultimoResumenDia={dayOrdersLength:dayOrders.length,totalVenta,domiciliosLength:domicilios.length,totalNormales,totalDomicilios,totalEfectivo,totalTarjeta,totalCambio};
   renderResumenDia();
 
   const btnWrap=document.getElementById('cal-day-domicilio-btn');
@@ -2683,6 +2723,10 @@ async function markEntregado(folio,fechaPedido){
     document.getElementById('ep-quien').value='';
     document.getElementById('ep-efectivo').classList.remove('selected');
     document.getElementById('ep-tarjeta').classList.remove('selected');
+    document.getElementById('cambio-restante-check').checked=false;
+    document.getElementById('cambio-restante-monto').style.display='none';
+    document.getElementById('cambio-restante-monto').value='';
+    document.getElementById('cambio-restante-wrap').style.display='none';
     document.getElementById('entrega-pago-modal').classList.add('open');
     return;
   }
@@ -2695,6 +2739,19 @@ function setMetodoEntrega(m){
   selectedMetodoEntrega=m;
   document.getElementById('ep-efectivo').classList.toggle('selected',m==='Efectivo');
   document.getElementById('ep-tarjeta').classList.toggle('selected',m==='Tarjeta');
+  const cambioWrap=document.getElementById('cambio-restante-wrap');
+  if(cambioWrap)cambioWrap.style.display=m==='Efectivo'?'block':'none';
+  if(m!=='Efectivo'){
+    document.getElementById('cambio-restante-check').checked=false;
+    document.getElementById('cambio-restante-monto').style.display='none';
+    document.getElementById('cambio-restante-monto').value='';
+  }
+}
+function toggleCambioRestanteInput(){
+  const checked=document.getElementById('cambio-restante-check').checked;
+  const inp=document.getElementById('cambio-restante-monto');
+  inp.style.display=checked?'block':'none';
+  if(!checked)inp.value='';
 }
 async function confirmarEntregaConPago(){
   const o=orders.find(x=>String(x.folio)===String(entregaPendienteFolio)&&String(x.fechaPedido||'')===String(entregaPendienteFecha||''));
@@ -2707,24 +2764,26 @@ async function confirmarEntregaConPago(){
   document.getElementById('entrega-pago-modal').classList.remove('open');
   const restanteOriginal=parseFloat(o.restante)||0;
   const nuevoRestante=Math.max(0,restanteOriginal-monto);
-  await ejecutarMarcarEntregado(o,quien,monto,selectedMetodoEntrega,nuevoRestante);
+  const cambioRestante=document.getElementById('cambio-restante-check').checked?(parseFloat(document.getElementById('cambio-restante-monto').value)||0):0;
+  await ejecutarMarcarEntregado(o,quien,monto,selectedMetodoEntrega,nuevoRestante,cambioRestante);
 }
-async function ejecutarMarcarEntregado(o,quien,montoRecibido,metodoRestante,nuevoRestante){
+async function ejecutarMarcarEntregado(o,quien,montoRecibido,metodoRestante,nuevoRestante,cambioRestante){
   const fechaCambio=new Date().toLocaleString('es-MX');
   const hoy=new Date();
   const fechaRealEntrega=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
   o.status='Entregado';
   o.fechaRealEntrega=fechaRealEntrega;
-  if(nuevoRestante!==null){o.restante=nuevoRestante;o.montoRestanteRecibido=montoRecibido;o.metodoRestante=metodoRestante;}
+  if(nuevoRestante!==null){o.restante=nuevoRestante;o.montoRestanteRecibido=montoRecibido;o.metodoRestante=metodoRestante;o.cambioRestante=cambioRestante||0;}
   let entry=`${fechaCambio} — Entregado — ${quien||'Sin nombre'}`;
   if(montoRecibido!==null&&metodoRestante)entry+=` (recibió $${montoRecibido} ${metodoRestante})`;
+  if(cambioRestante>0)entry+=` [dio $${cambioRestante} de cambio de caja general]`;
   o.historial=o.historial?o.historial+' | '+entry:entry;
   renderCalendar();
   updateBadge();
   toast('✓',`Folio #${String(o.folio).padStart(4,'0')} → Entregado ✅`);
   try{
     const payload={_update:true,folio:o.folio,fechaPedido:o.fechaPedido,estado:'Entregado',quien:quien||'Sin nombre',fechaCambio,fechaRealEntrega};
-    if(montoRecibido!==null){payload.montoRecibido=montoRecibido;payload.metodoRestante=metodoRestante;payload.nuevoRestante=nuevoRestante;}
+    if(montoRecibido!==null){payload.montoRecibido=montoRecibido;payload.metodoRestante=metodoRestante;payload.nuevoRestante=nuevoRestante;payload.cambioRestante=cambioRestante||0;}
     fetch(SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload))).catch(function(){toast('⚠️','Marcado localmente. Verifica conexión.');});
   }catch(e){toast('⚠️','Error al marcar como entregado.');}
 }
