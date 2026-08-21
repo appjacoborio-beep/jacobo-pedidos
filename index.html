@@ -1145,9 +1145,9 @@ function renderBuilder(){
       <!-- Paso 1: Sabor -->
       <div class="step-header"><div class="step-num">1</div><div class="step-title">Sabor</div></div>
       <div class="sabor-grid" style="margin-bottom:0.3rem">
-        ${['Vainilla','Chocolate','Fresa','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
+        ${['Vainilla','Chocolate','Fresa','Pan de Plátano','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
           <div class="sabor-card ${b.sabor===s?'selected':''}" onclick="bSelectSabor('${s}',false)">
-            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Fresa:'🍓','Birthday Cake':iconSpan(ICON_BIRTHDAY,21),Trilogía:iconSpan(ICON_TRILOGIA,21),Combinado:iconSpan(ICON_COMBINADO,21),Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋'}[s]||'🎂'}</span>
+            <span class="sabor-icon">${{Vainilla:'🍦',Chocolate:'🍫',Fresa:'🍓','Pan de Plátano':'🍌','Birthday Cake':iconSpan(ICON_BIRTHDAY,21),Trilogía:iconSpan(ICON_TRILOGIA,21),Combinado:iconSpan(ICON_COMBINADO,21),Moca:'☕','Red Velvet':'❤️',Blueberry:'🫐',Limón:'🍋'}[s]||'🎂'}</span>
             <div class="sabor-name">${s}</div>
           </div>`).join('')}
         <div class="sabor-card especial ${b.sabor==='3 Leches'?'selected':''}" onclick="bSelectSabor('3 Leches',true)"><span class="sabor-icon">🥛</span><div class="sabor-name">3 Leches</div></div>
@@ -1187,7 +1187,7 @@ function renderBuilder(){
       <div style="margin-top:0.5rem">
         <div class="step-header"><div class="step-num">3</div><div class="step-title">Sabores de la barra (elige de 1 a 3)</div></div>
         <div class="chips" style="margin-bottom:0.3rem">
-          ${['Vainilla','Chocolate','Fresa','Birthday Cake','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
+          ${['Vainilla','Chocolate','Fresa','Pan de Plátano','Birthday Cake','Moca','Red Velvet','Blueberry','Limón'].map(s=>`
             <div class="chip ${b.barraSabores.includes(s)?'selected':''}" onclick="bToggleBarraSabor('${s}')">${s}</div>`).join('')}
         </div>
         ${b.barraSabores.length?`<div style="font-size:0.65rem;color:var(--muted)">✓ ${b.barraSabores.join(' + ')}</div>`:`<div style="font-size:0.65rem;color:var(--red)">Elige al menos 1 sabor</div>`}
@@ -1202,7 +1202,7 @@ function renderBuilder(){
             <div class="piso-title">${pisoLabel}</div>
             <div class="form-group">
               <label class="field-label">Sabor del pan</label>
-              <div class="chips">${['Vainilla','Chocolate','Fresa','Birthday Cake','Trilogía','Moca','Red Velvet','Blueberry','Limón','Zanahoria'].map(s=>`
+              <div class="chips">${['Vainilla','Chocolate','Fresa','Pan de Plátano','Birthday Cake','Trilogía','Moca','Red Velvet','Blueberry','Limón','Zanahoria'].map(s=>`
                 <div class="chip ${(b.pisosData[i]&&b.pisosData[i].sabor===s)?'selected':''}"
                   onclick="bSetPisoSabor(${i},'${s}')">${s}</div>`).join('')}
               </div>
@@ -1401,7 +1401,7 @@ function renderBuilder(){
             <div class="piso-title">${pisoLabel}</div>
             <div class="form-group">
               <label class="field-label">Sabor</label>
-              <div class="chips">${['Vainilla','Chocolate','Fresa','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','Napolitano','Zanahoria'].map(s=>`
+              <div class="chips">${['Vainilla','Chocolate','Fresa','Pan de Plátano','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','Napolitano','Zanahoria'].map(s=>`
                 <div class="chip ${(b.pisosData[i]&&b.pisosData[i].sabor===s)?'selected':''}" onclick="bSetPisoSabor(${i},'${s}')">${s}</div>`).join('')}
               </div>
             </div>
@@ -2501,7 +2501,7 @@ function renderProductLines(prodLines,photosByIdx,azucarByIdx){
     'Cantidad':'','Tamaño':''
   };
 
-  var saboresKnown=['Vainilla','Chocolate','Fresa','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
+  var saboresKnown=['Vainilla','Chocolate','Fresa','Pan de Plátano','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
 
   prodLines.forEach(function(linea, idx){
     linea = linea.replace(/\uD83D\uDDB8\uFE0F ImpLink:[^\|]*/g,'').trim();
@@ -3082,7 +3082,7 @@ function printNota(folio,fechaPedido){
     var enc = partes[0]||'';
 
     // Producto y sabor del encabezado
-    var saboresKnown=['Vainilla','Chocolate','Fresa','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
+    var saboresKnown=['Vainilla','Chocolate','Fresa','Pan de Plátano','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
     var tipoParte=enc.match(/^\[?\d+\]?\s*(.+?)(?:\s*·|$)/);
     var tipoRaw=tipoParte?tipoParte[1].trim():'';
     var producto=tipoRaw, sabor='';
@@ -3307,7 +3307,7 @@ function printNota(folio,fechaPedido){
 
   function resumeProds(txt){
     if(!txt) return '—';
-    var saboresKnown=['Vainilla','Chocolate','Fresa','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
+    var saboresKnown=['Vainilla','Chocolate','Fresa','Pan de Plátano','Birthday Cake','Trilogía','Combinado','Moca','Red Velvet','Blueberry','Limón','3 Leches Chocolate','3 Leches'];
     function detectEmoji(p){
       if(p.indexOf('\uD83D\uDCAC')>=0&&p.indexOf('\uD83D\uDCAC')<=3)return'Mensaje';
       if(p.indexOf('\uD83C\uDFA8')>=0&&p.indexOf('\uD83C\uDFA8')<=3)return'Tema/Dec.';
