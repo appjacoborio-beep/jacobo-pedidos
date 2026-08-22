@@ -3376,8 +3376,9 @@ function printNota(folio,fechaPedido){
     }).join('');
   }
 
-  function notaTicket(bg){
-    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:8px 12px;box-sizing:border-box;height:100%;overflow:hidden;font-size:8px">'+
+  function notaTicket(bg, fs){
+    fs = fs || 8;
+    return '<div style="background:'+bg+';border:2px solid #1B2A6B;border-radius:6px;padding:8px 12px;box-sizing:border-box;height:100%;overflow:hidden;font-size:'+fs+'px">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;padding-bottom:5px;border-bottom:1.5px solid #1B2A6B">'+
         '<div style="display:flex;align-items:center;gap:6px">'+
           ''+
@@ -3421,24 +3422,19 @@ function printNota(folio,fechaPedido){
 
   var pw='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Nota #'+folioStr+'</title>'+
     '<style>'+
-      '@page{size:letter portrait;margin:8mm}'+
+      '@page{size:letter landscape;margin:8mm}'+
       'body{margin:0;font-family:Arial,sans-serif}'+
       '*{box-sizing:border-box}'+
-      '.pag{width:100%;display:flex;flex-direction:column;gap:4px}'+
-      '.row{display:flex;flex-direction:row;gap:4px}'+
-      '.col{width:50%;overflow:hidden;height:150mm}'+
+      '.pag{width:100%;display:flex;flex-direction:row;gap:4mm;height:190mm}'+
+      '.col{width:33.33%;overflow:hidden;height:100%}'+
       '.col>div{height:100%;overflow:hidden}'+
-      '.rosa{width:100%;overflow:hidden;height:90mm}'+
-      '.rosa>div{height:100%;overflow:hidden}'+
       '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.np{display:none!important}}'+
     '</style>'+
     '</head><body>'+
     '<div class="pag">'+
-      '<div class="row">'+
-        '<div class="col">'+nota('#FFF9C4',false,'16px')+'</div>'+
-        '<div class="col">'+nota('#FFFFFF',false,'16px')+'</div>'+
-      '</div>'+
-      '<div class="rosa">'+notaTicket('#FFD6E0')+'</div>'+
+      '<div class="col">'+nota('#FFF9C4',false,'16px')+'</div>'+
+      '<div class="col">'+nota('#FFFFFF',false,'16px')+'</div>'+
+      '<div class="col">'+nota('#FFD6E0',false,'16px')+'</div>'+
     '</div>'+
     '<div class="np" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:999">'+
       '<button onclick="window.print()" style="background:#1B2A6B;color:white;border:none;padding:10px 28px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3)">&#128424; Imprimir / Guardar PDF</button>'+
@@ -3470,7 +3466,7 @@ function printNota(folio,fechaPedido){
     '<\/script>'+
     '</body></html>';
 
-  var win=window.open('','_blank','width=760,height=980');
+  var win=window.open('','_blank','width=1000,height=760');
   if(win){win.document.write(pw);win.document.close();}
 }
 
