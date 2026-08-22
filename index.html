@@ -681,8 +681,8 @@ const SABORES_COMBO = [
 ];
 const SABORES_CUPCAKE = ['Vainilla','Chocolate','Moca','Red Velvet','Blueberry','Limón'];
 
-const RELLENOS_GRATIS = ['M. Fresa','M. Cereza','M. Frambuesa','Nutella','Durazno','Oreo'];
-const RELLENOS_FRUTA  = ['Fresa','Piña','Coco','Nuez','Cajeta'];
+const RELLENOS_GRATIS = ['M. Fresa','M. Cereza','M. Frambuesa','Nutella','M. Durazno','Oreo'];
+const RELLENOS_FRUTA  = ['Fresa','Piña','Coco','Nuez','Cajeta','Durazno'];
 const RELLENOS_PISO   = ['Crema Chantilly','Crema de Queso','Cheesecake','Nutella','Fresa Natural','M. Fresa','M. Cereza','M. Frambuesa','Durazno','Plátano','Piña','Coco','Nuez','Cajeta','Oreo'];
 
 const POSTRES = [
@@ -1243,17 +1243,16 @@ function renderBuilder(){
           <div class="chip ${b.cremaBase==='Crema Chantilly'?'selected':''}" onclick="bSetCrema('Crema Chantilly')">Crema Chantilly</div>
           <div class="chip ${b.cremaBase==='Crema de Queso'?'selected':''}" onclick="bSetCrema('Crema de Queso')">Crema de Queso</div>
         </div>
+        ${(b.sabor==='3 Leches'||b.sabor==='3 Leches Chocolate')&&b.cremaBase==='Crema de Queso'?`<div style="font-size:0.68rem;color:#B45309;font-weight:600;margin-top:4px">💰 Costo adicional: +$${getPrecio().fresa||100}</div>`:''}
       </div>
-      ${!b.saborEspecial?`<div class="form-group">
-        <label class="field-label">Toppings sin costo</label>
+      <div class="form-group">
+        <label class="field-label">Relleno sin costo</label>
         <div class="chips">${RELLENOS_GRATIS.map(r=>`<div class="chip ${b.rellenosGratis.includes(r)?'selected':''}" onclick="bTogRelGratis('${r}')">${r}</div>`).join('')}</div>
-      </div>`:''}
+      </div>
       <div class="form-group">
         <label class="field-label">Relleno de fruta${getPrecio().fresa?' — +$'+getPrecio().fresa:''} (elige uno o varios)</label>
         <div class="chips">
           ${RELLENOS_FRUTA.map(r=>`<div class="chip ${(Array.isArray(b.rellenoFruta)?b.rellenoFruta.includes(r):b.rellenoFruta===r)?'selected':''}" onclick="bSetRellenoFruta('${r}')">${r}</div>`).join('')}
-          ${b.saborEspecial?`<div class="chip ${(Array.isArray(b.rellenoFruta)?b.rellenoFruta.includes('Crema de Queso'):b.rellenoFruta==='Crema de Queso')?'selected':''}" onclick="bSetRellenoFruta('Crema de Queso')">Crema de Queso</div>
-          <div class="chip ${(Array.isArray(b.rellenoFruta)?b.rellenoFruta.includes('Mermelada'):b.rellenoFruta==='Mermelada')?'selected':''}" onclick="bSetRellenoFruta('Mermelada')">Mermelada</div>`:''}
         </div>
       </div>
       <div class="qty-item">
@@ -1811,7 +1810,7 @@ function bAddToCart(){
         if(p.sabor||rel)details+=`${lbl}: ${p.sabor||'—'}${rel?' | '+rel:''}\n`;
       });
     }
-    if(b.cremaBase)details+=`Base: ${b.cremaBase}\n`;
+    if(b.cremaBase)details+=`Base: ${b.cremaBase}${(b.sabor==='3 Leches'||b.sabor==='3 Leches Chocolate')&&b.cremaBase==='Crema de Queso'?' (+$'+(getPrecio().fresa||100)+')':''}\n`;
     if(b.rellenosGratis.length)details+=`Toppings: ${b.rellenosGratis.join(', ')}\n`;
     if(b.rellenoFruta&&b.rellenoFruta.length)details+=`Relleno: ${Array.isArray(b.rellenoFruta)?b.rellenoFruta.join(', '):b.rellenoFruta}\n`;
     const ck=Object.keys(b.rellenosCosto);if(ck.length)details+=`Extra: ${ck.join(', ')}\n`;
