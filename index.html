@@ -523,6 +523,8 @@ textarea{resize:vertical;min-height:60px;}
         <div style="font-size:0.72rem;color:var(--muted)" id="cal-day-sub"></div>
         <div id="cal-day-resumen"></div>
         <div id="cal-day-domicilio-btn"></div>
+        <div id="cal-day-fondant-btn"></div>
+        <div id="cal-day-azucarnota-btn"></div>
         <div id="cal-day-azucardoc-btn"></div>
       </div>
       <div class="ogrid" id="orders-grid"><div class="sw"><div class="spin"></div> Cargando...</div></div>
@@ -2173,6 +2175,33 @@ async function descargarDocAzucar(dateStr){
     if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
   }
 }
+function openBitacoraTipo(dateStr,tipo){
+  const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+  const esFondant=tipo==='fondant';
+  const filtro=o=>{
+    var t=String(o.productos||'').toLowerCase();
+    return esFondant?t.includes('fondant'):(t.includes('impresión azúcar')||t.includes('impresion azucar'));
+  };
+  const lista=visOrders.filter(o=>o.fechaEntrega===dateStr&&filtro(o)).sort((a,b)=>horaToMin(a.hora)-horaToMin(b.hora));
+  const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const parts=dateStr.split('-');
+  const dateLabel=parseInt(parts[2])+' '+months[parseInt(parts[1])-1]+' '+parts[0];
+  document.getElementById('bitacora-title').textContent=(esFondant?'🧸 Fondant':'🖨️ Impresión de Azúcar')+' · '+dateLabel;
+  document.getElementById('bitacora-body').innerHTML=lista.length?lista.map(function(o){
+    var m=String(o.productos||'').match(esFondant?/(?:🎭|🧸) Fondant: ([^\n|]+)/:/Impresión Azúcar[^\n|]*/i);
+    var detalle=esFondant?(m?m[1].trim():''):(m?'Impresión de azúcar solicitada':'');
+    return '<div style="padding:10px 0;border-bottom:1px solid var(--border)">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+        '<span style="font-size:0.68rem;font-weight:700;color:var(--navy);background:var(--navy-faint);padding:2px 6px;border-radius:5px">Folio '+String(o.folio).padStart(4,'0')+'</span>'+
+        (o.hora?'<span style="font-size:0.72rem;color:var(--muted)">'+o.hora+'</span>':'')+
+      '</div>'+
+      '<div style="font-size:0.85rem;font-weight:700;margin-bottom:2px">'+eHtml(o.cliente||'')+'</div>'+
+      (detalle?'<div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">'+eHtml(detalle)+'</div>':'')+
+      '<button class="oc-btn" style="width:100%" onclick="goToOrderFromBitacora(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')">Ver pedido completo</button>'+
+    '</div>';
+  }).join(''):'<div style="text-align:center;color:var(--muted);padding:1.5rem;font-size:0.8rem">Sin pedidos de este tipo en el día</div>';
+  document.getElementById('bitacora-modal').classList.add('open');
+}
 function openBitacora(dateStr){
   const visOrders = prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
   const domicilios = visOrders.filter(o=>o.fechaEntrega===dateStr&&o.tipoEntrega==='domicilio').sort((a,b)=>horaToMin(a.hora)-horaToMin(b.hora));
@@ -2437,6 +2466,22 @@ function calShowDay(dateStr){
     btnWrap.innerHTML='<button class="oc-btn" onclick="openBitacora(\''+dateStr+'\')" style="margin-top:6px;color:#BE123C;font-weight:700;border-color:#FDA4AF">🛵 Ver bitácora de domicilios ('+domicilios.length+')</button>';
   } else {
     btnWrap.innerHTML='';
+  }
+
+  const conFondant=dayOrders.filter(o=>String(o.productos||'').toLowerCase().includes('fondant'));
+  const fondantBtnWrap=document.getElementById('cal-day-fondant-btn');
+  if(conFondant.length){
+    fondantBtnWrap.innerHTML='<button class="oc-btn" onclick="openBitacoraTipo(\''+dateStr+'\',\'fondant\')" style="margin-top:6px;color:#7C3AED;font-weight:700;border-color:#DDD6FE">🧸 Ver pedidos con Fondant ('+conFondant.length+')</button>';
+  } else {
+    fondantBtnWrap.innerHTML='';
+  }
+
+  const conAzucarNota=dayOrders.filter(o=>{var t=String(o.productos||'').toLowerCase();return t.includes('impresión azúcar')||t.includes('impresion azucar');});
+  const azucarNotaBtnWrap=document.getElementById('cal-day-azucarnota-btn');
+  if(conAzucarNota.length){
+    azucarNotaBtnWrap.innerHTML='<button class="oc-btn" onclick="openBitacoraTipo(\''+dateStr+'\',\'azucar\')" style="margin-top:6px;color:#1E40AF;font-weight:700;border-color:#93C5FD">🖨️ Ver pedidos con Impresión de Azúcar ('+conAzucarNota.length+')</button>';
+  } else {
+    azucarNotaBtnWrap.innerHTML='';
   }
 
   const conAzucar=dayOrders.filter(o=>(o.impresionUrls||'').trim());
