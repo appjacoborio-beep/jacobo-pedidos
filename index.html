@@ -748,7 +748,7 @@ const CREPAS_FMTS = [
   {id:'cr12', label:'12 in', sub:'$1,500'},
   {id:'crplancha', label:'Plancha (100-120 pers.)', sub:'$4,600'}
 ];
-const CREPAS_RELLENOS = ['Fresa','Oreo','Cajeta','Nutella','M. Fresa','M. Cereza','M. Frambuesa'];
+const CREPAS_RELLENOS = ['Fresa','Oreo','Cajeta','Nutella','M. Fresa','M. Cereza','M. Frambuesa','M. Mango','Arroz con leche'];
 const CREPAS_PLANCHA_RELLENOS = ['Mermelada de Fresa','Frambuesa','Mango','Cereza','Arroz con leche'];
 const CREPAS_PLANCHA_EXTRAS = [
   {id:'fresa_natural', label:'Fresa natural', price:350},
@@ -1063,7 +1063,7 @@ function editCartItem(i){
   b.pisosCombo=item._pisosCombo||'';b.pisosData=item._pisosData||[];b.comboSabores=item._comboSabores||[];b.barraSabores=item._barraSabores||[];
   b.cremaBase=item._cremaBase||'';b.rellenosGratis=item._rellenosGratis||[];
   b.rellenosCosto=item._rellenosCosto||{};b.rellenoFruta=item._rellenoFruta||'';
-  b.rellenoCustom=item._rellenoCustom||'';b.crepaFmt=item._crepaFmt||'';b.crepaRelleno=item._crepaRelleno||'';
+  b.rellenoCustom=item._rellenoCustom||'';b.crepaFmt=item._crepaFmt||'';b.crepaRelleno=item._crepaRelleno||'';b.crepaRellenoCustom=item._crepaRellenoCustom||'';
   b.crepaMermelada=item._crepaMermelada||false;b.postProduct=item._postProduct||'';
   b.postFmt=item._postFmt||'';b.postFmtLabel=item._postFmtLabel||'';b.cupcakeSabor=item._cupcakeSabor||'';
   b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
@@ -1113,7 +1113,7 @@ function addPhotoToItem(i){
 
 // ══ BUILDER ══
 function bReset(){
-  b={cat:'pastel',sabor:'',saborEspecial:false,depositoCobrado:false,doblePan:false,crepaFmt:'',crepaRelleno:'',crepaMermelada:false,crepaPlanchaRelleno:'',crepaExtras:{},adicionales:{},otrosAdicionales:[],barraSabores:[],vitrinaGrupo:'',vitrinaSabor:'',vitrinaTam:'',
+  b={cat:'pastel',sabor:'',saborEspecial:false,depositoCobrado:false,doblePan:false,crepaFmt:'',crepaRelleno:'',crepaRellenoCustom:'',crepaMermelada:false,crepaPlanchaRelleno:'',crepaExtras:{},adicionales:{},otrosAdicionales:[],barraSabores:[],vitrinaGrupo:'',vitrinaSabor:'',vitrinaTam:'',
      fmtGrupo:'',fmtTamano:'',fmtLabel:'',
      pisosCombo:'',pisosData:[],
      comboSabores:[],
@@ -1338,7 +1338,7 @@ function renderBuilder(){
       <div class="formato-box" style="margin-bottom:0.5rem">
         <div class="formato-grid">
           ${CREPAS_FMTS.map(f=>`
-            <div class="fmt-btn ${b.crepaFmt===f.id?'selected':''}" onclick="b.crepaFmt='${f.id}';b.crepaMermelada=false;b.crepaRelleno='';b.crepaPlanchaRelleno='';b.crepaExtras={};renderBuilder()">
+            <div class="fmt-btn ${b.crepaFmt===f.id?'selected':''}" onclick="b.crepaFmt='${f.id}';b.crepaMermelada=false;b.crepaRelleno='';b.crepaRellenoCustom='';b.crepaPlanchaRelleno='';b.crepaExtras={};renderBuilder()">
               <div class="ft">${f.label}</div>
               <div class="fp" style="font-weight:700;color:${b.crepaFmt===f.id?'white':'var(--red)'}">${f.sub}</div>
             </div>`).join('')}
@@ -1364,6 +1364,10 @@ function renderBuilder(){
       <div class="chips" style="margin-bottom:0.6rem">
         ${CREPAS_RELLENOS.map(r=>`
           <div class="chip ${b.crepaRelleno===r?'sel selected':''}" onclick="b.crepaRelleno=b.crepaRelleno==='${r}'?'':'${r}';renderBuilder()">${r}</div>`).join('')}
+      </div>
+      <div class="form-group" style="margin-bottom:0.6rem">
+        <label class="field-label">Otro relleno (si no está en la lista)</label>
+        <input type="text" id="b-crepa-rel-custom" value="${bEsc(b.crepaRellenoCustom)}" placeholder="Ej. Dulce de leche, moras azules..." oninput="b.crepaRellenoCustom=this.value">
       </div>
 
       <div style="display:flex;align-items:center;gap:8px;cursor:pointer;background:#FFF0F0;border-radius:8px;padding:10px 12px;border:1.5px solid #FCA5A5" onclick="b.crepaMermelada=!b.crepaMermelada;renderBuilder()">
@@ -1630,7 +1634,7 @@ function bSetVitrinaGrupo(grupo){
   b.vitrinaTam='';
   renderBuilder();
 }
-function bSetCat(cat){b.cat=cat;if(cat==='pan'&&b.qty<12)b.qty=12;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaMermelada=false;b.comboSabores=[];b.barraSabores=[];b.vitrinaGrupo='';b.vitrinaSabor='';b.vitrinaTam='';renderBuilder();}
+function bSetCat(cat){b.cat=cat;if(cat==='pan'&&b.qty<12)b.qty=12;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaRellenoCustom='';b.crepaMermelada=false;b.comboSabores=[];b.barraSabores=[];b.vitrinaGrupo='';b.vitrinaSabor='';b.vitrinaTam='';renderBuilder();}
 
 function bSelectSabor(s,esp){
   b.sabor=s;b.saborEspecial=esp;
@@ -1915,6 +1919,7 @@ function bAddToCart(){
       if(chosenExtras.length)details+=`Extra: ${chosenExtras.map(x=>x.label+' +$'+x.price).join(', ')}\n`;
     } else {
       if(b.crepaRelleno)details+=`Relleno: ${b.crepaRelleno}\n`;
+      if(b.crepaRellenoCustom&&b.crepaRellenoCustom.trim())details+=`Otro relleno: ${b.crepaRellenoCustom.trim()}\n`;
       if(b.crepaMermelada)details+=`🍒 Mermelada de frutos rojos ${b.crepaFmt==='cr12'?'+$150':'+$100'}\n`;
     }
   } else if(b.cat==='postre'){
@@ -1970,7 +1975,7 @@ function bAddToCart(){
     const aStr=partesCatalogo.concat(partesOtros).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  const item={name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_barraSabores:[...(b.barraSabores||[])],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_otrosAdicionales:(b.otrosAdicionales||[]).map(o=>({...o})),_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]};
+  const item={name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_barraSabores:[...(b.barraSabores||[])],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaRellenoCustom:b.crepaRellenoCustom,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_otrosAdicionales:(b.otrosAdicionales||[]).map(o=>({...o})),_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]};
 
   if(replacingProductIndex!==null){
     const idx=replacingProductIndex;
