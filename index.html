@@ -807,7 +807,7 @@ function setAppMode(mode){
     if(floravitaSection)floravitaSection.style.display='none';
   }
 }
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbwr1dGeSC7Vc1ib5jQVvRaZaIL907jtVtYKJanfpjN48IUbWX861QfxvjgRcy4jIFRH9g/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbzVhHzPNRogHMtjy-QJbwVMyfOAfyL3zubus1dRkpTXJYfRtDOSvPJ1Sh9xDXVAMs3gJw/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -2252,15 +2252,59 @@ function bitacoraProductoLine(o){
   var extra=prods.split(' || ').length>1?' (+'+(prods.split(' || ').length-1)+' más)':'';
   return name?'<div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">🎂 '+eHtml(name)+extra+'</div>':'';
 }
+function gatherAzucarUrls(dateStr){
+  const urls=[];
+  orders.filter(o=>o.fechaEntrega===dateStr).forEach(o=>{
+    String(o.impresionUrls||'').split('|').forEach(function(entry){
+      entry=entry.trim();
+      if(!entry)return;
+      const m=entry.match(/^\d+::(https?:\/\/.+)$/);
+      const url=m?m[1]:entry;
+      if(url.indexOf('http')===0)urls.push(url);
+    });
+  });
+  return urls;
+}
+function urlToBase64(url){
+  return fetch(url).then(function(res){return res.blob();}).then(function(blob){
+    return new Promise(function(resolve,reject){
+      const reader=new FileReader();
+      reader.onloadend=function(){resolve(reader.result.split(',')[1]);};
+      reader.onerror=reject;
+      reader.readAsDataURL(blob);
+    });
+  });
+}
 async function descargarDocAzucar(dateStr){
   const btn=document.getElementById('azucar-doc-btn');
   const wrap=document.getElementById('cal-day-azucardoc-btn');
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin"></div> Generando documento...';}
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin"></div> Descargando imágenes...';}
   toast('⏳','Juntando las impresiones de azúcar del día...');
   try{
+    const urls=gatherAzucarUrls(dateStr);
+    if(!urls.length){
+      toast('❌','No hay impresiones de azúcar guardadas para ese día.');
+      if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
+      return;
+    }
+    const imagenes=[];
+    for(const url of urls){
+      try{
+        const b64=await urlToBase64(url);
+        imagenes.push(b64);
+      }catch(imgErr){
+        // Si una imagen en particular falla al bajar en el navegador, se sigue con las demás.
+      }
+    }
+    if(!imagenes.length){
+      alert('DIAGNÓSTICO — el navegador no pudo descargar ninguna de las '+urls.length+' imagen(es).');
+      if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
+      return;
+    }
+    if(btn)btn.innerHTML='<div class="spin"></div> Armando el documento...';
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),45000);
-    const res=await fetch(SCRIPT_URL+'?generarAzucarDoc='+encodeURIComponent(dateStr)+'&t='+Date.now(),{signal:controller.signal,cache:'no-store'});
+    const timeout=setTimeout(()=>controller.abort(),60000);
+    const res=await fetch(SCRIPT_URL,{method:'POST',signal:controller.signal,body:JSON.stringify({generarAzucarDocClient:true,fecha:dateStr,imagenes:imagenes})});
     clearTimeout(timeout);
     const rawText=await res.text();
     let result;
@@ -2278,8 +2322,8 @@ async function descargarDocAzucar(dateStr){
       if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
     }
   }catch(e){
-    if(e.name==='AbortError'){alert('DIAGNÓSTICO — se agotó el tiempo de espera (45 segundos) sin respuesta del servidor.');}
-    else{alert('DIAGNÓSTICO — error de conexión: '+e.message);}
+    if(e.name==='AbortError'){alert('DIAGNÓSTICO — se agotó el tiempo de espera sin respuesta del servidor.');}
+    else{alert('DIAGNÓSTICO — error: '+e.message);}
     if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
   }
 }
@@ -2669,7 +2713,7 @@ function calShowDay(dateStr){
 
   const conAzucar=dayOrders.filter(o=>(o.impresionUrls||'').trim());
   const azucarBtnWrap=document.getElementById('cal-day-azucardoc-btn');
-  const AZUCAR_DOC_BTN_ACTIVO=false; // en pausa — cámbialo a true cuando se retome esta función
+  const AZUCAR_DOC_BTN_ACTIVO=true;
   if(conAzucar.length&&AZUCAR_DOC_BTN_ACTIVO){
     azucarBtnWrap.innerHTML='<button class="oc-btn" id="azucar-doc-btn" onclick="descargarDocAzucar(\''+dateStr+'\')" style="margin-top:6px;color:#1E40AF;font-weight:700;border-color:#93C5FD">📄 Descargar Word con impresiones del día</button>';
   } else {
