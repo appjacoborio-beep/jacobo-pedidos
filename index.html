@@ -807,7 +807,7 @@ function setAppMode(mode){
     if(floravitaSection)floravitaSection.style.display='none';
   }
 }
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbzVhHzPNRogHMtjy-QJbwVMyfOAfyL3zubus1dRkpTXJYfRtDOSvPJ1Sh9xDXVAMs3gJw/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbx9Z73f1-JqMvWXxleSgv2Q-iQ5ZbzvjRwBiuDbBjXXcUVT6YJLvHY8HlQxZGAhzgImLQ/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -2269,10 +2269,25 @@ function gatherAzucarUrls(dateStr){
 function urlToBase64(url){
   return fetch(url).then(function(res){return res.blob();}).then(function(blob){
     return new Promise(function(resolve,reject){
-      const reader=new FileReader();
-      reader.onloadend=function(){resolve(reader.result.split(',')[1]);};
-      reader.onerror=reject;
-      reader.readAsDataURL(blob);
+      const img=new Image();
+      const objUrl=URL.createObjectURL(blob);
+      img.onload=function(){
+        // Se reduce a un tamaño razonable para el documento (se ve igual de bien,
+        // pero pesa mucho menos y se sube más rápido).
+        const maxDim=700;
+        let w=img.width,h=img.height;
+        if(w>maxDim||h>maxDim){
+          const ratio=Math.min(maxDim/w,maxDim/h);
+          w=Math.round(w*ratio);h=Math.round(h*ratio);
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        URL.revokeObjectURL(objUrl);
+        resolve(canvas.toDataURL('image/jpeg',0.82).split(',')[1]);
+      };
+      img.onerror=function(){URL.revokeObjectURL(objUrl);reject(new Error('No se pudo procesar la imagen'));};
+      img.src=objUrl;
     });
   });
 }
@@ -2283,20 +2298,17 @@ async function descargarDocAzucar(dateStr){
   toast('⏳','Juntando las impresiones de azúcar del día...');
   try{
     const urls=gatherAzucarUrls(dateStr);
+    const _debugVisOrders=prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+    const _debugMatches=_debugVisOrders.filter(o=>o.fechaEntrega===dateStr&&(o.impresionUrls||'').trim());
+    alert('DIAGNÓSTICO —\nSucursal seleccionada (prodSuc): "'+prodSuc+'"\nPedidos de ese día con imagen, YA filtrados por sucursal: '+_debugMatches.length+'\nSucursales de esos pedidos: '+_debugMatches.map(o=>o.sucursal).join(', ')+'\nTotal imágenes encontradas: '+urls.length);
     if(!urls.length){
       toast('❌','No hay impresiones de azúcar guardadas para ese día.');
       if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
       return;
     }
-    const imagenes=[];
-    for(const url of urls){
-      try{
-        const b64=await urlToBase64(url);
-        imagenes.push(b64);
-      }catch(imgErr){
-        // Si una imagen en particular falla al bajar en el navegador, se sigue con las demás.
-      }
-    }
+    // Se bajan todas las imágenes al mismo tiempo (no una por una), así es mucho más rápido.
+    const resultados=await Promise.allSettled(urls.map(function(url){return urlToBase64(url);}));
+    const imagenes=resultados.filter(function(r){return r.status==='fulfilled';}).map(function(r){return r.value;});
     if(!imagenes.length){
       alert('DIAGNÓSTICO — el navegador no pudo descargar ninguna de las '+urls.length+' imagen(es).');
       if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
@@ -2317,7 +2329,16 @@ async function descargarDocAzucar(dateStr){
     }
     if(result&&result.ok){
       toast('✓','Documento listo con '+result.cantidad+' imagen(es) ✅');
-      if(wrap)wrap.innerHTML='<a href="'+result.url+'" target="_blank" rel="noopener" class="oc-btn" style="display:block;text-align:center;margin-top:6px;color:#065F46;font-weight:700;border-color:#A7F3D0;background:#F0FFF4;text-decoration:none">📄 Tócalo para abrir el documento (listo)</a>';
+      if(result.docxBase64){
+        const byteChars=atob(result.docxBase64);
+        const byteNumbers=new Array(byteChars.length);
+        for(let i=0;i<byteChars.length;i++){byteNumbers[i]=byteChars.charCodeAt(i);}
+        const blob=new Blob([new Uint8Array(byteNumbers)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+        const blobUrl=URL.createObjectURL(blob);
+        if(wrap)wrap.innerHTML='<a href="'+blobUrl+'" download="'+(result.nombreArchivo||'Impresiones_de_Azucar.docx')+'" class="oc-btn" style="display:block;text-align:center;margin-top:6px;color:#065F46;font-weight:700;border-color:#A7F3D0;background:#F0FFF4;text-decoration:none">📄 Tócalo para descargar el documento</a>';
+      } else if(wrap){
+        wrap.innerHTML='<a href="'+result.url+'" target="_blank" rel="noopener" class="oc-btn" style="display:block;text-align:center;margin-top:6px;color:#065F46;font-weight:700;border-color:#A7F3D0;background:#F0FFF4;text-decoration:none">📄 Tócalo para abrir el documento (listo)</a>';
+      }
     } else {
       alert('DIAGNÓSTICO — el servidor respondió con error:\n\n'+((result&&result.error)||JSON.stringify(result)));
       if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
