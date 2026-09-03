@@ -2254,7 +2254,8 @@ function bitacoraProductoLine(o){
 }
 function gatherAzucarUrls(dateStr){
   const urls=[];
-  orders.filter(o=>o.fechaEntrega===dateStr).forEach(o=>{
+  const visOrders=prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+  visOrders.filter(o=>o.fechaEntrega===dateStr).forEach(o=>{
     String(o.impresionUrls||'').split('|').forEach(function(entry){
       entry=entry.trim();
       if(!entry)return;
