@@ -2118,20 +2118,41 @@ async function sendOrderInner(){
     if(result.ok){
       clearForm();updateBadge();
       if(appMode==='floravita')setAppMode('jacobo');
-      btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
-      toast('✓',`Folio #${String(folio).padStart(4,'0')} enviado ✅`);
+      const folioStr=String(folio).padStart(4,'0');
+      btn.disabled=true;
+      btn.style.background='#16A34A';
+      btn.style.borderColor='#16A34A';
+      btn.innerHTML='✅ ¡Enviado! Folio #'+folioStr;
+      toast('✓',`Folio #${folioStr} enviado ✅`);
+      setTimeout(function(){
+        btn.disabled=false;
+        btn.style.background='';
+        btn.style.borderColor='';
+        btn.innerHTML='📋 Enviar a Producción';
+      },4000);
     } else {
-      btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
-      toast('❌','Error al guardar: '+(result.error||'intenta de nuevo'));
+      mostrarFalloEnvio(btn,'Error al guardar: '+(result.error||'intenta de nuevo'));
     }
   }catch(e){
-    btn.disabled=false;btn.innerHTML='📋 Enviar a Producción';
     if(e.name==='AbortError'){
-      toast('❌','Tiempo agotado — verifica tu conexión e intenta de nuevo.');
+      mostrarFalloEnvio(btn,'Tiempo agotado — verifica tu conexión e intenta de nuevo.');
     } else {
-      toast('❌','Error al enviar. Verifica tu conexión.');
+      mostrarFalloEnvio(btn,'Error al enviar. Verifica tu conexión.');
     }
   }
+}
+function mostrarFalloEnvio(btn,mensaje){
+  btn.disabled=true;
+  btn.style.background='#DC2626';
+  btn.style.borderColor='#DC2626';
+  btn.innerHTML='❌ No se pudo enviar — intenta de nuevo';
+  toast('❌',mensaje);
+  setTimeout(function(){
+    btn.disabled=false;
+    btn.style.background='';
+    btn.style.borderColor='';
+    btn.innerHTML='📋 Enviar a Producción';
+  },4000);
 }
 
 function clearForm(){
