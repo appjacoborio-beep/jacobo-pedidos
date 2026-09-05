@@ -807,7 +807,7 @@ function setAppMode(mode){
     if(floravitaSection)floravitaSection.style.display='none';
   }
 }
-let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbzB_86Q-mKS93WnfkJiWnBGyIrneTRDv4YK3m8qKcQRMC_v0OaEeMLcmvd6q42Ea1_0mQ/exec';
+let SCRIPT_URL=localStorage.getItem('jacobo_script_url')||'https://script.google.com/macros/s/AKfycbyu7fWQRxk9P9CpWPNhvvg1gkc5Mo9yxzdPdx4rQZPwZkIuTJggdkVeAjzvCBPssfY/exec';
 const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
@@ -2350,16 +2350,7 @@ async function descargarDocAzucar(dateStr){
     }
     if(result&&result.ok){
       toast('✓','Documento listo con '+result.cantidad+' imagen(es) ✅');
-      if(result.docxBase64){
-        const byteChars=atob(result.docxBase64);
-        const byteNumbers=new Array(byteChars.length);
-        for(let i=0;i<byteChars.length;i++){byteNumbers[i]=byteChars.charCodeAt(i);}
-        const blob=new Blob([new Uint8Array(byteNumbers)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-        const blobUrl=URL.createObjectURL(blob);
-        if(wrap)wrap.innerHTML='<a href="'+blobUrl+'" download="'+(result.nombreArchivo||'Impresiones_de_Azucar.docx')+'" class="oc-btn" style="display:block;text-align:center;margin-top:6px;color:#065F46;font-weight:700;border-color:#A7F3D0;background:#F0FFF4;text-decoration:none">📄 Tócalo para descargar el documento</a>';
-      } else if(wrap){
-        wrap.innerHTML='<a href="'+result.url+'" target="_blank" rel="noopener" class="oc-btn" style="display:block;text-align:center;margin-top:6px;color:#065F46;font-weight:700;border-color:#A7F3D0;background:#F0FFF4;text-decoration:none">📄 Tócalo para abrir el documento (listo)</a>';
-      }
+      if(wrap)wrap.innerHTML='<a href="'+result.url+'" target="_blank" rel="noopener" class="oc-btn" style="display:block;text-align:center;margin-top:6px;color:#065F46;font-weight:700;border-color:#A7F3D0;background:#F0FFF4;text-decoration:none">📄 Tócalo para abrir el documento (listo)</a>';
     } else {
       alert('DIAGNÓSTICO — el servidor respondió con error:\n\n'+((result&&result.error)||JSON.stringify(result)));
       if(btn){btn.disabled=false;btn.innerHTML='📄 Descargar Word con impresiones del día';}
