@@ -764,6 +764,9 @@ const ADICIONALES = [
   {id:'fondant-cub',   name:'🧸 Cubierta en Fondant',    price:'a cotizar'},
   {id:'flores',        name:'🌸 Flores',                 price:'a cotizar'},
   {id:'mariposas',     name:'🦋 Mariposas de Cartón',    price:'$120'},
+  {id:'vela-numero',   name:'🕯️ Vela Chispa de Número',  price:'a cotizar'},
+  {id:'vela-letrero-ch', name:'🕯️ Vela Chispa con Letrero (chica)', price:'a cotizar'},
+  {id:'vela-letrero-gr', name:'🕯️ Vela Chispa con Letrero (grande)', price:'a cotizar'},
   {id:'imp-arroz',     name:'Impresión Papel de Arroz', price:'$200/hoja'},
   {id:'macarrones',    name:'Macarrones',               price:'$30/pza', step:12, unit:'docena'},
   {id:'merengues',     name:'Merengues',                price:'$20/pza'},
@@ -2400,13 +2403,16 @@ function openBitacora(dateStr){
     const isDelivered=o.status==='Entregado';
     const info=isDelivered?getStatusInfo(o.historial,'Entregado'):null;
     return '<div style="padding:10px 0;border-bottom:1px solid var(--border)">'+
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
-        '<span style="font-size:0.68rem;font-weight:700;color:var(--navy);background:var(--navy-faint);padding:2px 6px;border-radius:5px">Folio '+String(o.folio).padStart(4,'0')+'</span>'+
-        '<span style="font-size:0.78rem;font-weight:700;color:#BE123C">'+(o.hora||'Sin hora')+'</span>'+
+      '<div style="cursor:pointer" onclick="goToOrderFromBitacora(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+          '<span style="font-size:0.68rem;font-weight:700;color:var(--navy);background:var(--navy-faint);padding:2px 6px;border-radius:5px">Folio '+String(o.folio).padStart(4,'0')+'</span>'+
+          '<span style="font-size:0.78rem;font-weight:700;color:#BE123C">'+(o.hora||'Sin hora')+'</span>'+
+          '<span style="font-size:0.65rem;color:var(--navy);margin-left:auto">Ver detalle ›</span>'+
+        '</div>'+
+        '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:2px">📍 '+eHtml(o.direccion||'Sin dirección')+'</div>'+
+        '<div style="font-size:0.85rem;font-weight:700;margin-bottom:6px">'+eHtml(o.cliente||'')+'</div>'+
+        bitacoraProductoLine(o)+
       '</div>'+
-      '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:2px">📍 '+eHtml(o.direccion||'Sin dirección')+'</div>'+
-      '<div style="font-size:0.85rem;font-weight:700;margin-bottom:6px">'+eHtml(o.cliente||'')+'</div>'+
-      bitacoraProductoLine(o)+
       (isDelivered
         ?'<div style="font-size:0.68rem;color:#065F46;background:#F0FFF4;border:1px solid #A7F3D0;border-radius:6px;padding:5px 8px">✅ Entregado — '+(info?info.quien+' — '+info.fecha:'')+'</div>'
         :'<button class="oc-btn" style="width:100%;color:#B45309;font-weight:700;border-color:#FDE68A;background:#FFFBEB" onclick="markEntregadoFromBitacora(\''+o.folio+'\',\''+jsEsc(o.fechaPedido||'')+'\')">⏳ Pendiente — tocar al entregar</button>')+
