@@ -350,6 +350,14 @@ textarea{resize:vertical;min-height:60px;}
   <div class="form-sheet">
     <div class="section-bar">📋 Datos del Cliente</div>
     <div class="form-inner">
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="field-label">¿Cómo se está tomando este pedido?</label>
+        <div style="display:flex;gap:8px">
+          <div class="entrega-btn selected" id="folio-modo-nota" onclick="setFolioModo('nota')" style="flex:1"><span class="ei">📝</span><div class="en">Tengo nota física</div></div>
+          <div class="entrega-btn" id="folio-modo-tel" onclick="setFolioModo('telefono')" style="flex:1"><span class="ei">📞</span><div class="en">Por teléfono (sin nota)</div></div>
+        </div>
+        <div id="folio-auto-label" style="display:none;font-size:0.65rem;color:#065F46;background:#F0FFF4;border:1px solid #A7F3D0;border-radius:6px;padding:5px 8px;margin-top:6px">✓ Folio generado automáticamente — no se repite con ningún pedido existente</div>
+      </div>
       <div class="form-row">
         <div class="form-group"><label class="field-label">Nombre</label><input type="text" id="c-name" placeholder="Nombre completo"></div>
         <div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="c-phone" placeholder="664 000 0000"></div>
@@ -819,6 +827,26 @@ const CLOUDINARY_CLOUD='doyqpzclb';
 const CLOUDINARY_PRESET='jacobo_pedidos';
 const CLOUDINARY_URL=`https://api.cloudinary.com/v1_1/doyqpzclb/image/upload`;
 let folioCounter=parseInt(localStorage.getItem('jacobo_folio')||'1');
+let folioModo='nota';
+function setFolioModo(modo){
+  folioModo=modo;
+  document.getElementById('folio-modo-nota').classList.toggle('selected',modo==='nota');
+  document.getElementById('folio-modo-tel').classList.toggle('selected',modo==='telefono');
+  const folioInput=document.getElementById('folio-display');
+  const folioAutoLabel=document.getElementById('folio-auto-label');
+  if(modo==='telefono'){
+    folioInput.value=folioCounter;
+    folioInput.readOnly=true;
+    folioInput.style.opacity='0.85';
+    if(folioAutoLabel)folioAutoLabel.style.display='block';
+  } else {
+    folioInput.value='';
+    folioInput.readOnly=false;
+    folioInput.style.opacity='1';
+    if(folioAutoLabel)folioAutoLabel.style.display='none';
+  }
+  clearInvalidMarks();
+}
 // Sync folio from sheet to avoid duplicates across branches
 async function syncFolioCounter(){
   try{
@@ -2060,6 +2088,18 @@ async function sendOrder(){
     sendingOrder=false;
   }
 }
+function buscarPedidoPendienteSimilar(nombre,telefono,total){
+  const nombreNorm=String(nombre||'').trim().toLowerCase();
+  const telNorm=String(telefono||'').replace(/\D/g,'');
+  if(!nombreNorm||!telNorm)return null;
+  return orders.find(function(o){
+    if(String(o.status)==='Entregado')return false;
+    if(String(o.cliente||'').trim().toLowerCase()!==nombreNorm)return false;
+    if(String(o.telefono||'').replace(/\D/g,'')!==telNorm)return false;
+    if(Math.abs((parseFloat(o.total)||0)-total)>0.001)return false;
+    return true;
+  })||null;
+}
 async function sendOrderInner(){
   // ── Validaciones obligatorias ──
   const folioVal=document.getElementById('folio-display').value.trim();
@@ -2092,6 +2132,16 @@ async function sendOrderInner(){
   const total=parseFloat(document.getElementById('f-total').value)||0;
   if(!total||total<=0){toast('⚠️','Ingresa el precio total del pedido');markInvalid(document.getElementById('f-total'));return;}
 
+  // Revisión inteligente: si ya existe un pedido de este mismo cliente, mismo
+  // teléfono y mismo total que todavía NO se ha entregado, es probable que sea
+  // el mismo pedido capturado de más (aunque haya pasado tiempo entre uno y
+  // otro) — se avisa UNA vez, antes de crear nada, en vez de dejarlo pasar.
+  const parecido=buscarPedidoPendienteSimilar(name,phone,total);
+  if(parecido){
+    const seguir=confirm('⚠️ Ya existe un pedido pendiente de '+name+' con el mismo monto ($'+total.toLocaleString('es-MX')+'):\n\nFolio #'+String(parecido.folio).padStart(4,'0')+' — para el '+(parecido.fechaEntrega||'sin fecha')+'\n\n¿Es un pedido genuinamente nuevo? Dale Aceptar para continuar.\nSi crees que ya está capturado, dale Cancelar y revísalo en el calendario.');
+    if(!seguir)return;
+  }
+
   const anticipoVal=parseFloat(document.getElementById('f-anticipo').value)||0;
   if(anticipoVal>0&&!selectedMetodoAnticipo){toast('⚠️','Indica si el anticipo fue en efectivo o tarjeta');markInvalid(document.getElementById('metodo-anticipo-grid'),true);return;}
 
@@ -2123,7 +2173,12 @@ async function sendOrderInner(){
     clearTimeout(timeout);
     const result=await res.json();
     if(result.ok){
+      if(folioModo==='telefono'){
+        folioCounter++;
+        localStorage.setItem('jacobo_folio',String(folioCounter));
+      }
       clearForm();updateBadge();
+      setFolioModo('nota');
       if(appMode==='floravita')setAppMode('jacobo');
       const folioStr=String(folio).padStart(4,'0');
       btn.disabled=true;
