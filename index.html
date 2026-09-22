@@ -2168,7 +2168,7 @@ async function sendOrderInner(){
     // Split: send data via GET (reliable CORS), image via separate POST
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),15000); // 15 sec timeout
+    const timeout=setTimeout(()=>controller.abort(),30000); // 30 seg — margen extra por el tamaño de la hoja
     const res=await fetch(url,{signal:controller.signal});
     clearTimeout(timeout);
     const result=await res.json();
