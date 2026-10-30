@@ -343,7 +343,7 @@ textarea{resize:vertical;min-height:60px;}
         <div onclick="event.stopPropagation();setAppMode('floravita')" style="padding:10px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;color:var(--text);border-top:1px solid var(--border)">🌸 Floravita</div>
       </div>
     </div>
-    <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"></div>
+    <div class="folio-box"><div class="folio-label">Folio #</div><input type="number" id="folio-display" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:white;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,0.5);width:80px;text-align:center;outline:none" placeholder="001" min="1"><button type="button" id="folio-gen-btn" onclick="generarFolioManual()" style="display:block;margin:6px 0 0 auto;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.55);border-radius:999px;padding:4px 11px;font-size:0.68rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">🔢 Generar folio</button></div>
   </div>
 
   <!-- DATOS CLIENTE -->
@@ -857,6 +857,15 @@ async function syncFolioCounter(){
       localStorage.setItem('jacobo_folio',String(folioCounter));
     }
   }catch(e){}
+}
+// Botón "Generar folio": para cuando se terminan las notas físicas. Reutiliza el modo "sin nota" ya existente.
+async function generarFolioManual(){
+  var btn=document.getElementById('folio-gen-btn');
+  if(btn)btn.disabled=true;
+  try{await syncFolioCounter();}catch(e){}
+  setFolioModo('telefono');
+  if(btn)btn.disabled=false;
+  toast('🔢','Folio generado: '+folioCounter);
 }
 let currentFilter='all',sucView='mine',prodSuc='',orders=[],dateFilter='hoy',expandedFolios=new Set();
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
@@ -3435,7 +3444,7 @@ function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList
     autoRefreshTimer=setInterval(function(){
       var editOpen=document.getElementById('edit-modal')&&document.getElementById('edit-modal').classList.contains('open');
       if(document.visibilityState==='visible'&&prodSuc&&!editOpen)loadOrders();
-    },90000); // refresco automático cada 90s para evitar pantallas desactualizadas
+    },300000); // refresco automático cada 5 min (antes 90 s); el botón ↻ Actualizar sigue disponible
   }
 }
 function toast(icon,msg){const ti=document.getElementById('toast-icon');const tm=document.getElementById('toast-msg');const t=document.getElementById('toast');if(!ti||!tm||!t)return;ti.textContent=icon;tm.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
