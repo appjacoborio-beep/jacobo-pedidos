@@ -858,17 +858,30 @@ async function syncFolioCounter(){
     }
   }catch(e){}
 }
-// Botón "Generar folio": para cuando se terminan las notas físicas. Reutiliza el modo "sin nota" ya existente.
+// Botón "Generar folio": para cuando se terminan las notas físicas.
+// Usa un rango propio y corto (4001–4999) para no revolverse con los folios de las notas impresas
+// ni con folios mal capturados de la hoja (ej. 23423). Toma el más alto de ese rango y suma 1.
 async function generarFolioManual(){
   var btn=document.getElementById('folio-gen-btn');
-  if(btn)btn.disabled=true;
-  try{await syncFolioCounter();}catch(e){}
-  setFolioModo('telefono');
-  // Solo visual: la selección de arriba se queda en "Tengo nota física" (el folio sigue generado y bloqueado)
-  document.getElementById('folio-modo-nota').classList.add('selected');
-  document.getElementById('folio-modo-tel').classList.remove('selected');
-  if(btn)btn.disabled=false;
-  toast('🔢','Folio generado: '+folioCounter);
+  var txtOriginal=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Generando…';}
+  try{
+    var res=await fetch(SCRIPT_URL+'?t='+Date.now());
+    var data=await res.json();
+    var max=4000;
+    (Array.isArray(data)?data:[]).forEach(function(r){
+      var n=parseInt(r['Folio'],10);
+      if(!isNaN(n)&&n>=4000&&n<=4999&&n>max)max=n;
+    });
+    var nuevo=max>=4999?4001:max+1;
+    setFolioModo('nota');
+    document.getElementById('folio-display').value=nuevo;
+    var lbl=document.getElementById('folio-auto-label');if(lbl)lbl.style.display='block';
+    toast('🔢','Folio generado: '+String(nuevo).padStart(4,'0'));
+  }catch(e){
+    toast('⚠️','No se pudo generar el folio. Revisa la conexión e intenta de nuevo');
+  }
+  if(btn){btn.disabled=false;btn.textContent=txtOriginal;}
 }
 let currentFilter='all',sucView='mine',prodSuc='',orders=[],dateFilter='hoy',expandedFolios=new Set();
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
