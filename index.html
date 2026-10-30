@@ -864,6 +864,9 @@ async function generarFolioManual(){
   if(btn)btn.disabled=true;
   try{await syncFolioCounter();}catch(e){}
   setFolioModo('telefono');
+  // Solo visual: la selección de arriba se queda en "Tengo nota física" (el folio sigue generado y bloqueado)
+  document.getElementById('folio-modo-nota').classList.add('selected');
+  document.getElementById('folio-modo-tel').classList.remove('selected');
   if(btn)btn.disabled=false;
   toast('🔢','Folio generado: '+folioCounter);
 }
