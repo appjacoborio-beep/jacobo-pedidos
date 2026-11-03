@@ -360,7 +360,11 @@ textarea{resize:vertical;min-height:60px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label class="field-label">Nombre</label><input type="text" id="c-name" placeholder="Nombre completo"></div>
-        <div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="c-phone" placeholder="664 000 0000"></div>
+        <div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="c-phone" placeholder="664 000 0000">
+          <button type="button" class="tel-wa-btn" id="tel-wa-principal" onclick="abrirWhatsApp(document.getElementById('c-phone'))" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:6px;padding:7px 10px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">💬 Enviar WhatsApp</button>
+          <div id="tel-extra-wrap"></div>
+          <button type="button" id="tel-add-btn" onclick="agregarTelefonoExtra()" style="margin-top:6px;background:none;border:1.5px dashed var(--border);border-radius:8px;padding:6px 10px;font-size:0.72rem;font-weight:600;color:var(--navy);cursor:pointer;font-family:'DM Sans',sans-serif">＋ Agregar otro teléfono</button>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="field-label">Fecha de entrega</label><input type="date" id="c-date"></div>
@@ -2113,6 +2117,43 @@ async function sendOrder(){
     sendingOrder=false;
   }
 }
+// ── WhatsApp y teléfonos adicionales ──
+// Mensaje inicial que se abre en WhatsApp (el colaborador/chofer lo envía y después continúa la conversación).
+const WA_SALUDO='¡Buen día! 👋 Le saludamos de parte de Pastelería y Panadería Jacobo 🎂. Nos comunicamos por su pedido; en un momento le escribe un colaborador.';
+function waNumero(tel){
+  var d=String(tel||'').replace(/\D/g,'');
+  if(d.length===10)return '52'+d;                       // número de México a 10 dígitos
+  if(d.length===13&&d.indexOf('521')===0)return '52'+d.slice(3);
+  if(d.length===12&&d.indexOf('52')===0)return d;
+  if(d.length===11&&d.charAt(0)==='1')return d;         // EE. UU./Canadá con 1
+  return d.length>=11?d:'';
+}
+function abrirWhatsApp(inputEl){
+  var num=waNumero(inputEl?inputEl.value:'');
+  if(!num){toast('⚠️','Escribe un teléfono válido de 10 dígitos para enviar WhatsApp');if(inputEl)markInvalid(inputEl);return;}
+  var nom=(document.getElementById('c-name').value||'').trim().split(/\s+/)[0];
+  var msg=nom?WA_SALUDO.replace('¡Buen día!','¡Buen día, '+nom+'!'):WA_SALUDO;
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+}
+function agregarTelefonoExtra(){
+  var wrap=document.getElementById('tel-extra-wrap');if(!wrap)return;
+  var row=document.createElement('div');
+  row.className='tel-extra-row';
+  row.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px';
+  row.innerHTML='<input type="tel" class="tel-extra-input" placeholder="Otro teléfono" style="flex:1;min-width:0">'
+    +'<button type="button" onclick="abrirWhatsApp(this.parentNode.querySelector(\'input\'))" title="Enviar WhatsApp" style="flex-shrink:0;width:34px;height:34px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:0.9rem;cursor:pointer">💬</button>'
+    +'<button type="button" onclick="this.parentNode.remove()" title="Quitar" style="flex-shrink:0;width:34px;height:34px;background:#FEE2E2;color:var(--red);border:none;border-radius:8px;font-size:0.85rem;cursor:pointer">✕</button>';
+  wrap.appendChild(row);
+  row.querySelector('input').focus();
+}
+function telefonosCompletos(){
+  var lista=[document.getElementById('c-phone').value.trim()];
+  document.querySelectorAll('.tel-extra-input').forEach(function(i){var v=i.value.trim();if(v)lista.push(v);});
+  return lista.filter(Boolean).join(' / ');
+}
+function limpiarTelefonosExtra(){
+  var wrap=document.getElementById('tel-extra-wrap');if(wrap)wrap.innerHTML='';
+}
 function buscarPedidoPendienteSimilar(nombre,telefono,total){
   const nombreNorm=String(nombre||'').trim().toLowerCase();
   const telNorm=String(telefono||'').replace(/\D/g,'');
@@ -2120,7 +2161,7 @@ function buscarPedidoPendienteSimilar(nombre,telefono,total){
   return orders.find(function(o){
     if(String(o.status)==='Entregado')return false;
     if(String(o.cliente||'').trim().toLowerCase()!==nombreNorm)return false;
-    if(String(o.telefono||'').replace(/\D/g,'')!==telNorm)return false;
+    if(String(o.telefono||'').split('/')[0].replace(/\D/g,'')!==telNorm)return false;
     if(Math.abs((parseFloat(o.total)||0)-total)>0.001)return false;
     return true;
   })||null;
@@ -2188,7 +2229,7 @@ async function sendOrderInner(){
     :cart.map((item,i)=>`[${i+1}] ${item.name} ×${item.qty}${item.details?' — '+item.details.replace(/\n/g,' | ').replace(/\s+$/,''):''}` ).join(' || ');
   var allPhotos=cart.flatMap(function(i,idx){var ph=Array.isArray(i.photos)?i.photos:(i.photo&&i.photo.startsWith('http')?[i.photo]:[]);return ph.map(function(u){return idx+'::'+u;});});var firstPhoto=(allPhotos[0]||'').split('::').pop()||'';
   var allAzucar=cart.flatMap(function(i,idx){return Array.isArray(i.azucarPhotos)?i.azucarPhotos.map(function(u){return idx+'::'+u;}):[];});
-  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:document.getElementById('c-phone').value.trim(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,metodoAnticipo:selectedMetodoAnticipo,cambioAnticipo:document.getElementById('cambio-anticipo-check').checked?(parseFloat(document.getElementById('cambio-anticipo-monto').value)||0):0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto,imagenAzucar:allAzucar.join('|')};
+  const payload={folio,fechaPedido:new Date().toLocaleString('es-MX'),cliente:name,telefono:telefonosCompletos(),tipoEntrega:selectedEntrega,sucursal:selectedSuc||'',direccion:selectedEntrega==='domicilio'?document.getElementById('c-address').value.trim():'',fechaEntrega:document.getElementById('c-date').value,hora:`${document.getElementById('c-hour').value}:${document.getElementById('c-min').value} ${document.getElementById('c-ampm').value}`,productos:productsSummary,adicionales:getAdic(),notas:'',total:parseFloat(document.getElementById('f-total').value)||0,anticipo:parseFloat(document.getElementById('f-anticipo').value)||0,metodoAnticipo:selectedMetodoAnticipo,cambioAnticipo:document.getElementById('cambio-anticipo-check').checked?(parseFloat(document.getElementById('cambio-anticipo-monto').value)||0):0,restante:parseFloat(document.getElementById('f-restante').value)||0,colaborador:document.getElementById('c-staff').value.trim(),imagen:allPhotos.join('|'),imagenUrl:firstPhoto,imagenAzucar:allAzucar.join('|')};
   try{
     // Split: send data via GET (reliable CORS), image via separate POST
     const url=SCRIPT_URL+'?data='+encodeURIComponent(JSON.stringify(payload));
@@ -2257,6 +2298,7 @@ function clearForm(){
   document.getElementById('cambio-anticipo-monto').style.display='none';
   document.getElementById('cambio-anticipo-monto').value='';
   document.getElementById('folio-display').value='';
+  limpiarTelefonosExtra();
 }
 
 // ══ PRODUCTION ══
