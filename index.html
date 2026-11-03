@@ -2138,7 +2138,7 @@ function abrirWhatsAppPedido(btn){
   if(!num){toast('⚠️','Teléfono no válido para WhatsApp');return;}
   var nom=(btn.getAttribute('data-cliente')||'').trim().split(/\s+/)[0];
   var fol='#'+String(btn.getAttribute('data-folio')||'').padStart(4,'0');
-  var msg='¡Buen día'+(nom?', '+nom:'')+'! 👋 Le saludamos de parte de Pastelería y Panadería Jacobo 🎂. Nos comunicamos por su pedido con folio '+fol+'; en un momento le escribe un colaborador.';
+  var msg='¡Buen día'+(nom?', '+nom:'')+'! Le saludamos de parte de Pastelería y Panadería Jacobo. Nos comunicamos referente a su pedido con folio '+fol+'.';
   window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
 }
 function agregarTelefonoExtra(){
