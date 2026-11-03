@@ -361,7 +361,6 @@ textarea{resize:vertical;min-height:60px;}
       <div class="form-row">
         <div class="form-group"><label class="field-label">Nombre</label><input type="text" id="c-name" placeholder="Nombre completo"></div>
         <div class="form-group"><label class="field-label">Teléfono</label><input type="tel" id="c-phone" placeholder="664 000 0000">
-          <button type="button" class="tel-wa-btn" id="tel-wa-principal" onclick="abrirWhatsApp(document.getElementById('c-phone'))" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:6px;padding:7px 10px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">💬 Enviar WhatsApp</button>
           <div id="tel-extra-wrap"></div>
           <button type="button" id="tel-add-btn" onclick="agregarTelefonoExtra()" style="margin-top:6px;background:none;border:1.5px dashed var(--border);border-radius:8px;padding:6px 10px;font-size:0.72rem;font-weight:600;color:var(--navy);cursor:pointer;font-family:'DM Sans',sans-serif">＋ Agregar otro teléfono</button>
         </div>
@@ -2118,8 +2117,6 @@ async function sendOrder(){
   }
 }
 // ── WhatsApp y teléfonos adicionales ──
-// Mensaje inicial que se abre en WhatsApp (el colaborador/chofer lo envía y después continúa la conversación).
-const WA_SALUDO='¡Buen día! 👋 Le saludamos de parte de Pastelería y Panadería Jacobo 🎂. Nos comunicamos por su pedido; en un momento le escribe un colaborador.';
 function waNumero(tel){
   var d=String(tel||'').replace(/\D/g,'');
   if(d.length===10)return '52'+d;                       // número de México a 10 dígitos
@@ -2128,11 +2125,20 @@ function waNumero(tel){
   if(d.length===11&&d.charAt(0)==='1')return d;         // EE. UU./Canadá con 1
   return d.length>=11?d:'';
 }
-function abrirWhatsApp(inputEl){
-  var num=waNumero(inputEl?inputEl.value:'');
-  if(!num){toast('⚠️','Escribe un teléfono válido de 10 dígitos para enviar WhatsApp');if(inputEl)markInvalid(inputEl);return;}
-  var nom=(document.getElementById('c-name').value||'').trim().split(/\s+/)[0];
-  var msg=nom?WA_SALUDO.replace('¡Buen día!','¡Buen día, '+nom+'!'):WA_SALUDO;
+// WhatsApp desde la nota ya capturada (un botón por cada teléfono guardado en el pedido)
+function waBotonesPedido(o){
+  var tels=String(o.telefono||'').split('/').map(function(t){return t.trim();}).filter(function(t){return waNumero(t);});
+  if(!tels.length)return '';
+  return '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">'+tels.map(function(t){
+    return '<button type="button" class="wa-card-btn" data-tel="'+eAttr(t)+'" data-cliente="'+eAttr(o.cliente)+'" data-folio="'+eAttr(o.folio)+'" onclick="abrirWhatsAppPedido(this)" style="background:#25D366;color:#fff;border:none;border-radius:999px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif">💬 WhatsApp '+eAttr(t)+'</button>';
+  }).join('')+'</div>';
+}
+function abrirWhatsAppPedido(btn){
+  var num=waNumero(btn.getAttribute('data-tel'));
+  if(!num){toast('⚠️','Teléfono no válido para WhatsApp');return;}
+  var nom=(btn.getAttribute('data-cliente')||'').trim().split(/\s+/)[0];
+  var fol='#'+String(btn.getAttribute('data-folio')||'').padStart(4,'0');
+  var msg='¡Buen día'+(nom?', '+nom:'')+'! 👋 Le saludamos de parte de Pastelería y Panadería Jacobo 🎂. Nos comunicamos por su pedido con folio '+fol+'; en un momento le escribe un colaborador.';
   window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
 }
 function agregarTelefonoExtra(){
@@ -2141,7 +2147,6 @@ function agregarTelefonoExtra(){
   row.className='tel-extra-row';
   row.style.cssText='display:flex;gap:6px;align-items:center;margin-top:6px';
   row.innerHTML='<input type="tel" class="tel-extra-input" placeholder="Otro teléfono" style="flex:1;min-width:0">'
-    +'<button type="button" onclick="abrirWhatsApp(this.parentNode.querySelector(\'input\'))" title="Enviar WhatsApp" style="flex-shrink:0;width:34px;height:34px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:0.9rem;cursor:pointer">💬</button>'
     +'<button type="button" onclick="this.parentNode.remove()" title="Quitar" style="flex-shrink:0;width:34px;height:34px;background:#FEE2E2;color:var(--red);border:none;border-radius:8px;font-size:0.85rem;cursor:pointer">✕</button>';
   wrap.appendChild(row);
   row.querySelector('input').focus();
@@ -3107,7 +3112,7 @@ function renderOrdersList(visOrders){
     const isRealizado=o.status==='Listo';
     return`<div class="order-card${isToday?' urgente':''}${isDelivered?' delivered':''}${isRealizado?' realizado':''}">
       ${legacyPhotos.length?'<div class="oc-imgs">'+legacyPhotos.map(function(u,i){return '<img class="oc-img-thumb" src="'+u+'" onclick="openImgModal(this.src,\'Foto '+(i+1)+'\')" onerror="this.style.display=\'none\'" alt="Foto">';}).join('')+'</div>':''}
-      <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div></div></div>
+      <div class="oc-header"><div><div class="oc-folio">Folio ${folio}${showTag?`<span class="oc-suc-tag">${o.sucursal}</span>`:''}</div><div class="oc-client">${o.cliente}${o.telefono?' · '+o.telefono:''}</div>${waBotonesPedido(o)}</div></div>
       <div class="oc-body">
         ${(function(){var prods=o.productos||"";var adic=o.adicionales||"";var text=(prods+" "+adic).toLowerCase();var badges='';
           if(text.includes("fondant")){var m=prods.match(/(?:🎭|🧸) Fondant: ([^\n|]+)/);badges+='<div class="oc-fondant-badge">🧸 FONDANT!'+(m?' · '+m[1].trim():'')+'</div>';}
