@@ -3708,7 +3708,6 @@ function imprimirCorteDomicilios(dateStr){
     const info=getStatusInfo(o.historial,'Entregado');
     return{o:o,min:horaEntregaMin(info&&info.fecha),quien:info?info.quien:'Sin nombre',monto:parseFloat(o.montoRestanteRecibido)||0,metodo:o.metodoRestante||'',cambio:parseFloat(o.cambioRestante)||0};
   }).sort(function(a,b){return(a.min==null?9999:a.min)-(b.min==null?9999:b.min);});
-  if(!cobros.length){toast('ℹ️','No hay cobros de domicilios registrados en este día');return;}
   const turnos=[
     {n:'1er turno · 7:00 am – 3:00 pm',f:function(c){return c.min!=null&&c.min>=420&&c.min<900;}},
     {n:'2do turno · 3:00 pm – 9:00 pm',f:function(c){return c.min!=null&&c.min>=900&&c.min<1260;}},
@@ -3748,7 +3747,7 @@ function imprimirCorteDomicilios(dateStr){
     '.f{margin-top:18px;font-size:11px}.f div{border-bottom:1px solid #000;height:22px;margin:4px 0 12px}'+
     '@media print{.np{display:none!important}}</style></head><body>'+
     '<h1>PASTELERÍA Y PANADERÍA JACOBO</h1><div class="c">CORTE DE DOMICILIOS<br>'+dateLabel+(prodSuc!=='Todas'?' · '+eHtml(prodSuc):'')+'<br>Cobros al entregar ('+cobros.length+')</div>'+
-    secciones+
+    (cobros.length?'':'<div class="s" style="text-align:center;margin:10px 0">Sin cobros de entrega registrados este día.<br>(Solo cuenta el restante cobrado al marcar Entregado; los anticipos no entran.)</div>')+secciones+
     '<div class="g"><div class="tn" style="margin-top:0;border-top:none">TOTAL DEL DÍA</div>'+bloque(cobros)+'</div>'+
     (cambioTotal>0?'<div class="n">Cambio dado de caja general: '+$(cambioTotal)+' (no es faltante).</div>':'')+
     '<div class="f">Efectivo contado:<div></div>Diferencia:<div></div>Revisó:<div></div></div>'+
