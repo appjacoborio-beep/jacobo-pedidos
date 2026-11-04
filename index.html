@@ -2763,6 +2763,7 @@ function renderResumenDia(){
         </div>
         <div style="font-size:0.6rem;color:var(--muted);margin-top:2px">Explica por qué la caja general puede verse "corta" ese monto — no es un faltante.</div>
       </div>`:''}
+      ${r.domiciliosLength?`<button class="oc-btn" onclick="imprimirCorteDomicilios('${calSelectedDate}')" style="margin-top:8px;width:100%;color:#BE123C;font-weight:700;border-color:#FDA4AF">🧾 Corte de domicilios (ticket por turno)</button>`:''}
     </div>`;
 }
 function desbloquearResumenDia(){
@@ -3691,6 +3692,70 @@ function imprimirListaDia(dateStr,soloDomicilio){
     '</div>'+
     '</body></html>'
   );
+  win.document.close();
+}
+// Corte de domicilios: lo cobrado por los choferes al entregar, dividido por turno (para cuadrar contra el efectivo físico).
+function horaEntregaMin(fecha){
+  var m=/(\d{1,2}):(\d{2})(?::\d{2})?\s*(?:([ap])\.?\s*m)?/i.exec(String(fecha||''));
+  if(!m)return null;
+  var h=parseInt(m[1],10),mi=parseInt(m[2],10);
+  if(m[3]){h=h%12+(m[3].toLowerCase()==='p'?12:0);}
+  return h*60+mi;
+}
+function imprimirCorteDomicilios(dateStr){
+  const vis=prodSuc==='Todas'?orders:orders.filter(o=>o.sucursal.trim().toLowerCase()===prodSuc.trim().toLowerCase());
+  const cobros=vis.filter(o=>o.tipoEntrega==='domicilio'&&o.fechaRealEntrega===dateStr&&(parseFloat(o.montoRestanteRecibido)||0)>0).map(function(o){
+    const info=getStatusInfo(o.historial,'Entregado');
+    return{o:o,min:horaEntregaMin(info&&info.fecha),quien:info?info.quien:'Sin nombre',monto:parseFloat(o.montoRestanteRecibido)||0,metodo:o.metodoRestante||'',cambio:parseFloat(o.cambioRestante)||0};
+  }).sort(function(a,b){return(a.min==null?9999:a.min)-(b.min==null?9999:b.min);});
+  if(!cobros.length){toast('ℹ️','No hay cobros de domicilios registrados en este día');return;}
+  const turnos=[
+    {n:'1er turno · 7:00 am – 3:00 pm',f:function(c){return c.min!=null&&c.min>=420&&c.min<900;}},
+    {n:'2do turno · 3:00 pm – 9:00 pm',f:function(c){return c.min!=null&&c.min>=900&&c.min<1260;}},
+    {n:'Fuera de turno / sin hora',f:function(c){return c.min==null||c.min<420||c.min>=1260;}}
+  ];
+  const $=function(n){return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});};
+  const hora=function(m){if(m==null)return '--:--';var h=Math.floor(m/60),mi=m%60;return ((h%12)||12)+':'+String(mi).padStart(2,'0')+(h>=12?' pm':' am');};
+  const suma=function(l,met){return l.filter(function(c){return c.metodo===met;}).reduce(function(s,c){return s+c.monto;},0);};
+  const bloque=function(l){
+    return '<div class="r"><span>Efectivo</span><b>'+$(suma(l,'Efectivo'))+'</b></div>'+
+           '<div class="r"><span>Tarjeta</span><b>'+$(suma(l,'Tarjeta'))+'</b></div>'+
+           '<div class="r t"><span>Total</span><b>'+$(l.reduce(function(s,c){return s+c.monto;},0))+'</b></div>';
+  };
+  const secciones=turnos.map(function(t){
+    const l=cobros.filter(t.f);
+    if(!l.length&&t.n.indexOf('Fuera')===0)return '';
+    const filas=l.map(function(c){
+      return '<div class="it"><div class="r"><span>#'+String(c.o.folio).padStart(4,'0')+' '+eHtml(c.o.cliente||'')+'</span><b>'+$(c.monto)+'</b></div>'+
+             '<div class="s">'+hora(c.min)+' · '+eHtml(c.quien)+' · '+eHtml(c.metodo||'—')+(c.cambio>0?' · cambio '+$(c.cambio):'')+'</div></div>';
+    }).join('')||'<div class="s" style="text-align:center;padding:6px 0">Sin cobros</div>';
+    return '<div class="tn">'+t.n+'</div>'+filas+'<div class="sub">'+bloque(l)+'</div>';
+  }).join('');
+  const cambioTotal=cobros.reduce(function(s,c){return s+c.cambio;},0);
+  const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const p=dateStr.split('-');
+  const dateLabel=parseInt(p[2])+' '+months[parseInt(p[1])-1]+' '+p[0];
+  const win=window.open('','_blank','width=420,height=760');
+  if(!win){toast('⚠️','El navegador bloqueó la ventana. Permite ventanas emergentes e intenta de nuevo');return;}
+  win.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Corte domicilios '+dateLabel+'</title>'+
+    '<style>@page{margin:6mm}body{font-family:"Courier New",monospace;font-size:12px;color:#000;max-width:320px;margin:0 auto;padding:10px 8px 70px}'+
+    'h1{font-size:15px;text-align:center;margin:0 0 2px}.c{text-align:center;font-size:11px;margin-bottom:8px}'+
+    '.r{display:flex;justify-content:space-between;gap:8px}.s{font-size:10.5px;color:#444;margin:0 0 5px}.it{border-bottom:1px dotted #999;padding:3px 0}'+
+    '.tn{font-weight:bold;border-top:2px solid #000;border-bottom:1px solid #000;margin:12px 0 4px;padding:3px 0;font-size:11.5px}'+
+    '.sub{margin-top:5px}.t{font-weight:bold;border-top:1px solid #000;margin-top:2px;padding-top:2px}'+
+    '.g{border:2px solid #000;padding:6px;margin-top:14px}.g .t{font-size:14px}.n{font-size:10px;margin-top:6px}'+
+    '.f{margin-top:18px;font-size:11px}.f div{border-bottom:1px solid #000;height:22px;margin:4px 0 12px}'+
+    '@media print{.np{display:none!important}}</style></head><body>'+
+    '<h1>PASTELERÍA Y PANADERÍA JACOBO</h1><div class="c">CORTE DE DOMICILIOS<br>'+dateLabel+(prodSuc!=='Todas'?' · '+eHtml(prodSuc):'')+'<br>Cobros al entregar ('+cobros.length+')</div>'+
+    secciones+
+    '<div class="g"><div class="tn" style="margin-top:0;border-top:none">TOTAL DEL DÍA</div>'+bloque(cobros)+'</div>'+
+    (cambioTotal>0?'<div class="n">Cambio dado de caja general: '+$(cambioTotal)+' (no es faltante).</div>':'')+
+    '<div class="f">Efectivo contado:<div></div>Diferencia:<div></div>Revisó:<div></div></div>'+
+    '<div class="np" style="position:fixed;bottom:12px;left:0;right:0;display:flex;gap:10px;justify-content:center">'+
+      '<button onclick="window.print()" style="background:#1B2A6B;color:#fff;border:none;padding:10px 26px;border-radius:6px;font-size:14px;font-weight:600">🖨️ Imprimir</button>'+
+      '<button onclick="window.close()" style="background:#eee;color:#333;border:none;padding:10px 18px;border-radius:6px;font-size:14px">Cerrar</button></div>'+
+    '</body></html>');
   win.document.close();
 }
 // Hoja de referencia: una hoja carta por imagen, con la foto grande y renglones para anotar a mano.
