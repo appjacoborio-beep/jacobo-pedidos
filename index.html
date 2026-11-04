@@ -309,6 +309,21 @@ textarea{resize:vertical;min-height:60px;}
 .modal-actions{display:flex;gap:6px;margin-top:0.8rem;}
 .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
+.guia-oculto{display:none!important}
+#guia-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+#guia-bar .guia-sw{display:flex;align-items:center;gap:6px;font-size:0.72rem;font-weight:700;color:var(--navy);cursor:pointer}
+#guia-bar .guia-sw input{width:auto}
+#guia-prog{flex:1;min-width:150px}
+#guia-prog .guia-t{font-size:0.72rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+#guia-prog .guia-dots{display:flex;gap:4px}
+#guia-prog .guia-dots i{flex:1;height:5px;border-radius:3px;background:var(--border)}
+#guia-prog .guia-dots i.on{background:var(--navy)}
+#guia-nav{position:sticky;bottom:-1px;display:flex;gap:8px;background:var(--card);border-top:1px solid var(--border);padding:10px 0 4px;margin-top:12px;z-index:5}
+#guia-nav .btn-primary,#guia-nav .btn-ghost{flex:1;padding:11px}
+#guia-resumen{background:var(--navy-faint);border:1px solid var(--border);border-radius:10px;padding:0.7rem;margin-bottom:0.75rem}
+#guia-resumen .guia-fila{font-size:0.78rem;padding:4px 0;border-bottom:1px dashed var(--border);line-height:1.35}
+#guia-resumen .guia-fila:last-child{border-bottom:none}
+#guia-resumen .guia-fila.falta{color:var(--red);font-weight:700}
 .spinner-wrap{display:flex;align-items:center;justify-content:center;gap:7px;padding:2rem;color:var(--muted);font-size:0.82rem;}
 .toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--navy);color:white;padding:9px 13px;border-radius:var(--radius);font-size:0.8rem;font-weight:500;display:flex;align-items:center;gap:7px;box-shadow:0 6px 24px rgba(0,0,0,0.22);z-index:999;transform:translateY(70px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
 .toast.show{transform:translateY(0);opacity:1;}
@@ -3138,6 +3153,7 @@ function renderOrdersList(visOrders){
         <button class="oc-btn" onclick="printNota('${o.folio}','${jsEsc(o.fechaPedido||'')}')" style="color:#1B2A6B">🖨️ Imprimir</button>
         <button class="oc-btn danger" onclick="delOrder('${o.folio}','${jsEsc(o.fechaPedido||'')}')">🗑</button>
       </div>
+      ${(legacyPhotos.length||Object.keys(photosByIdx).length)?`<div class="oc-footer" style="border-top:none;padding-top:0"><button class="oc-btn" onclick="printReferencia('${o.folio}','${jsEsc(o.fechaPedido||'')}')" style="color:#1B2A6B">🖼️ Imprimir imagen de referencia</button></div>`:''}
     </div>`;
   }).join('');
 }
@@ -3512,6 +3528,118 @@ function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList
 }
 function toast(icon,msg){const ti=document.getElementById('toast-icon');const tm=document.getElementById('toast-msg');const t=document.getElementById('toast');if(!ti||!tm||!t)return;ti.textContent=icon;tm.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
+// ── Modo guiado del constructor de productos ──
+// Solo presentación: muestra las preguntas del constructor de una en una y un resumen al final.
+// Usa los mismos botones, la misma lógica y la misma nota. Es opcional: se activa con el interruptor.
+var guiaOn=false; // siempre abre en la vista de siempre; el modo guiado se activa con el interruptor
+var guiaPaso=0,guiaPaginas=[];
+function guiaQ(n,sel){var r=Array.prototype.slice.call(n.querySelectorAll(sel));if(n.matches&&n.matches(sel))r.unshift(n);return r;}
+function guiaVisible(el){return el.getClientRects().length>0;}
+function guiaConstruir(body){
+  var pages=[],pend=[];
+  function nueva(t,extra){var p={titulo:t,nodos:pend.splice(0),resumen:false};if(extra)for(var k in extra)p[k]=extra[k];pages.push(p);return p;}
+  function recorrer(el,cur){
+    Array.prototype.slice.call(el.children).forEach(function(c){
+      if(!guiaVisible(c))return;
+      if(c.classList.contains('step-header')){
+        var t=c.querySelector('.step-title');
+        cur=nueva(t?t.textContent.trim():'Paso');cur.nodos.push(c);return;
+      }
+      if(c.querySelector('.step-header')){cur=recorrer(c,cur);return;}
+      if(cur)cur.nodos.push(c);else pend.push(c);
+    });
+    return cur;
+  }
+  Array.prototype.slice.call(body.children).forEach(function(c){
+    if(!guiaVisible(c))return;
+    if(c.querySelector('.cat-chips')){nueva('Categoría').nodos.push(c);return;}
+    if(c.querySelector('.step-header')){recorrer(c,null);if(pend.length)nueva('Opciones');return;}
+    if(c.querySelector('#b-qty-display')){nueva('Cantidad').nodos.push(c);return;}
+    if(c.querySelector('button[onclick^="bAddToCart"]')){nueva('Resumen',{resumen:true}).nodos.push(c);return;}
+    if(c.querySelector('#b-photos-grid')){nueva('Fotos de referencia').nodos.push(c);return;}
+    nueva('Opciones').nodos.push(c);
+  });
+  return pages;
+}
+function guiaPaginaOk(p){
+  if(/opcional/i.test(p.titulo))return true;
+  var tot=0,sel=0;
+  p.nodos.forEach(function(n){guiaQ(n,'.sabor-card,.fmt-btn,.chip,.combo-card,.cat-chip,.suc-btn').forEach(function(e){tot++;if(/(^|\s)(selected|active)(\s|$)/.test(e.className))sel++;});});
+  return tot===0||sel>0;
+}
+function guiaTextoPagina(p){
+  var vals=[];
+  p.nodos.forEach(function(n){
+    guiaQ(n,'.sabor-card,.fmt-btn,.chip,.combo-card,.cat-chip').forEach(function(e){if(/(^|\s)(selected|active)(\s|$)/.test(e.className))vals.push(e.textContent.replace(/\s+/g,' ').trim());});
+    guiaQ(n,'input[type=text],textarea').forEach(function(e){
+      if(!e.value.trim())return;
+      var g=e.closest('.form-group'),l=g&&g.querySelector('.field-label');
+      vals.push((l?l.textContent.replace(/\s+/g,' ').trim()+': ':'')+e.value.trim());
+    });
+    guiaQ(n,'input[type=number]').forEach(function(e){
+      if(e.id==='b-qty-display'){vals.push(e.value+' pieza(s)');return;}
+      var v=parseInt(e.value,10);if(!(v>0))return;
+      var card=e.parentNode&&e.parentNode.parentNode,nm=card&&card.firstElementChild;
+      vals.push((nm?nm.textContent.replace(/\s+/g,' ').trim():'Adicional')+' ×'+v);
+    });
+    guiaQ(n,'#b-colors-list').forEach(function(e){var t=e.textContent.replace(/\s+/g,' ').trim();if(t)vals.push('Colores: '+t);});
+    guiaQ(n,'#b-photos-grid').forEach(function(e){var c=e.querySelectorAll('img').length;if(c)vals.push(c+' foto(s) de referencia');});
+  });
+  return vals;
+}
+function guiaResumenHTML(){
+  var f=[];
+  guiaPaginas.forEach(function(p){
+    if(p.resumen)return;
+    var v=guiaTextoPagina(p);
+    if(!guiaPaginaOk(p))f.push('<div class="guia-fila falta">⚠️ Falta elegir: '+p.titulo+'</div>');
+    else if(v.length)f.push('<div class="guia-fila"><b>'+p.titulo+':</b> '+v.join(' · ').replace(/</g,'&lt;')+'</div>');
+  });
+  return '<div style="font-size:0.7rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Revisión del producto</div>'+(f.join('')||'<div class="guia-fila">Sin datos todavía.</div>');
+}
+function guiaAplicar(){
+  var body=document.getElementById('builder-body');if(!body)return;
+  guiaPaginas=[];
+  var sw='<label class="guia-sw"><input type="checkbox" id="guia-toggle" '+(guiaOn?'checked':'')+' onchange="guiaCambiar(this.checked)"> 🧭 Modo guiado</label>';
+  if(!guiaOn||replacingProductIndex!==null){
+    if(replacingProductIndex===null)body.insertAdjacentHTML('afterbegin','<div id="guia-bar">'+sw+'</div>');
+    return;
+  }
+  guiaPaginas=guiaConstruir(body);
+  if(guiaPaso>=guiaPaginas.length)guiaPaso=guiaPaginas.length-1;
+  if(guiaPaso<0)guiaPaso=0;
+  guiaPaginas.forEach(function(p,i){p.nodos.forEach(function(n){n.classList.toggle('guia-oculto',i!==guiaPaso);});});
+  var p=guiaPaginas[guiaPaso],n=guiaPaginas.length;
+  // los contenedores (bordes/espacios) que ya no tienen nada de este paso también se ocultan
+  var conts=[];
+  guiaPaginas.forEach(function(g){g.nodos.forEach(function(nd){for(var a=nd.parentNode;a&&a!==body;a=a.parentNode)if(conts.indexOf(a)<0)conts.push(a);});});
+  conts.forEach(function(c){c.classList.toggle('guia-oculto',!p.nodos.some(function(nd){return c.contains(nd);}));});
+  if(p&&p.resumen){
+    var r=document.createElement('div');r.id='guia-resumen';r.innerHTML=guiaResumenHTML();
+    p.nodos[0].parentNode.insertBefore(r,p.nodos[0]);
+  }
+  var dots='';for(var i=0;i<n;i++)dots+='<i class="'+(i<=guiaPaso?'on':'')+'"></i>';
+  body.insertAdjacentHTML('afterbegin','<div id="guia-bar"><div id="guia-prog"><div class="guia-t">Paso '+(guiaPaso+1)+' de '+n+' · '+(p?p.titulo:'')+'</div><div class="guia-dots">'+dots+'</div></div>'+sw+'</div>');
+  body.insertAdjacentHTML('beforeend','<div id="guia-nav"><button type="button" class="btn-ghost" onclick="guiaIr(-1)" '+(guiaPaso===0?'disabled style="opacity:.4"':'')+'>‹ Atrás</button>'+(guiaPaso<n-1?'<button type="button" class="btn-primary" onclick="guiaIr(1)">Siguiente ›</button>':'')+'</div>');
+}
+function guiaIr(d){
+  var p=guiaPaginas[guiaPaso];
+  if(d>0&&p&&!guiaPaginaOk(p)){toast('⚠️','Falta elegir: '+p.titulo);return;}
+  guiaPaso=Math.max(0,Math.min(guiaPaginas.length-1,guiaPaso+d));
+  renderBuilder();
+  var sh=document.getElementById('builder-sheet');if(sh)sh.scrollTop=0;
+}
+function guiaCambiar(on){
+  guiaOn=!!on;
+  renderBuilder();
+}
+var _renderBuilderBase=renderBuilder;
+renderBuilder=function(){
+  _renderBuilderBase();
+  try{guiaAplicar();}catch(e){document.querySelectorAll('.guia-oculto').forEach(function(x){x.classList.remove('guia-oculto');});}
+};
+var _openBuilderBase=openBuilder;
+openBuilder=function(){guiaPaso=0;guiaOn=false;_openBuilderBase();};
 initSetupBanner();
 
 function imprimirListaDia(dateStr,soloDomicilio){
@@ -3564,6 +3692,54 @@ function imprimirListaDia(dateStr,soloDomicilio){
     '</body></html>'
   );
   win.document.close();
+}
+// Hoja de referencia: una hoja carta por imagen, con la foto grande y renglones para anotar a mano.
+function printReferencia(folio,fechaPedido){
+  const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));
+  if(!o)return;
+  function e(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+  var prodLines=(o.productos||'').split(' || ').filter(Boolean);
+  var fotos=[];
+  (o.imagen||'').split('|').filter(Boolean).forEach(function(entry){
+    var m=entry.match(/^(\d+)::(https?:\/\/.+)$/);
+    if(m)fotos.push({url:m[2],idx:parseInt(m[1],10)});
+    else if(entry.indexOf('http')===0)fotos.push({url:entry,idx:null});
+  });
+  if(!fotos.length){toast('⚠️','Este pedido no tiene imagen de referencia');return;}
+  var folioStr='#'+String(o.folio).padStart(4,'0');
+  var fp=(o.fechaEntrega||'').split('-');
+  var fechaEnt=fp.length===3?fp[2]+'/'+fp[1]+'/'+fp[0]:(o.fechaEntrega||'—');
+  var campos=['Producto','Sabor','Tamaño','Relleno','Mensaje','Colores','Notas'];
+  var paginas=fotos.map(function(f,i){
+    var linea=f.idx!==null&&prodLines[f.idx]?prodLines[f.idx].split('|')[0].replace(/^\s*\[\d+\]\s*/,'').trim():'';
+    return '<div class="pg">'+
+      '<div class="hd"><div><b>Folio '+e(folioStr)+'</b> · '+e(o.cliente)+'</div>'+
+      '<div>Entrega: <b>'+e(fechaEnt)+' '+e(o.hora||'')+'</b> · '+e(o.tipoEntrega==='domicilio'?'Domicilio':'Sucursal')+(o.sucursal?' '+e(o.sucursal):'')+'</div></div>'+
+      (linea?'<div class="pl">'+e(linea)+'</div>':'')+
+      '<div class="im"><img src="'+e(f.url)+'" alt="Referencia"></div>'+
+      '<div class="sp"><div class="st">Especificaciones'+(fotos.length>1?' · imagen '+(i+1)+' de '+fotos.length:'')+'</div>'+
+      campos.map(function(c){return '<div class="ln"><span>'+c+':</span><i></i></div>';}).join('')+
+      '</div></div>';
+  }).join('');
+  var pw='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Referencia '+e(folioStr)+'</title><style>'+
+    '@page{size:letter portrait;margin:10mm}*{box-sizing:border-box}'+
+    'body{margin:0;font-family:Arial,sans-serif;color:#111}'+
+    '.pg{height:255mm;display:flex;flex-direction:column;page-break-after:always}.pg:last-of-type{page-break-after:auto}'+
+    '.hd{display:flex;justify-content:space-between;gap:10px;font-size:13px;border-bottom:2px solid #1B2A6B;padding-bottom:5px;margin-bottom:5px}'+
+    '.pl{font-size:12px;font-weight:700;color:#1B2A6B;margin-bottom:5px}'+
+    '.im{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;border:1px solid #bbb;border-radius:6px;overflow:hidden}'+
+    '.im img{max-width:100%;max-height:100%;object-fit:contain}'+
+    '.sp{margin-top:8px}.st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1B2A6B;margin-bottom:2px}'+
+    '.ln{display:flex;align-items:flex-end;gap:6px;font-size:12px;height:8mm}.ln span{font-weight:700;white-space:nowrap}.ln i{flex:1;border-bottom:1px solid #555;height:1px;margin-bottom:3px}'+
+    '@media print{.np{display:none!important}}'+
+    '</style></head><body>'+paginas+
+    '<div class="np" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:999">'+
+      '<button onclick="window.print()" style="background:#1B2A6B;color:white;border:none;padding:10px 28px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3)">&#128424; Imprimir</button>'+
+      '<button onclick="window.close()" style="background:#eee;color:#333;border:none;padding:10px 18px;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2)">Cerrar</button>'+
+    '</div></body></html>';
+  var win=window.open('','_blank','width=900,height=760');
+  if(win){win.document.write(pw);win.document.close();}
+  else toast('⚠️','El navegador bloqueó la ventana de impresión');
 }
 function printNota(folio,fechaPedido){
   const o=orders.find(x=>String(x.folio)===String(folio)&&(!fechaPedido||String(x.fechaPedido||'')===String(fechaPedido)));
