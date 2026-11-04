@@ -3709,7 +3709,7 @@ function printReferencia(folio,fechaPedido){
   var folioStr='#'+String(o.folio).padStart(4,'0');
   var fp=(o.fechaEntrega||'').split('-');
   var fechaEnt=fp.length===3?fp[2]+'/'+fp[1]+'/'+fp[0]:(o.fechaEntrega||'—');
-  var campos=['Producto','Sabor','Tamaño','Relleno','Mensaje','Colores','Notas'];
+  var renglones='<div class="ln"><i></i></div>'.repeat(9);
   var paginas=fotos.map(function(f,i){
     var linea=f.idx!==null&&prodLines[f.idx]?prodLines[f.idx].split('|')[0].replace(/^\s*\[\d+\]\s*/,'').trim():'';
     return '<div class="pg">'+
@@ -3717,8 +3717,8 @@ function printReferencia(folio,fechaPedido){
       '<div>Entrega: <b>'+e(fechaEnt)+' '+e(o.hora||'')+'</b> · '+e(o.tipoEntrega==='domicilio'?'Domicilio':'Sucursal')+(o.sucursal?' '+e(o.sucursal):'')+'</div></div>'+
       (linea?'<div class="pl">'+e(linea)+'</div>':'')+
       '<div class="im"><img src="'+e(f.url)+'" alt="Referencia"></div>'+
-      '<div class="sp"><div class="st">Especificaciones'+(fotos.length>1?' · imagen '+(i+1)+' de '+fotos.length:'')+'</div>'+
-      campos.map(function(c){return '<div class="ln"><span>'+c+':</span><i></i></div>';}).join('')+
+      '<div class="sp"><div class="st">Especificaciones / instrucciones'+(fotos.length>1?' · imagen '+(i+1)+' de '+fotos.length:'')+'</div>'+
+      renglones+
       '</div></div>';
   }).join('');
   var pw='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Referencia '+e(folioStr)+'</title><style>'+
@@ -3728,9 +3728,9 @@ function printReferencia(folio,fechaPedido){
     '.hd{display:flex;justify-content:space-between;gap:10px;font-size:13px;border-bottom:2px solid #1B2A6B;padding-bottom:5px;margin-bottom:5px}'+
     '.pl{font-size:12px;font-weight:700;color:#1B2A6B;margin-bottom:5px}'+
     '.im{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;border:1px solid #bbb;border-radius:6px;overflow:hidden}'+
-    '.im img{max-width:100%;max-height:100%;object-fit:contain}'+
+    '.im img{max-width:66%;max-height:74%;object-fit:contain}'+
     '.sp{margin-top:8px}.st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1B2A6B;margin-bottom:2px}'+
-    '.ln{display:flex;align-items:flex-end;gap:6px;font-size:12px;height:8mm}.ln span{font-weight:700;white-space:nowrap}.ln i{flex:1;border-bottom:1px solid #555;height:1px;margin-bottom:3px}'+
+    '.ln{display:flex;align-items:flex-end;height:8.5mm}.ln i{flex:1;border-bottom:1px solid #777;height:1px;margin-bottom:3px}'+
     '@media print{.np{display:none!important}}'+
     '</style></head><body>'+paginas+
     '<div class="np" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:999">'+
