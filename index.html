@@ -3776,11 +3776,18 @@ function printReferencia(folio,fechaPedido,modo){
   var renglones='<div class="ln"><i></i></div>'.repeat(9);
   var paginas=fotos.map(function(f,i){
     var linea=f.idx!==null&&prodLines[f.idx]?prodLines[f.idx].split('|')[0].replace(/^\s*\[\d+\]\s*/,'').trim():'';
+    // Notas adicionales del producto (📝) y notas generales del pedido, para seguirlas junto a la referencia
+    var notas=[];
+    (f.idx!==null&&prodLines[f.idx]?[prodLines[f.idx]]:prodLines).forEach(function(l){
+      l.split('|').forEach(function(seg){var k=seg.indexOf('\uD83D\uDCDD');if(k>=0&&k<=3){var t=seg.replace('\uD83D\uDCDD','').replace(/^\s*Notas( adicionales)?:\s*/i,'').trim();if(t)notas.push(t);}});
+    });
+    if((o.notas||'').trim())notas.push(o.notas.trim());
     return '<div class="pg">'+
       '<div class="hd"><div><b>Folio '+e(folioStr)+'</b> · '+e(o.cliente)+'</div>'+
       '<div>Entrega: <b>'+e(fechaEnt)+' '+e(o.hora||'')+'</b> · '+e(o.tipoEntrega==='domicilio'?'Domicilio':'Sucursal')+(o.sucursal?' '+e(o.sucursal):'')+'</div></div>'+
       (linea?'<div class="pl">'+e(linea)+'</div>':'')+
       '<div class="im"><img src="'+e(f.url)+'" alt="Referencia"></div>'+
+      (notas.length?'<div class="nt"><b>Notas adicionales:</b> '+notas.map(e).join(' · ')+'</div>':'')+
       '<div class="sp"><div class="st">Especificaciones / instrucciones'+(fotos.length>1?' · imagen '+(i+1)+' de '+fotos.length:'')+'</div>'+
       renglones+
       '</div></div>';
@@ -3793,7 +3800,7 @@ function printReferencia(folio,fechaPedido,modo){
     '.pl{font-size:12px;font-weight:700;color:#1B2A6B;margin-bottom:5px}'+
     '.im{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;border:1px solid #bbb;border-radius:6px;overflow:hidden}'+
     '.im img{max-width:66%;max-height:74%;object-fit:contain}'+
-    '.sp{margin-top:8px}.st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1B2A6B;margin-bottom:2px}'+
+    '.nt{margin-top:6px;border:1px solid #1B2A6B;border-radius:4px;padding:5px 8px;font-size:13px}.sp{margin-top:8px}.st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1B2A6B;margin-bottom:2px}'+
     '.ln{display:flex;align-items:flex-end;height:8.5mm}.ln i{flex:1;border-bottom:1px solid #777;height:1px;margin-bottom:3px}'+
     '@media print{.np{display:none!important}}'+
     '</style></head><body>'+paginas+
