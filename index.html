@@ -4225,7 +4225,7 @@ function printNota(folio,fechaPedido,modo){
   if(win){win.document.write(pw);win.document.close();}
 }
 
-// PDF para compartir: una nota (hoja horizontal) + una hoja por imagen de referencia (vertical), en un solo documento para "Guardar como PDF".
+// PDF para compartir: una nota (hoja horizontal) + una hoja por imagen de referencia (vertical, sin renglones: se comparte digital), en un solo documento para "Guardar como PDF".
 function pdfCompartir(folio,fechaPedido){
   var rawN=printNota(folio,fechaPedido,'raw');
   if(!rawN)return;
@@ -4242,13 +4242,14 @@ function pdfCompartir(folio,fechaPedido){
   if(rawR){
     var dr=new DOMParser().parseFromString(rawR,'text/html');
     var rb=dr.querySelector('.np');if(rb)rb.remove();
+    dr.querySelectorAll('.sp').forEach(function(x){x.remove();});
     refCss=dr.querySelector('style').textContent.replace(/@page\{[^}]*\}/,'').replace(/@media print\{\.np\{display:none!important\}\}/,'');
     refBody=dr.body.innerHTML;
   }
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pedido #'+String(folio).padStart(4,'0')+'</title><style>'+
     '@page nota{size:letter landscape;margin:8mm}@page ref{size:letter portrait;margin:10mm}'+
     css+refCss+
-    '.pag{page:nota;page-break-after:always}.pg{page:ref}'+(refBody?'':'.pag{page-break-after:auto}')+
+    '.pag{page:nota;page-break-after:always}.pg{page:ref}.im img{max-width:96%;max-height:96%}'+(refBody?'':'.pag{page-break-after:auto}')+
     '</style></head><body>'+cuerpo+refBody+
     '<div class="np" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:999">'+
       '<button onclick="window.print()" style="background:#1B2A6B;color:white;border:none;padding:10px 28px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3)">&#128196; Guardar como PDF</button>'+
