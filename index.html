@@ -3776,18 +3776,22 @@ function printReferencia(folio,fechaPedido,modo){
   var renglones='<div class="ln"><i></i></div>'.repeat(9);
   var paginas=fotos.map(function(f,i){
     var linea=f.idx!==null&&prodLines[f.idx]?prodLines[f.idx].split('|')[0].replace(/^\s*\[\d+\]\s*/,'').trim():'';
-    // Notas adicionales del producto (📝) y notas generales del pedido, para seguirlas junto a la referencia
+    // Todas las notas: del producto (📝 y "Nota:") y generales del pedido
     var notas=[];
     (f.idx!==null&&prodLines[f.idx]?[prodLines[f.idx]]:prodLines).forEach(function(l){
-      l.split('|').forEach(function(seg){var k=seg.indexOf('\uD83D\uDCDD');if(k>=0&&k<=3){var t=seg.replace('\uD83D\uDCDD','').replace(/^\s*Notas( adicionales)?:\s*/i,'').trim();if(t)notas.push(t);}});
+      l.split('|').forEach(function(seg){
+        var k=seg.indexOf('\uD83D\uDCDD');
+        if(k>=0&&k<=3){var t=seg.replace('\uD83D\uDCDD','').replace(/^\s*Notas( adicionales)?:\s*/i,'').trim();if(t)notas.push({l:'Notas adicionales',t:t});}
+        else{var m=seg.match(/^\s*Notas?:\s*([\s\S]+)$/i);if(m&&m[1].trim())notas.push({l:'Nota del producto',t:m[1].trim()});}
+      });
     });
-    if((o.notas||'').trim())notas.push(o.notas.trim());
+    if((o.notas||'').trim())notas.push({l:'Notas generales',t:o.notas.trim()});
     return '<div class="pg">'+
       '<div class="hd"><div><b>Folio '+e(folioStr)+'</b> · '+e(o.cliente)+'</div>'+
       '<div>Entrega: <b>'+e(fechaEnt)+' '+e(o.hora||'')+'</b> · '+e(o.tipoEntrega==='domicilio'?'Domicilio':'Sucursal')+(o.sucursal?' '+e(o.sucursal):'')+'</div></div>'+
       (linea?'<div class="pl">'+e(linea)+'</div>':'')+
       '<div class="im"><img src="'+e(f.url)+'" alt="Referencia"></div>'+
-      (notas.length?'<div class="nt"><b>Notas adicionales:</b> '+notas.map(e).join(' · ')+'</div>':'')+
+      (notas.length?'<div class="nt">'+notas.map(function(n){return '<div><b>'+n.l+':</b> '+e(n.t)+'</div>';}).join('')+'</div>':'')+
       '<div class="sp"><div class="st">Especificaciones / instrucciones'+(fotos.length>1?' · imagen '+(i+1)+' de '+fotos.length:'')+'</div>'+
       renglones+
       '</div></div>';
