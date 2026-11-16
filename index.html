@@ -3539,7 +3539,13 @@ async function eHandlePhoto(e){
     else{toast('❌','Sin conexión para subir foto. Puedes guardar el pedido sin imagen.');}
   }
 }
+function eShowErr(msg){
+  var box=document.getElementById('edit-err');
+  if(!box){var act=document.querySelector('#edit-modal .modal-actions');if(!act)return;box=document.createElement('div');box.id='edit-err';box.style.cssText='background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5;border-radius:8px;padding:8px 10px;font-size:.78rem;font-weight:600;margin-top:10px';act.parentNode.insertBefore(box,act);}
+  box.textContent=msg||'';box.style.display=msg?'block':'none';
+}
 async function saveEdit(){
+  eShowErr('');
   const saveBtn=document.getElementById('edit-save-btn');
   if(saveBtn){saveBtn.disabled=true;saveBtn.innerHTML='<div class="spin"></div> Guardando...';}
   try{
@@ -3576,13 +3582,16 @@ async function saveEdit(){
     } else {
       if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Guardar';}
       toast('❌','Error al guardar: '+((result&&result.error)||'intenta de nuevo'));
+      eShowErr('❌ No se guardó. '+((result&&result.error)||'El servidor no respondió como se esperaba: '+JSON.stringify(result)));
     }
   }catch(e){
     if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Guardar';}
     if(e.name==='AbortError'){
       toast('❌','Se tardó demasiado. Puede que sí se haya guardado: recarga la app y revisa antes de intentar de nuevo.');
+      eShowErr('❌ Se tardó demasiado (más de 45 s) y no hubo respuesta. Puede que sí se haya guardado: recarga la app y revisa antes de intentar de nuevo.');
     } else {
       toast('❌','Error al guardar: '+(e.message||'algo salió mal')+'. Intenta de nuevo.');
+      eShowErr('❌ Error al guardar: '+(e.message||'algo salió mal')+'. Intenta de nuevo.');
     }
   }
 }
