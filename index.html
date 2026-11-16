@@ -786,6 +786,22 @@ const CREPAS_PLANCHA_EXTRAS = [
   {id:'frutos_rojos',   label:'Frutos Rojos',  price:450}
 ];
 
+const ROSCA_RELLENOS = ['Queso','Cajeta','Queso con Mermelada de Frambuesa'];
+const ROSCAS = {
+  rellena:{label:'Rellena',tam:[
+    {id:'fam',label:'Familiar',pers:'25 personas',mon:8,p:2000},
+    {id:'gra',label:'Grande',pers:'16 personas',mon:6,p:950},
+    {id:'med',label:'Mediana',pers:'12 personas',mon:4,p:680},
+    {id:'chi',label:'Chica',pers:'6 personas',mon:3,p:400},
+    {id:'ind',label:'Individual',p:120}]},
+  tradicional:{label:'Tradicional',tam:[
+    {id:'fam',label:'Familiar',pers:'25 personas',mon:8,p:800},
+    {id:'gra',label:'Grande',pers:'16 personas',mon:6,p:650},
+    {id:'med',label:'Mediana',pers:'12 personas',mon:4,p:400},
+    {id:'chi',label:'Chica',pers:'6 personas',mon:3,p:250},
+    {id:'ind',label:'Individual',p:60}]}
+};
+
 const ADICIONALES = [
   {id:'imp-azucar',    name:'🖨️ Impresión Azúcar',      price:'$200/hoja'},
   {id:'perlas',        name:'✨ Perlas',                 price:'a cotizar'},
@@ -1194,7 +1210,7 @@ function editCartItem(i){
   b.rellenoCustom=item._rellenoCustom||'';b.crepaFmt=item._crepaFmt||'';b.crepaRelleno=item._crepaRelleno||'';b.crepaRellenoCustom=item._crepaRellenoCustom||'';
   b.crepaMermelada=item._crepaMermelada||false;b.postProduct=item._postProduct||'';
   b.postFmt=item._postFmt||'';b.postFmtLabel=item._postFmtLabel||'';b.cupcakeSabor=item._cupcakeSabor||'';
-  b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';
+  b.miniProduct=item._miniProduct||'';b.miniVariant=item._miniVariant||'';b.panDesc=item._panDesc||'';b.roscaTipo=item._roscaTipo||'';b.roscaRelleno=item._roscaRelleno||'';b.roscaTam=item._roscaTam||'';
   b.adicionales=item._adicionales||{};b.otrosAdicionales=Array.isArray(item._otrosAdicionales)?item._otrosAdicionales.map(o=>({...o})):[];b.mensaje=item._mensaje||'';b.tema=item._tema||'';
   b.colores=Array.isArray(item._colores)?item._colores.map(function(c){return{...c};}):[];
   b.fondantDesc=item._fondantDesc||'';b.floresDesc=item._floresDesc||'';
@@ -1247,7 +1263,7 @@ function bReset(){
      comboSabores:[],
      cremaBase:'',rellenosGratis:[],rellenosCosto:{},rellenoFruta:'',rellenoCustom:'',
      postProduct:'',postFmt:'',postFmtLabel:'',cupcakeSabor:'',
-     miniProduct:'',miniVariant:'',panDesc:'',
+     miniProduct:'',miniVariant:'',panDesc:'',roscaTipo:'',roscaRelleno:'',roscaTam:'',
      mensaje:'',tema:'',colores:[],alergias:'',notas:'',fondantDesc:'',floresDesc:'',photos:[],azucarPhotos:[],
      qty:1,nota:'',photo:null};
 }
@@ -1300,6 +1316,7 @@ function renderBuilder(){
         <div class="cat-chip ${b.cat==='mini'?'active':''}" onclick="bSetCat('mini')">🥧 Mini postres</div>
         <div class="cat-chip ${b.cat==='pan'?'active':''}" onclick="bSetCat('pan')" style="display:inline-flex;align-items:center;gap:3px">${iconSpan(ICON_OREJA,14)} Pan Variado</div>
         <div class="cat-chip ${b.cat==='vitrina'?'active':''}" onclick="bSetCat('vitrina')">✨ Vitrina</div>
+        <div class="cat-chip ${b.cat==='rosca'?'active':''}" onclick="bSetCat('rosca')">👑 Rosca de Reyes</div>
       </div>
     </div>
 
@@ -1527,6 +1544,30 @@ function renderBuilder(){
       </div>`:''}
     </div>
 
+
+    <!-- ══ ROSCA DE REYES ══ -->
+    <div style="display:${b.cat==='rosca'?'block':'none'}">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Tipo de rosca</div></div>
+      <div class="formato-box" style="margin-bottom:0.6rem"><div class="formato-grid">
+        ${Object.keys(ROSCAS).map(k=>`
+          <div class="fmt-btn ${b.roscaTipo===k?'selected':''}" onclick="bRoscaTipo('${k}')"><div class="ft">${ROSCAS[k].label}</div></div>`).join('')}
+      </div></div>
+      ${b.roscaTipo==='rellena'?`
+      <div class="step-header" style="margin-top:0.5rem"><div class="step-num">2</div><div class="step-title">Relleno</div></div>
+      <div class="chips">${ROSCA_RELLENOS.map(r=>`
+        <div class="chip ${b.roscaRelleno===r?'selected':''}" onclick="b.roscaRelleno='${r}';renderBuilder()">${r}</div>`).join('')}
+      </div>`:''}
+      ${b.roscaTipo?`
+      <div class="step-header" style="margin-top:0.5rem"><div class="step-num">${b.roscaTipo==='rellena'?3:2}</div><div class="step-title">Tamaño</div></div>
+      <div class="formato-box"><div class="formato-grid">
+        ${ROSCAS[b.roscaTipo].tam.map(t=>`
+          <div class="fmt-btn ${b.roscaTam===t.id?'selected':''}" onclick="b.roscaTam='${t.id}';renderBuilder()">
+            <div class="ft">${t.label}</div>
+            <div class="fp" style="font-weight:700;color:${b.roscaTam===t.id?'white':'var(--red)'}">$${t.p.toLocaleString('es-MX')}</div>
+            ${t.pers?`<div style="font-size:0.58rem;color:${b.roscaTam===t.id?'#fff':'var(--muted)'}">${t.pers} · ${t.mon} monitos</div>`:''}
+          </div>`).join('')}
+      </div></div>`:''}
+    </div>
 
     <!-- ══ PAN VARIADO ══ -->
     <div style="display:${b.cat==='pan'?'block':'none'}">
@@ -1762,7 +1803,8 @@ function bSetVitrinaGrupo(grupo){
   b.vitrinaTam='';
   renderBuilder();
 }
-function bSetCat(cat){b.cat=cat;if(cat==='pan'&&b.qty<12)b.qty=12;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaRellenoCustom='';b.crepaMermelada=false;b.comboSabores=[];b.barraSabores=[];b.vitrinaGrupo='';b.vitrinaSabor='';b.vitrinaTam='';renderBuilder();}
+function bSetCat(cat){b.cat=cat;if(cat==='pan'&&b.qty<12)b.qty=12;b.sabor='';b.saborEspecial=false;b.fmtGrupo='';b.fmtTamano='';b.postProduct='';b.postFmt='';b.miniProduct='';b.pisosCombo='';b.pisosData=[];b.depositoCobrado=false;b.crepaFmt='';b.crepaRelleno='';b.crepaRellenoCustom='';b.crepaMermelada=false;b.comboSabores=[];b.barraSabores=[];b.vitrinaGrupo='';b.vitrinaSabor='';b.vitrinaTam='';b.roscaTipo='';b.roscaRelleno='';b.roscaTam='';renderBuilder();}
+function bRoscaTipo(t){b.roscaTipo=t;b.roscaRelleno='';b.roscaTam='';renderBuilder();}
 
 function bSelectSabor(s,esp){
   b.sabor=s;b.saborEspecial=esp;
@@ -2050,6 +2092,14 @@ function bAddToCart(){
       if(b.crepaRellenoCustom&&b.crepaRellenoCustom.trim())details+=`Otro relleno: ${b.crepaRellenoCustom.trim()}\n`;
       if(b.crepaMermelada)details+=`🍒 Mermelada de frutos rojos ${b.crepaFmt==='cr12'?'+$150':'+$100'}\n`;
     }
+  } else if(b.cat==='rosca'){
+    if(!b.roscaTipo){toast('⚠️','Elige el tipo de rosca');return;}
+    if(b.roscaTipo==='rellena'&&!b.roscaRelleno){toast('⚠️','Elige el relleno');return;}
+    if(!b.roscaTam){toast('⚠️','Elige el tamaño');return;}
+    const rt=ROSCAS[b.roscaTipo],rs=rt.tam.find(x=>x.id===b.roscaTam);
+    name=`Rosca de Reyes ${rt.label} · ${rs.label} ($${rs.p.toLocaleString('es-MX')})`;
+    if(b.roscaTipo==='rellena')details+=`Relleno: ${b.roscaRelleno}\n`;
+    if(rs.pers)details+=`Rinde: ${rs.pers} · ${rs.mon} monitos\n`;
   } else if(b.cat==='postre'){
     if(!b.postProduct){toast('⚠️','Elige el producto');return;}
     if(b.postProduct==='Cupcakes'&&!b.cupcakeSabor){toast('⚠️','Elige el sabor de los cupcakes');return;}
@@ -2103,7 +2153,7 @@ function bAddToCart(){
     const aStr=partesCatalogo.concat(partesOtros).join(', ');
     details+=`\nAdicionales: ${aStr}`;
   }
-  const item={name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_barraSabores:[...(b.barraSabores||[])],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaRellenoCustom:b.crepaRellenoCustom,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_otrosAdicionales:(b.otrosAdicionales||[]).map(o=>({...o})),_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]};
+  const item={name,qty:b.qty,details:details.trim(),photo:b.photo||null,_cat:b.cat,_sabor:b.sabor,_saborEspecial:b.saborEspecial,_fmtGrupo:b.fmtGrupo,_fmtTamano:b.fmtTamano,_fmtLabel:b.fmtLabel,_pisosCombo:b.pisosCombo,_pisosData:[...b.pisosData],_comboSabores:[...b.comboSabores],_barraSabores:[...(b.barraSabores||[])],_cremaBase:b.cremaBase,_rellenosGratis:[...b.rellenosGratis],_rellenosCosto:{...b.rellenosCosto},_rellenoFruta:b.rellenoFruta,_rellenoCustom:b.rellenoCustom,_crepaFmt:b.crepaFmt,_crepaRelleno:b.crepaRelleno,_crepaRellenoCustom:b.crepaRellenoCustom,_crepaMermelada:b.crepaMermelada,_postProduct:b.postProduct,_roscaTipo:b.roscaTipo,_roscaRelleno:b.roscaRelleno,_roscaTam:b.roscaTam,_postFmt:b.postFmt,_postFmtLabel:b.postFmtLabel,_cupcakeSabor:b.cupcakeSabor,_miniProduct:b.miniProduct,_miniVariant:b.miniVariant,_panDesc:b.panDesc,_adicionales:{...b.adicionales},_otrosAdicionales:(b.otrosAdicionales||[]).map(o=>({...o})),_mensaje:b.mensaje,_tema:b.tema,_fondantDesc:b.fondantDesc,_floresDesc:b.floresDesc,_colores:Array.isArray(b.colores)?b.colores.map(function(c){return{...c};}):[],_alergias:b.alergias,_notas:b.notas,_depositoCobrado:b.depositoCobrado,_doblePan:b.doblePan,photos:Array.isArray(b.photos)?[...b.photos]:[],azucarPhotos:Array.isArray(b.azucarPhotos)?[...b.azucarPhotos]:[]};
 
   if(replacingProductIndex!==null){
     const idx=replacingProductIndex;
